@@ -1,0 +1,38 @@
+Material,Código
+Aspirado Traqueal,0
+Lavado broncoalveolar,1
+Liquido ascitico,2
+Liquido pleural,3
+Partes moles,4
+Sangue,5
+Liquido pericardico,6
+Urina,7
+Liquido abdominal,8
+Ponta de cateter,9
+Outro,10
+Fragmento de tecido,11
+Ferida operatoria,11
+Lesao perianal,11
+Pleura pariental,11
+Mao direita,11
+Pele,11
+Rim,11
+Fragmento osseo,12
+Esterno,12
+Osso,12
+Líquido Hepático,13
+Líquido da loja renal,14
+Valvula aortica,15
+Liquor,15
+Liquido cefalorraquidiano,15
+Liquido sinovial,16
+Líquido articular,17
+Secrecao nasal,18
+Secrecao ocular,19
+Secrecao de ferida,20
+Secrecao de abcesso,20
+Secrecao purulenta,21
+Abscesso hepatico,21
+Fragmento de pele,22
+Líquido biliar,23
+Médula Óssea,24

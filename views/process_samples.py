@@ -1,0 +1,394 @@
+import streamlit as st
+import pandas as pd
+import re
+import io
+import zipfile
+from pypdf import PdfReader
+from datetime import datetime, timedelta
+from xlsxwriter.utility import xl_rowcol_to_cell
+
+# Planilhas auxiliares GitHub
+departments_df = pd.read_csv("assets/files/departments.csv")
+substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.upper(), departments_df["Código"]))
+materials_general_df = pd.read_csv("assets/files/materials_general.csv")
+materials_general = dict(zip(materials_general_df["Material"].str.lower(), materials_general_df["Código"]))
+materials_vigilance_df = pd.read_csv("assets/files/materials_vigilance.csv")
+materials_vigilance = dict(zip(materials_vigilance_df["Material"].str.lower(), materials_vigilance_df["Código"]))
+materials_smear_df = pd.read_csv("assets/files/materials_smear_microscopy.csv")
+materials_smear_microscopy = dict(zip(materials_smear_df["Material"].str.lower(), materials_smear_df["Código"]))
+
+# Planilhas para download
+df_general = pd.DataFrame(columns=st.secrets["columns"]["general"]); df_general.name = "general"
+df_vigilance = pd.DataFrame(columns=st.secrets["columns"]["vigilance"]); df_vigilance.name = "vigilance"
+df_smear = pd.DataFrame(columns=st.secrets["columns"]["smear_microscopy"]); df_smear.name = "smear"
+
+# Função de estilização/download
+def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="relatorios_processados.zip"):
+    status.update(label="Estilizando planilhas...", state="running", expanded=False)
+    try:
+        zip_buffer = io.BytesIO()
+        dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia}
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file: 
+            for nome_arquivo_excel, df in dfs_para_exportar.items():
+                if df is None or df.empty:
+                    continue
+                excel_buffer = io.BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                    nome_aba = "Dados"
+                    df.to_excel(writer, sheet_name=nome_aba, index=False)
+                    workbook = writer.book
+                    blue_format = workbook.add_format({'bg_color': '#DDEBF7'})
+                    green_format = workbook.add_format({'bg_color': '#C6EFCE'})
+                    red_format = workbook.add_format({'bg_color': '#FFC7CE'})
+                    purple_format = workbook.add_format({'bg_color': '#E8DAEF'})
+                    yellow_format = workbook.add_format({'bg_color': '#FFEB9C'})
+                    worksheet = writer.sheets[nome_aba]
+                    max_row = len(df)
+                    if max_row == 0:
+                        continue
+                    if "desfecho_do_paciente" in df.columns:
+                        col_idx = df.columns.get_loc("desfecho_do_paciente")
+                        cell_range = (1, col_idx, max_row, col_idx) 
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "2", 'format': red_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
+                    if "setor_de_origem" in df.columns:
+                        col_idx_setor = df.columns.get_loc("setor_de_origem")
+                        cell_range_setor = (1, col_idx_setor, max_row, col_idx_setor)
+                        first_cell = xl_rowcol_to_cell(1, col_idx_setor) 
+                        worksheet.conditional_format(*cell_range_setor, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': purple_format})
+                    if "tipo_de_material" in df.columns:
+                        col_idx = df.columns.get_loc("tipo_de_material")
+                        cell_range = (1, col_idx, max_row, col_idx)
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "14", 'format': yellow_format})
+                    if "qual_tipo_de_material" in df.columns:
+                        col_idx = df.columns.get_loc("qual_tipo_de_material")
+                        cell_range = (1, col_idx, max_row, col_idx)
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "10", 'format': yellow_format})
+                excel_buffer.seek(0)
+                zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
+        zip_buffer.seek(0)
+        st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)  
+        st.download_button(label="Baixar (.zip)", data=zip_buffer, file_name=nome_arquivo_zip, mime="application/zip")
+    except Exception as e:
+        st.error(f"Ocorreu um erro inesperado ao gerar o arquivo .zip: {e}")
+        st.exception(e)
+
+# Função de comparação
+def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem"):
+    for df in dfs:
+        if setor_col in df.columns:
+            df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
+        if df is df_general and "qual_tipo_de_material" in df.columns:
+            mat_col = "qual_tipo_de_material"
+            outro_col = "outro_tipo_de_material"
+            default_val = "10"
+            for idx, val in df[mat_col].items():
+                val_norm = str(val).strip().upper()
+                mapped = {k.strip().upper(): v for k, v in materials_dicts["df_general"].items()}.get(val_norm)
+                if mapped is not None:
+                    df.at[idx, mat_col] = mapped
+                else:
+                    df.at[idx, outro_col] = val
+                    df.at[idx, mat_col] = default_val
+        elif df is df_vigilance and "qual_tipo_de_material" in df.columns:
+            df["qual_tipo_de_material"] = df["qual_tipo_de_material"].map(materials_dicts["df_vigilance"]).fillna(df["qual_tipo_de_material"])
+        elif df is df_smear and "tipo_de_material" in df.columns:
+            mat_col = "tipo_de_material"
+            outro_col = "se_outro_material"
+            default_val = "2"
+            for idx, val in df[mat_col].items():
+                val_norm = str(val).strip().upper()
+                mapped = {k.strip().upper(): v for k, v in materials_dicts["df_smear"].items()}.get(val_norm)
+                if mapped is not None:
+                    df.at[idx, mat_col] = mapped
+                else:
+                    df.at[idx, outro_col] = val
+                    df.at[idx, mat_col] = default_val
+    return dfs
+
+# Função de desfecho
+def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="column_aux2", col_date2="column_aux3", col_outcome="desfecho_do_paciente", col_setor="setor_de_origem"):
+    text = extract_text_pdf(pdf_file)
+    if not text:
+        return dfs
+    lines = text.splitlines()
+    date_pattern = r"(\d{2}/\d{2}/\d{4})"
+    for df in dfs:
+        for col in [col_date1, col_date2, col_outcome]:
+            if col not in df.columns:
+                df[col] = ""
+        for idx, row in df.iterrows():
+            patient_name = str(row[column_name_search]).strip()
+            setor = str(row.get(col_setor, "")).lower()
+            for line in lines:
+                if patient_name and patient_name in line:
+                    dates = re.findall(date_pattern, line)
+                    if len(dates) >= 2:
+                        df.at[idx, col_date1] = dates[0]
+                        df.at[idx, col_date2] = dates[1]
+                    elif len(dates) == 1:
+                        df.at[idx, col_date1] = dates[0]
+                    if "amb" in setor:
+                        df.at[idx, col_outcome] = 3
+                    elif re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
+                        df.at[idx, col_outcome] = 2
+                    elif df.at[idx, col_date1] and df.at[idx, col_date2]:
+                        df.at[idx, col_outcome] = 3
+                    break
+        for col in [column_name_search, col_date1, col_date2]:
+            if col in df.columns:
+                df.drop(columns=[col], inplace=True)
+    return dfs
+
+# Funções de preenchimento
+def get_next_id(df, start_id, column_name):
+    if df.empty or df[column_name].dropna().empty:
+        return start_id
+    max_val = df[column_name].max()
+    if pd.isna(max_val):
+        return start_id
+    return int(max_val) + 1
+def extract_fields_positive(report_text, df_name):
+    pass
+def extract_fields_negative(report_text, df_name):
+    report_lower = report_text.lower()
+    def get_value(label):
+        idx = report_lower.find(label.lower())
+        if idx != -1:
+            end = report_lower.find("\n", idx)
+            if end == -1:
+                end = len(report_lower)
+            line = report_text[idx:end]
+            return line.split(":", 1)[-1].strip()
+        return ""
+    def format_time(raw_text, df_name, column_name=""):
+        match = re.search(r"(\d{2}/\d{2}/\d{4})(?:\s+(\d{2}:\d{2}))?", raw_text)
+        if not match:
+            return ""
+        date_str = match.group(1)
+        time_str = match.group(2) or "00:00"
+        try:
+            date_obj = datetime.strptime(f"{date_str} {time_str}", "%d/%m/%Y %H:%M")
+        except ValueError:
+            return ""
+        if df_name in ("general", "vigilance"):
+            return date_obj.strftime("%Y-%m-%d %H:%M")
+        elif df_name == "smear":
+            if column_name == "data_da_libera_o":
+                date_obj += timedelta(days=1)
+            return date_obj.strftime("%Y-%m-%d")
+        else:
+            return date_obj.strftime("%Y-%m-%d %H:%M")
+    def get_result(report_text, df_name):
+        """Define o resultado conforme o conteúdo do texto e o tipo de planilha."""
+        text_lower = report_text.lower()
+        if df_name in ("vigilance", "smear"):
+            return "2"
+        if "contaminado" in text_lower:
+            if "urina" in text_lower:
+                return "2"
+            else:
+                return "3"
+        else:
+            return "0"
+    def process_material(raw_material, df_name):
+        if not raw_material:
+            return {"tipo": "", "outro": ""}
+        material_clean = raw_material.strip().lower()
+        if "sangue" in material_clean:
+            return {"tipo": "SANGUE", "outro": ""}
+        if df_name == "smear":
+            if material_clean not in materials_smear_microscopy:
+                return {"tipo": "Outro", "outro": raw_material}
+            return {"tipo": raw_material, "outro": ""}
+        elif df_name == "general":
+            if material_clean not in materials_general:
+                return {"tipo": "Outro", "outro": raw_material}
+            return {"tipo": raw_material, "outro": ""}
+        elif df_name == "vigilance":
+            if material_clean not in materials_vigilance:
+                return {"tipo": "Outro", "outro": raw_material}
+            return {"tipo": raw_material, "outro": ""}
+        else:
+            return {"tipo": raw_material, "outro": ""}
+    def get_negative_agent(report_text):
+        text_lower = report_text.lower()
+        has_carbapenemicos = "carbapenêmico" in text_lower or "carbapenêmicos" in text_lower
+        has_vancomicina = "vancomicina" in text_lower
+        if has_carbapenemicos and has_vancomicina:
+            return "3"
+        elif has_carbapenemicos:
+            return "1"
+        elif has_vancomicina:
+            return "2"
+        else:
+            return ""
+    def get_material_value(labels):
+        for label in labels:
+            value = get_value(label)
+            if value:  # se encontrou algum valor
+                return value
+        return ""
+    def format_sexo(raw_sexo_value, df_name):
+        sexo_clean = raw_sexo_value.split("|")[0].strip().lower()
+        if df_name in ("smear", "vigilance"):
+            if "masculino" in sexo_clean:
+                return "2"
+            elif "feminino" in sexo_clean:
+                return "1"
+        elif df_name == "general":
+            if "masculino" in sexo_clean:
+                return "1"
+            elif "feminino" in sexo_clean:
+                return "0"
+        return ""    
+    return {
+        "hospital": "1",
+        "hospital_de_origem": "1",
+        "faz_parte_projeto_cdc_rfa": "2",
+        "faz_parte_projeto_cdc_rfa_ck21_2104": "2",
+        "n_mero_do_prontu_rio": "".join(re.findall(r"\d+", get_value("Prontuário..:"))),
+        "sexo": format_sexo(get_value("Sexo........:"), df_name),
+        "idade": get_value("Idade:").split("A")[0].strip(),
+        "idade_anos": get_value("Idade:").split("A")[0].strip(),
+        "setor_de_origem": get_value("Procedência.:").split("|")[0].strip(),
+        "data_de_entrada": format_time(get_value("Dt.Recebimento:"), df_name, "data_de_entrada"),
+        "data_da_entrada": format_time(get_value("Dt.Recebimento:"), df_name, "data_da_entrada"),
+        "data_da_libera_o": format_time(get_value("Dt.Liberação:"), df_name, "data_da_libera_o"),
+        "qual_tipo_de_material": process_material(get_material_value(["material:", "material : "]), df_name)["tipo"] if df_name in ["general", "vigilance"] else get_material_value(["material:", "material : "]),
+        "tipo_de_material": process_material(get_material_value(["material examinado:", "material examinado : "]), df_name)["tipo"] if df_name == "smear" else get_material_value(["material examinado:", "material examinado : "]),
+        "se_outro_material": process_material(get_material_value(["material:", "material : "]), df_name)["outro"] if df_name == "smear" else "",
+        "outro_tipo_de_material": process_material(get_material_value(["material:", "material : "]), df_name)["outro"] if df_name in ["general", "vigilance"] else "",
+        "resultado": get_result(report_text, df_name),
+        "se_negativo_para_qual_agente": get_negative_agent(report_text),
+        "formulrio_complete": "2",
+        "dados_microbiologia_complete": "2",
+        "data_agora": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
+    }
+
+# Funções de processamento
+def process_general(report_text, row_idx=None):
+    global df_general
+    if "positivo" in report_text.lower():
+        fields = extract_fields_positive(report_text, "general")
+    else:
+        fields = extract_fields_negative(report_text, "general")
+    if row_idx is None:
+        new_row = {col: "" for col in st.secrets["columns"]["general"]}
+        for key, val in fields.items():
+            if key in new_row:
+                new_row[key] = val
+        new_row["id"] = get_next_id(df_general, start_id_general, "id")
+        df_general = pd.concat([df_general, pd.DataFrame([new_row])], ignore_index=True)
+    else:
+        for key, val in fields.items():
+            if key in df_general.columns:
+                if df_general.at[row_idx, key] == "" or pd.isna(df_general.at[row_idx, key]):
+                    df_general.at[row_idx, key] = val
+def process_vigilance(report_text, row_idx=None):
+    global df_vigilance
+    if "positivo" in report_text.lower():
+        fields = extract_fields_positive(report_text, "vigilance")
+    else:
+        fields = extract_fields_negative(report_text, "vigilance")
+    if row_idx is None:
+        new_row = {col: "" for col in st.secrets["columns"]["vigilance"]}
+        for key, val in fields.items():
+            if key in new_row:
+                new_row[key] = val
+        new_row["record_id"] = get_next_id(df_vigilance, start_id_vigilance, "record_id")
+        df_vigilance = pd.concat([df_vigilance, pd.DataFrame([new_row])], ignore_index=True)
+    else:
+        for key, val in fields.items():
+            if key in df_vigilance.columns:
+                if df_vigilance.at[row_idx, key] == "" or pd.isna(df_vigilance.at[row_idx, key]):
+                    df_vigilance.at[row_idx, key] = val
+def process_smear(report_text, row_idx=None):
+    global df_smear
+    if "positivo" in report_text.lower():
+        fields = extract_fields_positive(report_text, "smear")
+    else:
+        fields = extract_fields_negative(report_text, "smear")
+    if row_idx is None:
+        new_row = {col: "" for col in st.secrets["columns"]["smear_microscopy"]}
+        for key, val in fields.items():
+            if key in new_row:
+                new_row[key] = val
+        new_row["record_id"] = get_next_id(df_smear, start_id_smear, "record_id")
+        df_smear = pd.concat([df_smear, pd.DataFrame([new_row])], ignore_index=True)
+    else:
+        for key, val in fields.items():
+            if key in df_smear.columns:
+                if df_smear.at[row_idx, key] == "" or pd.isna(df_smear.at[row_idx, key]):
+                    df_smear.at[row_idx, key] = val
+
+# Funções para tratamento de PDFs
+def extract_text_pdf(pdf_file):
+    try:
+        pdf_reader = PdfReader(pdf_file)
+        full_text = ""
+        for page in pdf_reader.pages:
+            full_text += (page.extract_text() or "") + "\n"
+        return full_text
+    except Exception as e:
+        st.error(f"Erro ao ler o PDF: {e}")
+        return None
+def process_singular_report(report_text):
+    report_text_lower = report_text.lower()
+    procedencia_index = report_text_lower.find("procedência.:")
+    if procedencia_index != -1:
+        end_of_line = report_text_lower.find("\n", procedencia_index)
+        if end_of_line == -1:
+            end_of_line = len(report_text_lower)
+        procedencia_line = report_text_lower[procedencia_index:end_of_line]
+        if "meac" in procedencia_line:
+            return
+    if any(material in report_text_lower for material in materials_vigilance.keys()):
+        process_vigilance(report_text)
+    elif "baar" in report_text_lower:
+        process_smear(report_text)
+    else:
+        process_general(report_text)
+def process_text_pdf(text_pdf):
+    delimiter = "COMPLEXO HOSPITALAR DA UFC/EBSERH"
+    report = text_pdf.split(delimiter)
+    if len(report) < 1:
+        return
+    for i, report_chunk in enumerate(report[1:], start=1):
+        process_singular_report(report_chunk)
+
+# Código principal da página
+st.title("Compilação de amostras")
+st.error("Código incompleto: coleta do número de amostra e processamento de positivas.")
+uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
+uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
+st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    start_id_general = st.number_input("Geral", value=None, step=1)
+with col2:
+    start_id_vigilance = st.number_input("Cultura de vigilância", value=None, step=1)
+with col3:
+    start_id_smear = st.number_input("Baciloscopia", value=None, step=1)
+
+conditions_met = uploaded_files and uploaded_reports_discharge
+is_disabled = not conditions_met
+
+if st.button("Iniciar processamento", disabled=is_disabled):
+    st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
+    with st.status("Extraindo dados...", expanded=False) as status:
+        if uploaded_files:
+            for pdf_file in uploaded_files:
+                full_text = extract_text_pdf(pdf_file)   
+                if full_text:
+                    status.update(label="Criando planilhas...", state="running", expanded=False)
+                    process_text_pdf(full_text)
+        if uploaded_reports_discharge:
+            df_list = [df_general, df_vigilance, df_smear]
+            df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
+        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
+    style_download(df_general, df_vigilance, df_smear)
+    status.update(label="Concluído", state="complete", expanded=False)

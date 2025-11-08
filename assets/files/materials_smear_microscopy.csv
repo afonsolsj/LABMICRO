@@ -1,0 +1,21 @@
+Material,Código
+Escarro,0
+Aspirado Traqueal,1
+Lavado broncoalveolar,2
+Liquido ascitico,3
+Liquido pleural,4
+Partes moles,5
+Sangue,6
+Liquido pericárdico,7
+Urina,8
+Líquido abdominal,9
+Fragmento de tecido,10
+Fragmento ósseo,11
+Osso,11
+Liquor,14
+Outro,15
+Líquido sinovial,17
+Secreção nasal,19
+Secreção de abcesso,21
+Secreção purulenta,22
+Fragmento de pele,23
