@@ -205,7 +205,8 @@ def process_general(uploaded_files, start_id, st):
                                 pass
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                    df_export = df.drop(columns=['setor_nao_padronizado', 'column_aux', 'pdf_data_1', 'pdf_data_2'])
+                    df_export = df.drop(columns=['setor_nao_padronizado', 'column_aux', 'pdf_data_1', 'pdf_data_2','column_aux1',
+            'column_aux2', 'column_aux3'], errors='ignore')
                     df_export.to_excel(writer, index=False, sheet_name='Dados')
                     wb = writer.book
                     ws = writer.sheets['Dados']
@@ -427,7 +428,8 @@ def process_vigilance(uploaded_files, start_id, st):
                                 pass
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                    df_export = df.drop(columns=['setor_nao_padronizado', 'column_aux', 'pdf_data_1', 'pdf_data_2'])
+                    df_export = df.drop(columns=['setor_nao_padronizado', 'column_aux', 'pdf_data_1', 'pdf_data_2','column_aux1',
+            'column_aux2', 'column_aux3'], errors='ignore')
                     df_export.to_excel(writer, index=False, sheet_name='Dados')
                     wb = writer.book
                     ws = writer.sheets['Dados']
@@ -631,7 +633,8 @@ def process_smear_microscopy(uploaded_files, start_id, st):
                                 pass
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                    df_export = df.drop(columns=['setor_nao_padronizado', 'column_aux', 'pdf_data_1', 'pdf_data_2'])
+                    df_export = df.drop(columns=['setor_nao_padronizado', 'column_aux', 'pdf_data_1', 'pdf_data_2','column_aux1',
+            'column_aux2', 'column_aux3'], errors='ignore')
                     df_export.to_excel(writer, index=False, sheet_name='Dados')
                     wb = writer.book
                     ws = writer.sheets['Dados']
