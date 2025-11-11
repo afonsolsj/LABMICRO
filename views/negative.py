@@ -242,7 +242,7 @@ def process_general(uploaded_files, start_id, st):
                             if match and match.group(1):
                                 ws.write(i + 1, col_cx, 2, red)
                             else:
-                                ws.write(i + 1, col_cx, row['desfecho_do_paciente'], green)
+                                ws.write(i + 1, col_cx, row['desfecho_do_paciente'], blue)
                         if "AMB" in setor_nome:
                             ws.write(i + 1, col_cx, row['desfecho_do_paciente'], green)
                             continue
@@ -465,7 +465,7 @@ def process_vigilance(uploaded_files, start_id, st):
                             if match and match.group(1):
                                 ws.write(i + 1, col_cx, 2, red)
                             else:
-                                ws.write(i + 1, col_cx, row['desfecho_do_paciente'], green)
+                                ws.write(i + 1, col_cx, row['desfecho_do_paciente'], blue)
                         if "AMB" in setor_nome:
                             ws.write(i + 1, col_cx, row['desfecho_do_paciente'], green)
                             continue
@@ -670,7 +670,7 @@ def process_smear_microscopy(uploaded_files, start_id, st):
                             if match and match.group(1):
                                 ws.write(i + 1, col_cx, 2, red)
                             else:
-                                ws.write(i + 1, col_cx, row['desfecho_do_paciente'], green)
+                                ws.write(i + 1, col_cx, row['desfecho_do_paciente'], blue)
                         if "AMB" in setor_nome:
                             ws.write(i + 1, col_cx, row['desfecho_do_paciente'], green)
                             continue
