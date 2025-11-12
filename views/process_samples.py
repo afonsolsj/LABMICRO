@@ -134,7 +134,7 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                     elif re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
                         df.at[idx, col_outcome] = 2
                     elif df.at[idx, col_date1] and df.at[idx, col_date2]:
-                        df.at[idx, col_outcome] = 3
+                        df.at[idx, col_outcome] = ""
                     break
         for col in [column_name_search, col_date1, col_date2]:
             if col in df.columns:
