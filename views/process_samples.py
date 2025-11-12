@@ -248,6 +248,7 @@ def extract_fields_negative(report_text, df_name):
         "hospital_de_origem": "1",
         "faz_parte_projeto_cdc_rfa": "2",
         "faz_parte_projeto_cdc_rfa_ck21_2104": "2",
+        "n_mero_do_pedido": get_value("Amostra: ").strip(),
         "n_mero_do_prontu_rio": "".join(re.findall(r"\d+", get_value("Prontuário..:"))),
         "sexo": format_sexo(get_value("Sexo........:"), df_name),
         "idade": get_value("Idade:").split("A")[0].strip(),
