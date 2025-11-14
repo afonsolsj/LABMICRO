@@ -3,6 +3,7 @@ import pandas as pd
 import re
 import io
 import zipfile
+import pdfplumber
 from pypdf import PdfReader
 from datetime import datetime, timedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
@@ -327,17 +328,20 @@ def process_smear(report_text, row_idx=None):
 
 # Funções para tratamento de PDFs
 def extract_text_pdf(pdf_file):
+    full_text = ""
     try:
-        pdf_reader = PdfReader(pdf_file)
-        full_text = ""
-        for page in pdf_reader.pages:
-            full_text += (page.extract_text() or "") + "\n"
+        with pdfplumber.open(pdf_file) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text(x_tolerance=2, y_tolerance=3)
+                if page_text:
+                    full_text += page_text + "\n"
         return full_text
     except Exception as e:
-        st.error(f"Erro ao ler o PDF: {e}")
+        st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
 def process_singular_report(report_text):
-    report_text_lower = report_text.lower()
+    report_text_clean = report_text.strip()
+    report_text_lower = report_text_clean.lower()
     procedencia_index = report_text_lower.find("procedência.:")
     st.text(report_text_lower)
     st.text("-----------------------------")
@@ -355,12 +359,13 @@ def process_singular_report(report_text):
     else:
         process_general(report_text)
 def process_text_pdf(text_pdf):
-    delimiter = "COMPLEXO HOSPITALAR DA UFC/EBSERH"
-    report = text_pdf.split(delimiter)
-    if len(report) < 1:
+    if not text_pdf:
         return
-    for i, report_chunk in enumerate(report[1:], start=1):
-        process_singular_report(report_chunk)
+    delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
+    reports = re.split(delimiter_pattern, text_pdf)
+    for report_chunk in reports:
+        if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
+            process_singular_report(report_chunk)
 
 # Código principal da página
 st.title("Compilação de amostras")
