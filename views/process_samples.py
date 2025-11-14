@@ -163,6 +163,15 @@ def extract_fields_negative(report_text, df_name):
             line = report_text[idx:end]
             return line.split(":", 1)[-1].strip()
         return ""
+    def get_sample_number():
+        pattern = r"Amostra:\s*(.*)"
+        match = re.search(pattern, report_text, re.IGNORECASE | re.DOTALL)
+        if not match:
+            return ""
+        value = match.group(1).strip()
+        if "\n" in value:
+            value = value.split("\n")[0].strip()
+        return value
     def format_time(raw_text, df_name, column_name=""):
         match = re.search(r"(\d{2}/\d{2}/\d{4})(?:\s+(\d{2}:\d{2}))?", raw_text)
         if not match:
@@ -182,7 +191,6 @@ def extract_fields_negative(report_text, df_name):
         else:
             return date_obj.strftime("%Y-%m-%d %H:%M")
     def get_result(report_text, df_name):
-        """Define o resultado conforme o conteúdo do texto e o tipo de planilha."""
         text_lower = report_text.lower()
         if df_name in ("vigilance", "smear"):
             return "2"
@@ -228,7 +236,7 @@ def extract_fields_negative(report_text, df_name):
     def get_material_value(labels):
         for label in labels:
             value = get_value(label)
-            if value:  # se encontrou algum valor
+            if value:
                 return value
         return ""
     def format_sexo(raw_sexo_value, df_name):
@@ -249,7 +257,7 @@ def extract_fields_negative(report_text, df_name):
         "hospital_de_origem": "1",
         "faz_parte_projeto_cdc_rfa": "2",
         "faz_parte_projeto_cdc_rfa_ck21_2104": "2",
-        "n_mero_do_pedido": get_value("Amostra: ").strip(),
+        "n_mero_do_pedido": get_sample_number(),
         "n_mero_do_prontu_rio": "".join(re.findall(r"\d+", get_value("Prontuário..:"))),
         "sexo": format_sexo(get_value("Sexo........:"), df_name),
         "idade": get_value("Idade:").split("A")[0].strip(),
