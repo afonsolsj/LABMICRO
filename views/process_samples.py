@@ -339,6 +339,7 @@ def extract_text_pdf(pdf_file):
 def process_singular_report(report_text):
     report_text_lower = report_text.lower()
     procedencia_index = report_text_lower.find("procedência.:")
+    st.text(report_text_lower)
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
         if end_of_line == -1:
