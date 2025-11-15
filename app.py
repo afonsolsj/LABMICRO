@@ -22,6 +22,6 @@ structuring_reports_page = st.Page(page='views/structuring_reports.py', title="D
 negative_page = st.Page(page='views/negative.py', title="Amostras negativas", icon=':material/cancel:')
 process_samples_page = st.Page(page='views/process_samples.py', title="Compilação de amostras", icon=':material/biotech:')
 info_page = st.Page(page='views/info.py', title="Informações", icon=':material/info:')
-pg = st.navigation(pages=[main_page, negative_page, process_samples_page, info_page])
+pg = st.navigation(pages=[main_page, structuring_reports_page, negative_page, process_samples_page, info_page])
 
 pg.run()
