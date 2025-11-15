@@ -4,7 +4,7 @@ import re
 import io
 import zipfile
 import pdfplumber
-from pypdf import PdfReader
+import time
 from datetime import datetime, timedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
 
@@ -424,13 +424,21 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             for pdf_file in uploaded_files:
                 with st.spinner("Processando PDF..."):
                     pages = extract_pages_generator(pdf_file)
+
                     progress_bar = st.progress(0.0)
                     last_page = 0
+
                     for page_number, total_pages, page_text in pages:
                         progress_bar.progress(page_number / total_pages)
                         status.update(label=f"Processando página {page_number}/{total_pages}", state="running")
+
                         process_text_pdf(page_text)
+
                         last_page = page_number
+
+                        # 🔥 ESSENCIAL PARA EVITAR RESET NO STREAMLIT CLOUD
+                        time.sleep(0.005)
+
                     progress_bar.progress(1.0)
                     st.success(f"PDF concluído ({last_page} páginas).")
         if uploaded_reports_discharge:
