@@ -4,13 +4,14 @@ import re
 import io
 import zipfile
 import pdfplumber
-from pypdf import PdfReader
+import tempfile
+from pypdf import PdfReader, PdfWriter
 from datetime import datetime, timedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
 departments_df = pd.read_csv("assets/files/departments.csv")
-substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.upper(), departments_df["Código"]))
+substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.upper().str.strip().str.normalize("NFKD").str.encode("ascii", errors="ignore").str.decode("utf-8"),departments_df["Código"]))
 materials_general_df = pd.read_csv("assets/files/materials_general.csv")
 materials_general = dict(zip(materials_general_df["Material"].str.lower(), materials_general_df["Código"]))
 materials_vigilance_df = pd.read_csv("assets/files/materials_vigilance.csv")
@@ -79,7 +80,8 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
 def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem"):
     for df in dfs:
         if setor_col in df.columns:
-            df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
+            st.write("Valores antes do map:", df[setor_col].apply(repr).unique())
+            df[setor_col] = (df[setor_col].astype(str).str.upper().str.strip().str.normalize("NFKD").str.encode("ascii", errors="ignore").str.decode("utf-8").map(substitution_dict).fillna(df[setor_col]))
         if df is df_general and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
             outro_col = "outro_tipo_de_material"
@@ -355,6 +357,22 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Funções para tratamento de PDFs
+def split_pdf_in_chunks(pdf_file, max_pages=400):
+    reader = PdfReader(pdf_file)
+    total_pages = len(reader.pages)
+    chunks = []
+    current_start = 0
+    while current_start < total_pages:
+        writer = PdfWriter()
+        end = min(current_start + max_pages, total_pages)
+        for i in range(current_start, end):
+            writer.add_page(reader.pages[i])
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        with open(temp_file.name, "wb") as f:
+            writer.write(f)
+        chunks.append(temp_file.name)
+        current_start = end
+    return chunks
 def extract_text_pdf(pdf_file):
     full_text = ""
     try:
@@ -418,10 +436,15 @@ if st.button("Iniciar processamento", disabled=is_disabled):
     with st.status("Extraindo dados...", expanded=False) as status:
         if uploaded_files:
             for pdf_file in uploaded_files:
-                full_text = extract_text_pdf(pdf_file)   
-                if full_text:
-                    status.update(label="Criando planilhas...", state="running", expanded=False)
-                    process_text_pdf(full_text)
+                with st.spinner("Dividindo PDF em partes menores..."):
+                    pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
+                st.success(f"PDF dividido em {len(pdf_parts)} partes.")
+                for idx, part in enumerate(pdf_parts, start=1):
+                    st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
+                    with st.spinner(f"Processando parte {idx}..."):
+                        text = extract_text_pdf(part)
+                        process_text_pdf(text)
+                    st.success(f"Parte {idx} concluída!")
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
