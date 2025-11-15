@@ -367,8 +367,6 @@ def process_singular_report(report_text):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     procedencia_index = report_text_lower.find("procedência.:")
-    st.write(report_text)
-    st.write("próximo")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
         if end_of_line == -1:
