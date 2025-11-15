@@ -351,7 +351,7 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Funções para tratamento de PDFs
-def extract_pdf_in_chunks(pdf_file, chunk_size=50):
+def extract_pdf_in_chunks(pdf_file, chunk_size=30):
     with pdfplumber.open(pdf_file) as pdf:
         total_pages = len(pdf.pages)
         buffer = []
@@ -363,7 +363,7 @@ def extract_pdf_in_chunks(pdf_file, chunk_size=50):
                 yield start_page, i, total_pages, "\n".join(buffer)
                 buffer = []
                 start_page = i + 1
-            time.sleep(0.003)
+            time.sleep(0.02)
         if buffer:
             yield start_page, total_pages, total_pages, "\n".join(buffer)
 def extract_text_pdf(pdf_file):
