@@ -61,7 +61,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                     if "tipo_de_material" in df.columns:
                         col_idx = df.columns.get_loc("tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "14", 'format': yellow_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "15", 'format': yellow_format})
                     if "qual_tipo_de_material" in df.columns:
                         col_idx = df.columns.get_loc("qual_tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)
@@ -93,11 +93,21 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                     df.at[idx, outro_col] = val
                     df.at[idx, mat_col] = default_val
         elif df is df_vigilance and "qual_tipo_de_material" in df.columns:
-            df["qual_tipo_de_material"] = df["qual_tipo_de_material"].map(materials_dicts["df_vigilance"]).fillna(df["qual_tipo_de_material"])
+            mat_col = "qual_tipo_de_material"
+            outro_col = "outro_tipo_de_material"
+            default_val = "2"
+            for idx, val in df[mat_col].items():
+                val_norm = str(val).strip().upper()
+                mapped = {k.strip().upper(): v for k, v in materials_dicts["df_vigilance"].items()}.get(val_norm)
+                if mapped is not None:
+                    df.at[idx, mat_col] = mapped
+                else:
+                    df.at[idx, outro_col] = val
+                    df.at[idx, mat_col] = default_val
         elif df is df_smear and "tipo_de_material" in df.columns:
             mat_col = "tipo_de_material"
             outro_col = "se_outro_material"
-            default_val = "2"
+            default_val = "15"
             for idx, val in df[mat_col].items():
                 val_norm = str(val).strip().upper()
                 mapped = {k.strip().upper(): v for k, v in materials_dicts["df_smear"].items()}.get(val_norm)
@@ -151,7 +161,7 @@ def get_next_id(df, start_id, column_name):
         return start_id
     return int(max_val) + 1
 def extract_fields_positive(report_text, df_name):
-    pass
+    return {}
 def extract_fields_negative(report_text, df_name):
     report_lower = report_text.lower()
     def get_value(label):
@@ -194,7 +204,7 @@ def extract_fields_negative(report_text, df_name):
         text_lower = report_text.lower()
         if df_name in ("vigilance", "smear"):
             return "2"
-        if "contaminado" in text_lower:
+        if "sugestivo de contaminação" in text_lower:
             if "urina" in text_lower:
                 return "2"
             else:
@@ -281,10 +291,12 @@ def extract_fields_negative(report_text, df_name):
 # Funções de processamento
 def process_general(report_text, row_idx=None):
     global df_general
-    if "positivo" in report_text.lower():
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):
         fields = extract_fields_positive(report_text, "general")
     else:
         fields = extract_fields_negative(report_text, "general")
+    if not fields.get("n_mero_do_prontu_rio"):
+        return
     if row_idx is None:
         new_row = {col: "" for col in st.secrets["columns"]["general"]}
         for key, val in fields.items():
@@ -299,10 +311,12 @@ def process_general(report_text, row_idx=None):
                     df_general.at[row_idx, key] = val
 def process_vigilance(report_text, row_idx=None):
     global df_vigilance
-    if "positivo" in report_text.lower():
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields = extract_fields_positive(report_text, "vigilance")
     else:
         fields = extract_fields_negative(report_text, "vigilance")
+    if not fields.get("n_mero_do_prontu_rio"):
+        return
     if row_idx is None:
         new_row = {col: "" for col in st.secrets["columns"]["vigilance"]}
         for key, val in fields.items():
@@ -317,10 +331,12 @@ def process_vigilance(report_text, row_idx=None):
                     df_vigilance.at[row_idx, key] = val
 def process_smear(report_text, row_idx=None):
     global df_smear
-    if "positivo" in report_text.lower():
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]): 
         fields = extract_fields_positive(report_text, "smear")
     else:
         fields = extract_fields_negative(report_text, "smear")
+    if not fields.get("n_mero_do_prontu_rio"):
+        return
     if row_idx is None:
         new_row = {col: "" for col in st.secrets["columns"]["smear_microscopy"]}
         for key, val in fields.items():
@@ -360,15 +376,15 @@ def process_singular_report(report_text):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     procedencia_index = report_text_lower.find("procedência.:")
-    st.text(report_text_lower)
-    st.text("-----------------------------")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
         if end_of_line == -1:
             end_of_line = len(report_text_lower)
         procedencia_line = report_text_lower[procedencia_index:end_of_line]
-        if "meac" in procedencia_line:
+        if any(x in procedencia_line for x in ["meac", "cpdhr"]):
             return
+    if "bacterioscopia" in report_text_lower:
+        return
     if any(material in report_text_lower for material in materials_vigilance.keys()):
         process_vigilance(report_text)
     elif "baar" in report_text_lower:
