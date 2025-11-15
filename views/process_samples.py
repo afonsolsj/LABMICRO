@@ -295,6 +295,8 @@ def process_general(report_text, row_idx=None):
         fields = extract_fields_positive(report_text, "general")
     else:
         fields = extract_fields_negative(report_text, "general")
+    if not fields.get("n_mero_do_prontu_rio"):
+        return
     if row_idx is None:
         new_row = {col: "" for col in st.secrets["columns"]["general"]}
         for key, val in fields.items():
@@ -313,6 +315,8 @@ def process_vigilance(report_text, row_idx=None):
         fields = extract_fields_positive(report_text, "vigilance")
     else:
         fields = extract_fields_negative(report_text, "vigilance")
+    if not fields.get("n_mero_do_prontu_rio"):
+        return
     if row_idx is None:
         new_row = {col: "" for col in st.secrets["columns"]["vigilance"]}
         for key, val in fields.items():
@@ -331,6 +335,8 @@ def process_smear(report_text, row_idx=None):
         fields = extract_fields_positive(report_text, "smear")
     else:
         fields = extract_fields_negative(report_text, "smear")
+    if not fields.get("n_mero_do_prontu_rio"):
+        return
     if row_idx is None:
         new_row = {col: "" for col in st.secrets["columns"]["smear_microscopy"]}
         for key, val in fields.items():
@@ -360,10 +366,6 @@ def extract_text_pdf(pdf_file):
 def process_singular_report(report_text):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
-    if not any(x in report_text_lower for x in ["material", "pedido", "prontuário"]):
-        return
-    if ("crf" in report_text_lower or "atendimento" in report_text_lower) and "material" not in report_text_lower:
-        return
     procedencia_index = report_text_lower.find("procedência.:")
     st.write(report_text)
     st.write("próximo")
