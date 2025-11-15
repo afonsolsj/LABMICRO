@@ -11,7 +11,7 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
 departments_df = pd.read_csv("assets/files/departments.csv")
-substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.lower(), departments_df["Código"]))
+substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.upper(), departments_df["Código"]))
 materials_general_df = pd.read_csv("assets/files/materials_general.csv")
 materials_general = dict(zip(materials_general_df["Material"].str.lower(), materials_general_df["Código"]))
 materials_vigilance_df = pd.read_csv("assets/files/materials_vigilance.csv")
