@@ -133,21 +133,25 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
         for idx, row in df.iterrows():
             patient_name = str(row[column_name_search]).strip()
             setor = str(row.get(col_setor, "")).lower()
-            for line in lines:
-                if patient_name and patient_name in line:
-                    dates = re.findall(date_pattern, line)
-                    if len(dates) >= 2:
-                        df.at[idx, col_date1] = dates[0]
-                        df.at[idx, col_date2] = dates[1]
-                    elif len(dates) == 1:
-                        df.at[idx, col_date1] = dates[0]
-                    if "amb" in setor:
-                        df.at[idx, col_outcome] = 3
-                    elif re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
-                        df.at[idx, col_outcome] = 2
-                    elif df.at[idx, col_date1] and df.at[idx, col_date2]:
-                        df.at[idx, col_outcome] = ""
-                    break
+            if "amb" in setor:
+                df.at[idx, col_outcome] = 3
+                continue
+            found_in_report = False
+            if patient_name: 
+                for line in lines:
+                    if patient_name in line:
+                        found_in_report = True
+                        dates = re.findall(date_pattern, line)
+                        if len(dates) >= 2:
+                            df.at[idx, col_date1] = dates[0]
+                            df.at[idx, col_date2] = dates[1]
+                        elif len(dates) == 1:
+                            df.at[idx, col_date1] = dates[0]
+                        if re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
+                            df.at[idx, col_outcome] = 2  # Óbito
+                        elif df.at[idx, col_date1] and df.at[idx, col_date2]:
+                            df.at[idx, col_outcome] = ""   # Alta (será azul)
+                        break
         for col in [column_name_search, col_date1, col_date2]:
             if col in df.columns:
                 df.drop(columns=[col], inplace=True)
