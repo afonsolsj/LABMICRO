@@ -11,7 +11,7 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
 departments_df = pd.read_csv("assets/files/departments.csv")
-substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.upper().str.strip().str.normalize("NFKD").str.encode("ascii", errors="ignore").str.decode("utf-8"),departments_df["Código"]))
+substitution_departments = dict(zip(departments_df["Unidade/Ambulatório"].str.lower(), departments_df["Código"]))
 materials_general_df = pd.read_csv("assets/files/materials_general.csv")
 materials_general = dict(zip(materials_general_df["Material"].str.lower(), materials_general_df["Código"]))
 materials_vigilance_df = pd.read_csv("assets/files/materials_vigilance.csv")
@@ -80,7 +80,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
 def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem"):
     for df in dfs:
         if setor_col in df.columns:
-            df[setor_col] = (df[setor_col].astype(str).str.upper().str.strip().str.normalize("NFKD").str.encode("ascii", errors="ignore").str.decode("utf-8").map(substitution_dict).fillna(df[setor_col]))
+            df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
         if df is df_general and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
             outro_col = "outro_tipo_de_material"
@@ -91,8 +91,9 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                 if mapped is not None:
                     df.at[idx, mat_col] = mapped
                 else:
-                    df.at[idx, outro_col] = val
-                    df.at[idx, mat_col] = default_val
+                    if pd.notna(val) and str(val).strip() != "":
+                        df.at[idx, outro_col] = val
+                        df.at[idx, mat_col] = default_val
         elif df is df_vigilance and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
             outro_col = "outro_tipo_de_material"
@@ -103,8 +104,9 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                 if mapped is not None:
                     df.at[idx, mat_col] = mapped
                 else:
-                    df.at[idx, outro_col] = val
-                    df.at[idx, mat_col] = default_val
+                    if pd.notna(val) and str(val).strip() != "":
+                        df.at[idx, outro_col] = val
+                        df.at[idx, mat_col] = default_val
         elif df is df_smear and "tipo_de_material" in df.columns:
             mat_col = "tipo_de_material"
             outro_col = "se_outro_material"
@@ -115,8 +117,9 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                 if mapped is not None:
                     df.at[idx, mat_col] = mapped
                 else:
-                    df.at[idx, outro_col] = val
-                    df.at[idx, mat_col] = default_val
+                    if pd.notna(val) and str(val).strip() != "":
+                        df.at[idx, outro_col] = val
+                        df.at[idx, mat_col] = default_val
     return dfs
 
 # Função de desfecho
