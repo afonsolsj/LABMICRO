@@ -80,7 +80,6 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
 def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem"):
     for df in dfs:
         if setor_col in df.columns:
-            st.write("Valores antes do map:", df[setor_col].apply(repr).unique())
             df[setor_col] = (df[setor_col].astype(str).str.upper().str.strip().str.normalize("NFKD").str.encode("ascii", errors="ignore").str.decode("utf-8").map(substitution_dict).fillna(df[setor_col]))
         if df is df_general and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
