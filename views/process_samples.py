@@ -4,7 +4,7 @@ import re
 import io
 import zipfile
 import pdfplumber
-import time
+from pypdf import PdfReader
 from datetime import datetime, timedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
 
@@ -351,21 +351,6 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Funções para tratamento de PDFs
-def extract_pdf_in_chunks(pdf_file, chunk_size=30):
-    with pdfplumber.open(pdf_file) as pdf:
-        total_pages = len(pdf.pages)
-        buffer = []
-        start_page = 1
-        for i, page in enumerate(pdf.pages, start=1):
-            text = page.extract_text() or ""
-            buffer.append(text)
-            if i % chunk_size == 0:
-                yield start_page, i, total_pages, "\n".join(buffer)
-                buffer = []
-                start_page = i + 1
-            time.sleep(0.02)
-        if buffer:
-            yield start_page, total_pages, total_pages, "\n".join(buffer)
 def extract_text_pdf(pdf_file):
     full_text = ""
     try:
@@ -429,15 +414,10 @@ if st.button("Iniciar processamento", disabled=is_disabled):
     with st.status("Extraindo dados...", expanded=False) as status:
         if uploaded_files:
             for pdf_file in uploaded_files:
-                with st.spinner(f"Processando PDF {pdf_file.name}..."):
-                    progress_bar = st.progress(0.0)
-                    for start_page, end_page, total_pages, chunk_text in extract_pdf_in_chunks(pdf_file, chunk_size=30):
-                        progress_bar.progress(end_page / total_pages)
-                        status.update(label=f"Processando páginas {start_page}–{end_page} / {total_pages}", state="running")
-                        process_text_pdf(chunk_text)
-                        time.sleep(0.01)
-                    progress_bar.progress(1.0)
-                    st.success(f"PDF {pdf_file.name} concluído com sucesso!")
+                full_text = extract_text_pdf(pdf_file)   
+                if full_text:
+                    status.update(label="Criando planilhas...", state="running", expanded=False)
+                    process_text_pdf(full_text)
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
