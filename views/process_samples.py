@@ -30,7 +30,8 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
     try:
         zip_buffer = io.BytesIO()
         dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia}
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file: 
+        cols_required = ["record_id", "id", "hospital_de_origem", "n_mero_do_pedido", "n_mero_do_prontu_rio", "sexo", "idade", "idade_anos", "data_da_entrada", "setor_de_origem", "tipo_de_material", "qual_tipo_de_material", "data_da_libera_o", "resultado", "data_agora", "formulrio_complete"]
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for nome_arquivo_excel, df in dfs_para_exportar.items():
                 if df is None or df.empty:
                     continue
@@ -39,39 +40,44 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                     nome_aba = "Dados"
                     df.to_excel(writer, sheet_name=nome_aba, index=False)
                     workbook = writer.book
+                    worksheet = writer.sheets[nome_aba]
                     blue_format = workbook.add_format({'bg_color': '#DDEBF7'})
                     green_format = workbook.add_format({'bg_color': '#C6EFCE'})
                     red_format = workbook.add_format({'bg_color': '#FFC7CE'})
                     purple_format = workbook.add_format({'bg_color': '#E8DAEF'})
                     yellow_format = workbook.add_format({'bg_color': '#FFEB9C'})
-                    worksheet = writer.sheets[nome_aba]
                     max_row = len(df)
                     if max_row == 0:
                         continue
+                    for col in cols_required:
+                        if col in df.columns:
+                            col_idx = df.columns.get_loc(col)
+                            worksheet.conditional_format(1, col_idx, max_row, col_idx, {'type': 'blanks', 'format': blue_format})
                     if "desfecho_do_paciente" in df.columns:
                         col_idx = df.columns.get_loc("desfecho_do_paciente")
-                        cell_range = (1, col_idx, max_row, col_idx) 
+                        cell_range = (1, col_idx, max_row, col_idx)
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "2", 'format': red_format})
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
                         worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
                     if "setor_de_origem" in df.columns:
-                        col_idx_setor = df.columns.get_loc("setor_de_origem")
-                        cell_range_setor = (1, col_idx_setor, max_row, col_idx_setor)
-                        first_cell = xl_rowcol_to_cell(1, col_idx_setor) 
-                        worksheet.conditional_format(*cell_range_setor, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': purple_format})
+                        col_idx = df.columns.get_loc("setor_de_origem")
+                        cell_range = (1, col_idx, max_row, col_idx)
+                        first_cell = xl_rowcol_to_cell(1, col_idx)
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': purple_format})
                     if "tipo_de_material" in df.columns:
                         col_idx = df.columns.get_loc("tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '"15"', 'format': yellow_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '15', 'format': yellow_format})
                     if "qual_tipo_de_material" in df.columns:
                         col_idx = df.columns.get_loc("qual_tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "10", 'format': yellow_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '10', 'format': yellow_format})
                 excel_buffer.seek(0)
                 zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
         zip_buffer.seek(0)
-        st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)  
-        st.download_button(label="Baixar (.zip)", data=zip_buffer, file_name=nome_arquivo_zip, mime="application/zip")
+        st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
+        st.download_button(label="Baixar (.zip)", data=zip_buffer,
+                           file_name=nome_arquivo_zip, mime="application/zip")
     except Exception as e:
         st.error(f"Ocorreu um erro inesperado ao gerar o arquivo .zip: {e}")
         st.exception(e)
@@ -84,7 +90,7 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
         if df is df_general and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
             outro_col = "outro_tipo_de_material"
-            default_val = "10"
+            default_val = 10
             for idx, val in df[mat_col].items():
                 val_norm = str(val).strip().upper()
                 mapped = {k.strip().upper(): v for k, v in materials_dicts["df_general"].items()}.get(val_norm)
@@ -97,7 +103,7 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
         elif df is df_vigilance and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
             outro_col = "outro_tipo_de_material"
-            default_val = "2"
+            default_val = 2
             for idx, val in df[mat_col].items():
                 val_norm = str(val).strip().upper()
                 mapped = {k.strip().upper(): v for k, v in materials_dicts["df_vigilance"].items()}.get(val_norm)
@@ -110,7 +116,7 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
         elif df is df_smear and "tipo_de_material" in df.columns:
             mat_col = "tipo_de_material"
             outro_col = "se_outro_material"
-            default_val = "15"
+            default_val = 15
             for idx, val in df[mat_col].items():
                 val_norm = str(val).strip().upper()
                 mapped = {k.strip().upper(): v for k, v in materials_dicts["df_smear"].items()}.get(val_norm)
@@ -151,9 +157,9 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                         elif len(dates) == 1:
                             df.at[idx, col_date1] = dates[0]
                         if re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
-                            df.at[idx, col_outcome] = 2  # Óbito
+                            df.at[idx, col_outcome] = 2
                         elif df.at[idx, col_date1] and df.at[idx, col_date2]:
-                            df.at[idx, col_outcome] = ""   # Alta (será azul)
+                            df.at[idx, col_outcome] = ""
                         break
         for col in [column_name_search, col_date1, col_date2]:
             if col in df.columns:
@@ -424,7 +430,7 @@ def process_text_pdf(text_pdf):
 
 # Código principal da página
 st.title("Compilação de amostras")
-st.error("Código incompleto: coleta do número de amostra e processamento de positivas.")
+st.error("Código incompleto: SEM processamento de positivas.")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
