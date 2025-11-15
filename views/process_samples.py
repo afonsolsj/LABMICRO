@@ -4,8 +4,7 @@ import re
 import io
 import zipfile
 import pdfplumber
-from pypdf import PdfReader, PdfWriter
-import tempfile
+from pypdf import PdfReader
 from datetime import datetime, timedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
 
@@ -154,7 +153,7 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                         break
         for col in [column_name_search, col_date1, col_date2]:
             if col in df.columns:
-                df.drop(columns=[col], inplace=True)
+                df.drop(columns=[col], inplace=True)     
     return dfs
 
 # Funções de preenchimento
@@ -356,23 +355,6 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Funções para tratamento de PDFs
-def split_pdf_in_chunks(pdf_file, max_pages=400):
-    reader = PdfReader(pdf_file)
-    total_pages = len(reader.pages)
-    chunks = []
-    current_start = 0
-    while current_start < total_pages:
-        writer = PdfWriter()
-        end = min(current_start + max_pages, total_pages)
-        for i in range(current_start, end):
-            writer.add_page(reader.pages[i])
-        # cria arquivo temporário
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-        with open(temp_file.name, "wb") as f:
-            writer.write(f)
-        chunks.append(temp_file.name)
-        current_start = end
-    return chunks
 def extract_text_pdf(pdf_file):
     full_text = ""
     try:
@@ -436,15 +418,10 @@ if st.button("Iniciar processamento", disabled=is_disabled):
     with st.status("Extraindo dados...", expanded=False) as status:
         if uploaded_files:
             for pdf_file in uploaded_files:
-                with st.spinner("Dividindo PDF em partes menores..."):
-                    pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                st.success(f"PDF dividido em {len(pdf_parts)} partes.")
-                for idx, part in enumerate(pdf_parts, start=1):
-                    st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
-                    with st.spinner(f"Processando parte {idx}..."):
-                        text = extract_text_pdf(part)
-                        process_text_pdf(text)
-                    st.success(f"Parte {idx} concluída!")
+                full_text = extract_text_pdf(pdf_file)   
+                if full_text:
+                    status.update(label="Criando planilhas...", state="running", expanded=False)
+                    process_text_pdf(full_text)
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
