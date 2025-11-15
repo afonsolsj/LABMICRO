@@ -360,6 +360,10 @@ def extract_text_pdf(pdf_file):
 def process_singular_report(report_text):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
+    if not any(x in report_text_lower for x in ["material", "pedido", "prontuário"]):
+        return
+    if ("crf" in report_text_lower or "atendimento" in report_text_lower) and "material" not in report_text_lower:
+        return
     procedencia_index = report_text_lower.find("procedência.:")
     st.write(report_text)
     st.write("próximo")
