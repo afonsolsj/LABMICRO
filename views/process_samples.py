@@ -234,7 +234,7 @@ def extract_fields_negative(report_text, df_name):
             return {"tipo": "SANGUE", "outro": ""}
         if df_name == "smear":
             if material_clean not in materials_smear_microscopy:
-                return {"tipo": "Outro", "outro": raw_material}
+                return {"tipo": raw_material, "outro": raw_material}
             return {"tipo": raw_material, "outro": ""}
         elif df_name == "general":
             if material_clean not in materials_general:
