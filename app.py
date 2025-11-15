@@ -1,10 +1,5 @@
 import streamlit as st
 
-try:
-    st.write("App carregando...")
-except Exception as e:
-    st.write("Erro ainda antes do Streamlit inicializar:", e)
-
 users = st.secrets["users"]
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
