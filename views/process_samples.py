@@ -351,7 +351,6 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Funções para tratamento de PDFs
-@st.cache_data(show_spinner=False)
 def extract_pages_generator(pdf_file):
     """Extrai texto página a página (yield), ideal para PDFs grandes."""
     with pdfplumber.open(pdf_file) as pdf:
