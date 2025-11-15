@@ -132,7 +132,7 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                 df[col] = ""
         for idx, row in df.iterrows():
             patient_name = str(row[column_name_search]).strip()
-            setor = str(row.get(col_setor, "")).lower()
+            setor = (str(row.get(col_setor, "")).lower().replace("\n", " ").replace("\r", " ").replace("|", " ").replace("-", " ").strip())
             for line in lines:
                 if patient_name and patient_name in line:
                     dates = re.findall(date_pattern, line)
