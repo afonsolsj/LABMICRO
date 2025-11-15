@@ -179,7 +179,14 @@ def extract_fields_negative(report_text, df_name):
             if end == -1:
                 end = len(report_lower)
             line = report_text[idx:end]
-            return line.split(":", 1)[-1].strip()
+            value = line.split(":", 1)[-1].strip()
+            if value == "" and "dt.liberação" in label.lower():
+                next_line_start = end + 1
+                next_line_end = report_lower.find("\n", next_line_start)
+                if next_line_end == -1:
+                    next_line_end = len(report_lower)
+                value = report_text[next_line_start:next_line_end].strip()
+            return value
         return ""
     def get_sample_number():
         pattern = r"Amostra:\s*(.*)"
