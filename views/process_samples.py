@@ -431,7 +431,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             for pdf_file in uploaded_files:
                 with st.spinner(f"Processando PDF {pdf_file.name}..."):
                     progress_bar = st.progress(0.0)
-                    for start_page, end_page, total_pages, chunk_text in extract_pdf_in_chunks(pdf_file, chunk_size=50):
+                    for start_page, end_page, total_pages, chunk_text in extract_pdf_in_chunks(pdf_file, chunk_size=30):
                         progress_bar.progress(end_page / total_pages)
                         status.update(label=f"Processando páginas {start_page}–{end_page} / {total_pages}", state="running")
                         process_text_pdf(chunk_text)
