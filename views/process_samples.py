@@ -408,6 +408,7 @@ def extract_text_pdf(pdf_file):
 def process_singular_report(report_text):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
+    match = re.search(r"(material(?: examinado)?\s*:\s*)(.*)", report_text_lower)
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -418,8 +419,10 @@ def process_singular_report(report_text):
             return
     if "bacterioscopia" in report_text_lower:
         return
-    if any(term in report_text_lower for term in ("swab retal", "reto")):
-        process_vigilance(report_text)
+    if match:
+        material_section = match.group(2)  
+        if any(material in material_section for material in materials_vigilance.keys()):
+            process_vigilance(report_text)
     elif "baar" in report_text_lower:
         process_smear(report_text)
     else:
