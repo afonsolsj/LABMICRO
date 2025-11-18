@@ -418,7 +418,7 @@ def process_singular_report(report_text):
             return
     if "bacterioscopia" in report_text_lower:
         return
-    if any(material in report_text_lower for material in materials_vigilance.keys()):
+    if any(term in report_text_lower for term in ("swab retal", "reto")):
         process_vigilance(report_text)
     elif "baar" in report_text_lower:
         process_smear(report_text)
