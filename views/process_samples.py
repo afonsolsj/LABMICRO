@@ -59,6 +59,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "2", 'format': red_format})
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
                         worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'no_blanks', 'format': yellow_format})
                     if "setor_de_origem" in df.columns:
                         col_idx = df.columns.get_loc("setor_de_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
