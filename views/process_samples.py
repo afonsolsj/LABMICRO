@@ -419,7 +419,7 @@ def process_singular_report(report_text):
     if "bacterioscopia" in report_text_lower:
         return
     if re.search(r"(material:\s*|material examinado:\s*)(" + "|".join(re.escape(term) for term in materials_vigilance.keys()) + r")", report_text_lower):
-        if "sem reagente" in report_text_lower:
+        if "faltando reagente" in report_text_lower:
             return
         else:
             process_vigilance(report_text)
