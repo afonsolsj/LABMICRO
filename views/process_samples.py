@@ -150,6 +150,10 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                 for line in lines:
                     if patient_name in line:
                         found_in_report = True
+                        pront_match = re.match(r"(\d+)", line.strip()) 
+                        pront_number = ""
+                        if pront_match:
+                            pront_number = pront_match.group(1)
                         dates = re.findall(date_pattern, line)
                         if len(dates) >= 2:
                             df.at[idx, col_date1] = dates[0]
@@ -159,11 +163,11 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                         if re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
                             df.at[idx, col_outcome] = 2
                         elif df.at[idx, col_date1] and df.at[idx, col_date2]:
-                            df.at[idx, col_outcome] = ""
+                            df.at[idx, col_outcome] = pront_number
                         break
         for col in [column_name_search, col_date1, col_date2]:
             if col in df.columns:
-                df.drop(columns=[col], inplace=True)     
+                df.drop(columns=[col], inplace=True) 
     return dfs
 
 # Funções de preenchimento
