@@ -18,6 +18,14 @@ materials_vigilance_df = pd.read_csv("assets/files/materials_vigilance.csv")
 materials_vigilance = dict(zip(materials_vigilance_df["Material"].str.lower(), materials_vigilance_df["Código"]))
 materials_smear_df = pd.read_csv("assets/files/materials_smear_microscopy.csv")
 materials_smear_microscopy = dict(zip(materials_smear_df["Material"].str.lower(), materials_smear_df["Código"]))
+microorganisms_gnb_df = pd.read_csv("assets/files/microorganisms_gnb.csv")
+microorganisms_gnb = dict(zip(microorganisms_gnb_df["Microrganismo"].str.lower(), microorganisms_gnb_df["Código"]))
+microorganisms_gpc_df = pd.read_csv("assets/files/microorganisms_gpc.csv")
+microorganisms_gpc = dict(zip(microorganisms_gpc_df["Microrganismo"].str.lower(), microorganisms_gpc_df["Código"]))
+microorganisms_gpb_df = pd.read_csv("assets/files/microorganisms_gpb.csv")
+microorganisms_gpb = dict(zip(microorganisms_gpb_df["Microrganismo"].str.lower(), microorganisms_gpb_df["Código"]))
+microorganisms_fy_df = pd.read_csv("assets/files/microorganisms_fy.csv")
+microorganisms_fy = dict(zip(microorganisms_fy_df["Microrganismo"].str.lower(), microorganisms_fy_df["Código"]))
 
 # Planilhas para download
 df_general = pd.DataFrame(columns=st.secrets["columns"]["general"]); df_general.name = "general"
@@ -218,7 +226,17 @@ def extract_fields_positive(report_text, df_name):
         return {"resultado": 1,
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
-        return
+        def get_value(label):
+            idx = report_lower.find(label.lower())
+            if idx != -1:
+                end = report_lower.find("\n", idx)
+                if end == -1:
+                    end = len(report_lower)
+                line = report_text[idx:end]
+                value = line.split(":", 1)[-1].strip()
+                return value
+            return ""
+        return {"qual_microorganismo": get_value("ISOLADO1 :")}
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
     def get_value(label):
