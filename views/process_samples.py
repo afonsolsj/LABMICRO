@@ -210,7 +210,6 @@ def extract_fields_positive(report_text, df_name):
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
         return
-
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
     def get_value(label):
@@ -348,10 +347,6 @@ def extract_fields(report_text, df_name):
 def process_general(report_text, row_idx=None):
     global df_general
     fields = extract_fields(report_text, "general")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "campos observados"]):    
-        fields_positive = extract_fields_positive(report_text, "general")
-        if fields_positive:
-            fields.update(fields_positive)
     if not fields.get("n_mero_do_prontu_rio"):
         return
     if row_idx is None:
@@ -471,7 +466,7 @@ def process_text_pdf(text_pdf):
 
 # Código principal da página
 st.title("Compilação de amostras")
-st.error("Código incompleto: SEM processamento de positivas.")
+st.error("Sem processamento de positivas para formulário GERAL.")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
