@@ -357,11 +357,9 @@ def process_general(report_text, row_idx=None):
                     df_general.at[row_idx, key] = val
 def process_vigilance(report_text, row_idx=None):
     global df_vigilance
+    fields = extract_fields_negative(report_text, "vigilance")
     if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
-        fields = extract_fields_negative(report_text, "vigilance")
         fields = extract_fields_positive(report_text, "vigilance")
-    else:
-        fields = extract_fields_negative(report_text, "vigilance")
     if not fields.get("n_mero_do_prontu_rio"):
         return
     if row_idx is None:
