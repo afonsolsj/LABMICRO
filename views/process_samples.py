@@ -197,25 +197,25 @@ def extract_fields_positive(report_text, df_name):
             has_carbapenemicos = "carbapenêmico" in report_lower
             has_vancomicina = "vancomicina" in report_lower
             if has_carbapenemicos and has_vancomicina:
-                return "4"
+                return 4
             elif has_carbapenemicos:
-                return "1"
+                return 1
             elif has_vancomicina:
-                return "2"
+                return 2
             else:
                 return ""
-        return {"resultado": "1",
+        return {"resultado": 1,
                 "se_positivo_para_qual_agente": if_positive(report_lower),
                 "se_negativo_para_qual_agente": ""}
     elif df_name == "smear":
         def if_positive(report_lower):
             if "+++" in report_lower:
-                return "4"
+                return 4
             elif "++" in report_lower:
-                return "3"
+                return 3
             elif "+" in report_lower:
-                return "2"
-        return {"resultado": "1",
+                return 2
+        return {"resultado": 1,
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
         return
@@ -267,14 +267,14 @@ def extract_fields(report_text, df_name):
     def get_result(report_text, df_name):
         text_lower = report_text.lower()
         if df_name in ("vigilance", "smear"):
-            return "2"
+            return 2
         if "sugestivo de contaminação" in text_lower:
             if "urina" in text_lower:
-                return "2"
+                return 2
             else:
-                return "3"
+                return 3
         else:
-            return "0"
+            return 0
     def process_material(raw_material, df_name):
         if not raw_material:
             return {"tipo": "", "outro": ""}
