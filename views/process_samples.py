@@ -196,6 +196,8 @@ def extract_fields_positive(report_text, df_name):
         return {"resultado": "1",
                 "se_positivo_para_qual_agente": type_positive(report_lower),
                 "se_negativo_para_qual_agente": ""}
+    else:
+        return
 
 def extract_fields_negative(report_text, df_name):
     report_lower = report_text.lower()
