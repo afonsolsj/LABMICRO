@@ -65,7 +65,7 @@ with tab3:
     render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", "microorganism_gpb", ":material/counter_3:")
     render_editor("Levedura", "microorganisms_fy", "yellow", "microorganism_fy", ":material/counter_4:")
 with tab4:
-    with st.expander("Cores", icon=":material/colors:"):
+    with st.expander("Cores", icon=":material/colors:", expanded=True):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
                            "Paciente em ambulatório. Não é necessário verificação.")
         render_legend_item("Vermelho", ":material/skull:", "red",
