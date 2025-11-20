@@ -69,7 +69,7 @@ with tab2:
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance")
     render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear")
 with tab3:
-    render_editor("Microrganismos", "microrganisms", "purple", "microorganism")
+    render_editor("Microrganismos", "microorganisms", "orange", "microorganism")
 with tab4:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
