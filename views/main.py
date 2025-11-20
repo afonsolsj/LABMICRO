@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("Estagiários MicroHUWC")
+st.title("Estagiários Lab Microbiologia")
 st.markdown(f"Bem-vindo, **{st.session_state.username}** 👋")
 col1, col2 = st.columns(2)
 if col1.button("Amostras negativas"):

@@ -64,7 +64,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         col_idx = df.columns.get_loc("setor_de_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
                         first_cell = xl_rowcol_to_cell(1, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': purple_format})
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
                     if "tipo_de_material" in df.columns:
                         col_idx = df.columns.get_loc("tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)

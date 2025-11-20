@@ -69,18 +69,14 @@ with tab2:
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance")
     render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear")
 with tab3:
-    with st.expander("Desfecho", icon=":material/health_cross:"):
-        render_legend_item("Alta/Ambulatório", ":material/check_circle:", "green",
-                           "Paciente encontrado no relatório de alta/óbito. Não é necessário verificação.")
-        render_legend_item("Óbito", ":material/skull:", "red",
-                           "Paciente encontrado no relatório de alta/óbito. Não é necessário verificação.")
-        render_legend_item("Internado(a)", ":material/hotel:", "blue",
-                           "Paciente não encontrado no relatório de alta/óbito. É necessário verificação.")
-        render_legend_item("Transferência", ":material/transfer_within_a_station:", "blue",
-                           "Paciente não encontrado no relatório de alta/óbito. É necessário verificação.")
-    with st.expander("Material", icon=":material/labs:"):
-        render_legend_item("Não encontrado", ":material/check_circle:", "yellow",
-                           "Material não encontrado na lista de materiais. É necessário verificação.")
-    with st.expander("Setor de origem", icon=":material/location_on:"):
-        render_legend_item("Não encontrado", ":material/check_circle:", "violet",
-                           "Setor não encontrado na lista de setores. É necessário verificação.")
+    with st.expander("Cores", icon=":material/colors:"):
+        render_legend_item("Ambulatório", ":material/check_circle:", "green",
+                           "Paciente em ambulatório. Não é necessário verificação.")
+        render_legend_item("Vermelho", ":material/skull:", "red",
+                           "Óbito do paciente. Não é necessário verificação.")
+        render_legend_item("Amarelo", ":material/hotel:", "yellow",
+                           "Valor dependente. É necessário verificação e preenchimento manual.")
+        render_legend_item("Vazio", ":material/hotel:", "blue",
+                           "Valor não encontrado. É necessário verificação e preenchimento manual.")
+    with st.expander("Desfecho", icon=":material/health_cross:", expanded="True"):
+        st.table(dados = {"Desfecho": ["Internação", "Óbito", "Alta", "Transferência"], "Código": [1, 2, 3, 4]})
