@@ -212,8 +212,6 @@ def extract_fields_positive(report_text, df_name):
                 return "3"
             elif "+" in report_lower:
                 return "2"
-            elif "campos observados" in report_lower:
-                return "1"
         return {"resultado": "1",
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
