@@ -79,5 +79,5 @@ with tab3:
         render_legend_item("Vazio", ":material/hotel:", "blue",
                            "Valor não encontrado. É necessário verificação e preenchimento manual.")
     with st.expander("Desfecho", icon=":material/health_cross:", expanded=True):
-        df = pd.DataFrame({"Estado": ["Internação", "Óbito", "Alta", "Transferência"], "Código": [1, 2, 3, 4]})
-        st.table(df.set_index("Estado"))
+        df = pd.DataFrame({"Situação": ["Internação", "Óbito", "Alta", "Transferência"], "Código": [1, 2, 3, 4]})
+        st.table(df.set_index("Situação"))
