@@ -73,6 +73,11 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         col_idx = df.columns.get_loc("qual_tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '10', 'format': yellow_format})
+                    if "resultado" in df.columns and ("se_positivo_para_qual_agente" or "se_positivo_marque") in df.columns:
+                        col_res = df.columns.get_loc("resultado")
+                        col_agente = df.columns.get_loc("se_positivo_para_qual_agente")
+                        cell_range = (1, col_agente, max_row, col_agente)
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=AND(${xl_rowcol_to_cell(1, col_res, row_abs=False, col_abs=False)}=1,' f'ISBLANK({xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)}))', 'format': blue_format})
                 excel_buffer.seek(0)
                 zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
         zip_buffer.seek(0)
