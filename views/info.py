@@ -7,7 +7,7 @@ from io import StringIO
 # Variáveis
 GITHUB_TOKEN = st.secrets["github"]["token"]
 REPO = "afonsolsj/LABMICRO"
-PATHS = {"departments": "assets/files/departments.csv", "material_general": "assets/files/materials_general.csv", "material_vigilance": "assets/files/materials_vigilance.csv", "material_smear_microscopy": "assets/files/materials_smear_microscopy.csv"}
+PATHS = {"departments": "assets/files/departments.csv", "microorganisms": "assets/files/microorganisms.csv", "material_general": "assets/files/materials_general.csv", "material_vigilance": "assets/files/materials_vigilance.csv", "material_smear_microscopy": "assets/files/materials_smear_microscopy.csv"}
 
 # Funções
 def load_csv_from_github(file_path):
