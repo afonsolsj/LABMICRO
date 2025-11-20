@@ -52,7 +52,7 @@ def render_legend_item(badge_text, icon, color, description):
 
 # Código principal da página
 st.title("Informações")
-tab1, tab2, tab3 = st.tabs(["Setores", "Materiais", "Legendas"])
+tab1, tab2, tab3, tab4 = st.tabs(["Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
     st.badge('HUWC', icon=":material/home_health:", color="yellow")
     df, sha = load_csv_from_github(PATHS["departments"])
@@ -69,6 +69,8 @@ with tab2:
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance")
     render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear")
 with tab3:
+    render_editor("Microrganismos", "microrganisms", "purple", "microorganism")
+with tab4:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
                            "Paciente em ambulatório. Não é necessário verificação.")
