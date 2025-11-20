@@ -73,14 +73,17 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         col_idx = df.columns.get_loc("qual_tipo_de_material")
                         cell_range = (1, col_idx, max_row, col_idx)
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '10', 'format': yellow_format})
-                    if "resultado" in df.columns and ("se_positivo_para_qual_agente" or "se_positivo_marque") in df.columns:
+                    tem_agente = "se_positivo_para_qual_agente" in df.columns
+                    tem_marque = "se_positivo_marque" in df.columns
+                    if "resultado" in df.columns and (tem_agente or tem_marque):
                         col_res = df.columns.get_loc("resultado")
-                        if "se_positivo_para_qual_agente" in df.columns:
-                            col_agente = df.columns.get_loc("se_positivo_para_qual_agente")
-                        elif "se_positivo_marque" in df.columns:
-                            col_agente = df.columns.get_loc("se_positivo_marque")
-                        cell_range = (1, col_agente, max_row, col_agente)
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=AND(${xl_rowcol_to_cell(1, col_res, row_abs=False, col_abs=False)}=1,' f'ISBLANK({xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)}))', 'format': blue_format})
+                        nome_col_agente = "se_positivo_para_qual_agente" if tem_agente else "se_positivo_marque"
+                        col_agente = df.columns.get_loc(nome_col_agente)
+                        cell_range = (1, col_agente, max_row, col_agente) 
+                        ref_resultado = xl_rowcol_to_cell(1, col_res, row_abs=False, col_abs=True)
+                        ref_agente = xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)
+                        formula = f'=AND({ref_resultado}=1, ISBLANK({ref_agente}))'
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
                 excel_buffer.seek(0)
                 zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
         zip_buffer.seek(0)
