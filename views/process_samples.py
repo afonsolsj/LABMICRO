@@ -346,7 +346,10 @@ def extract_fields(report_text, df_name):
 # Funções de processamento
 def process_general(report_text, row_idx=None):
     global df_general
-    fields = extract_fields(report_text, "general")
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):
+        fields = extract_fields_positive(report_text, "general")
+    else:
+        fields = extract_fields(report_text, "general")
     if not fields.get("n_mero_do_prontu_rio"):
         return
     if row_idx is None:
