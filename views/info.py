@@ -63,7 +63,7 @@ with tab3:
     render_editor("Bacilos Gram Negativos", "microorganisms_gnb", "orange", "microorganism_gnb", ":material/counter_1:")
     render_editor("Cocos Gram Positivos", "microorganisms_gpc", "violet", "microorganism_gpc", ":material/counter_2:")
     render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", "microorganism_gpb", ":material/counter_3:")
-    render_editor("Levedura", "microorganisms_fy", "yellow", "microorganism_gpb", ":material/counter_4:")
+    render_editor("Levedura", "microorganisms_fy", "yellow", "microorganism_fy", ":material/counter_4:")
 with tab4:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
