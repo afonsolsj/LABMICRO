@@ -354,7 +354,7 @@ def extract_fields(report_text, df_name):
 # Funções de processamento
 def process_general(report_text, row_idx=None):
     global df_general
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "campos observados"]):
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):
         return
     fields = extract_fields(report_text, "general")
     if not fields.get("n_mero_do_prontu_rio"):
@@ -374,7 +374,7 @@ def process_general(report_text, row_idx=None):
 def process_vigilance(report_text, row_idx=None):
     global df_vigilance
     fields = extract_fields(report_text, "vigilance")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "campos observados"]):    
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields_positive = extract_fields_positive(report_text, "vigilance")
         if fields_positive:
             fields.update(fields_positive)
@@ -395,7 +395,7 @@ def process_vigilance(report_text, row_idx=None):
 def process_smear(report_text, row_idx=None):
     global df_smear
     fields = extract_fields(report_text, "smear")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "campos observados"]):    
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields_positive = extract_fields_positive(report_text, "smear")
         if fields_positive:
             fields.update(fields_positive)
