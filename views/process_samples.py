@@ -300,11 +300,11 @@ def extract_fields(report_text, df_name):
         has_carbapenemicos = "carbapenêmico" in text_lower or "carbapenêmicos" in text_lower
         has_vancomicina = "vancomicina" in text_lower
         if has_carbapenemicos and has_vancomicina:
-            return "3"
+            return 3
         elif has_carbapenemicos:
-            return "1"
+            return 1
         elif has_vancomicina:
-            return "2"
+            return 2
         else:
             return ""
     def get_material_value(labels):
@@ -313,27 +313,27 @@ def extract_fields(report_text, df_name):
             if value:
                 return value
         return ""
-    def format_sexo(raw_sexo_value, df_name):
+    def format_sex(raw_sexo_value, df_name):
         sexo_clean = raw_sexo_value.split("|")[0].strip().lower()
         if df_name in ("smear", "vigilance"):
             if "masculino" in sexo_clean:
-                return "2"
+                return 2
             elif "feminino" in sexo_clean:
-                return "1"
+                return 1
         elif df_name == "general":
             if "masculino" in sexo_clean:
-                return "1"
+                return 1
             elif "feminino" in sexo_clean:
-                return "0"
+                return 0
         return ""    
     return {
-        "hospital": "1",
-        "hospital_de_origem": "1",
-        "faz_parte_projeto_cdc_rfa": "2",
-        "faz_parte_projeto_cdc_rfa_ck21_2104": "2",
+        "hospital": 1,
+        "hospital_de_origem": 1,
+        "faz_parte_projeto_cdc_rfa": 2,
+        "faz_parte_projeto_cdc_rfa_ck21_2104": 2,
         "n_mero_do_pedido": get_sample_number(),
         "n_mero_do_prontu_rio": "".join(re.findall(r"\d+", get_value("Prontuário..:"))),
-        "sexo": format_sexo(get_value("Sexo........:"), df_name),
+        "sexo": format_sex(get_value("Sexo........:"), df_name),
         "idade": get_value("Idade:").split("A")[0].strip(),
         "idade_anos": get_value("Idade:").split("A")[0].strip(),
         "setor_de_origem": get_value("Procedência.:").split("|")[0].strip(),
@@ -346,8 +346,8 @@ def extract_fields(report_text, df_name):
         "outro_tipo_de_material": process_material(get_material_value(["material:", "material : "]), df_name)["outro"] if df_name in ["general", "vigilance"] else "",
         "resultado": get_result(report_text, df_name),
         "se_negativo_para_qual_agente": get_negative_agent(report_text),
-        "formulrio_complete": "2",
-        "dados_microbiologia_complete": "2",
+        "formulrio_complete": 2,
+        "dados_microbiologia_complete": 2,
         "data_agora": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
     }
