@@ -196,7 +196,9 @@ def extract_fields_positive(report_text, df_name):
         return {"resultado": "1",
                 "se_positivo_para_qual_agente": type_positive(report_lower),
                 "se_negativo_para_qual_agente": ""}
-    else:
+    elif df_name == "general":
+        return
+    elif df_name == "smear":
         return
 
 def extract_fields_negative(report_text, df_name):
