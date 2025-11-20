@@ -180,7 +180,23 @@ def get_next_id(df, start_id, column_name):
         return start_id
     return int(max_val) + 1
 def extract_fields_positive(report_text, df_name):
-    return {}
+    report_lower = report_text.lower()
+    if df_name == "vigilance":
+        def type_positive(report_lower):
+            has_carbapenemicos = "carbapenêmico" in report_lower
+            has_vancomicina = "vancomicina" in report_lower
+            if has_carbapenemicos and has_vancomicina:
+                return "4"
+            elif has_carbapenemicos:
+                return "1"
+            elif has_vancomicina:
+                return "2"
+            else:
+                return ""
+        return {"resultado": "1",
+                "se_positivo_para_qual_agente": type_positive(report_lower),
+                "se_negativo_para_qual_agente": ""}
+
 def extract_fields_negative(report_text, df_name):
     report_lower = report_text.lower()
     def get_value(label):
@@ -337,10 +353,10 @@ def process_general(report_text, row_idx=None):
                     df_general.at[row_idx, key] = val
 def process_vigilance(report_text, row_idx=None):
     global df_vigilance
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
-        fields = extract_fields_positive(report_text, "vigilance")
-    else:
+    if not any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields = extract_fields_negative(report_text, "vigilance")
+    else:
+        fields = extract_fields_positive(report_text, "vigilance")
     if not fields.get("n_mero_do_prontu_rio"):
         return
     if row_idx is None:
