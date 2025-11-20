@@ -5,14 +5,14 @@ import base64
 from io import StringIO
 
 # Variáveis
-GITHUB_TOKEN = st.secrets["github"]["token"]
-REPO = "afonsolsj/LABMICRO"
-PATHS = {"departments": "assets/files/departments.csv", "microorganisms": "assets/files/microorganisms.csv", "material_general": "assets/files/materials_general.csv", "material_vigilance": "assets/files/materials_vigilance.csv", "material_smear_microscopy": "assets/files/materials_smear_microscopy.csv"}
+github_token = st.secrets["github"]["token"]
+repo = "afonsolsj/LABMICRO"
+paths = {"departments": "assets/files/departments.csv", "microorganisms_gnb": "assets/files/microorganisms_gnb.csv", "microorganisms_gpb": "assets/files/microorganisms_gpb.csv", "microorganisms_gpc": "assets/files/microorganisms_gpc.csv", "microorganisms_fy": "assets/files/microorganisms_fy.csv", "material_general": "assets/files/materials_general.csv", "material_vigilance": "assets/files/materials_vigilance.csv", "material_smear_microscopy": "assets/files/materials_smear_microscopy.csv"}
 
 # Funções
 def load_csv_from_github(file_path):
-    url = f"https://api.github.com/repos/{REPO}/contents/{file_path}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+    headers = {"Authorization": f"token {github_token}"}
     r = requests.get(url, headers=headers)
     if r.status_code != 200:
         st.error(f"Erro ao carregar {file_path}: {r.status_code}")
@@ -22,8 +22,8 @@ def load_csv_from_github(file_path):
     return pd.read_csv(StringIO(csv_content)), data["sha"]
 
 def update_csv_on_github(df, file_path, sha):
-    url = f"https://api.github.com/repos/{REPO}/contents/{file_path}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+    headers = {"Authorization": f"token {github_token}"}
     payload = {
         "message": f"Atualização automática de {file_path} pelo Streamlit",
         "content": base64.b64encode(df.to_csv(index=False).encode()).decode(),
@@ -31,14 +31,14 @@ def update_csv_on_github(df, file_path, sha):
     }
     return requests.put(url, headers=headers, json=payload).status_code == 200
 
-def render_editor(title, path_key, color, key_suffix):
-    st.badge(title, icon=":material/picture_as_pdf:", color=color)
-    df, sha = load_csv_from_github(PATHS[path_key])
+def render_editor(title, path_key, color, key_suffix, icon_selected):
+    st.badge(title, icon=icon_selected, color=color)
+    df, sha = load_csv_from_github(paths[path_key])
     edited = st.data_editor(df, num_rows="dynamic", use_container_width=True, key=f"{key_suffix}_editor")
     if st.button(f"Atualizar {title}", key=f"save_{key_suffix}"):
         if "Código" in edited.columns:
             edited = edited.sort_values("Código").reset_index(drop=True)
-        if update_csv_on_github(edited, PATHS[path_key], sha):
+        if update_csv_on_github(edited, paths[path_key], sha):
             st.success("Base de dados atualizada com sucesso!")
         else:
             st.error("Erro ao atualizar base de dados.")
@@ -54,22 +54,16 @@ def render_legend_item(badge_text, icon, color, description):
 st.title("Informações")
 tab1, tab2, tab3, tab4 = st.tabs(["Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
-    st.badge('HUWC', icon=":material/home_health:", color="yellow")
-    df, sha = load_csv_from_github(PATHS["departments"])
-    edited = st.data_editor(df, num_rows="dynamic", use_container_width=True, key="departments_editor") 
-    if st.button("Atualizar setores", key="save_departments"):
-        if "Código" in edited.columns:
-            edited = edited.sort_values("Código").reset_index(drop=True)
-        if update_csv_on_github(edited, PATHS["departments"], sha):
-            st.success("Base de dados atualizada com sucesso!")
-        else:
-            st.error("Erro ao atualizar base de dados.")
+    render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
 with tab2:
-    render_editor("Materiais (Geral)", "material_general", "blue", "general")
-    render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance")
-    render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear")
+    render_editor("Materiais (Geral)", "material_general", "blue", "general", ":material/fluid_med:")
+    render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance", ":material/medication_liquid:")
+    render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear",  ":material/hematology:")
 with tab3:
-    render_editor("Microrganismos", "microorganisms", "orange", "microorganism")
+    render_editor("Bacilos Gram Negativos", "microorganisms_gnb", "orange", "microorganism_gnb", ":material/counter_1:")
+    render_editor("Cocos Gram Positivos", "microorganisms_gpc", "violet", "microorganism_gpc", ":material/counter_2:")
+    render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", "microorganism_gpb", ":material/counter_3:")
+    render_editor("Levedura", "microorganisms_fy", "yellow", "microorganism_gpb", ":material/counter_3:")
 with tab4:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
