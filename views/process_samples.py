@@ -75,7 +75,10 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '10', 'format': yellow_format})
                     if "resultado" in df.columns and ("se_positivo_para_qual_agente" or "se_positivo_marque") in df.columns:
                         col_res = df.columns.get_loc("resultado")
-                        col_agente = df.columns.get_loc("se_positivo_para_qual_agente")
+                        if "se_positivo_para_qual_agente" in df.columns:
+                            col_agente = df.columns.get_loc("se_positivo_para_qual_agente")
+                        elif "se_positivo_marque" in df.columns:
+                            col_agente = df.columns.get_loc("se_positivo_marque")
                         cell_range = (1, col_agente, max_row, col_agente)
                         worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=AND(${xl_rowcol_to_cell(1, col_res, row_abs=False, col_abs=False)}=1,' f'ISBLANK({xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)}))', 'format': blue_format})
                 excel_buffer.seek(0)
@@ -473,7 +476,7 @@ def process_text_pdf(text_pdf):
 
 # Código principal da página
 st.title("Compilação de amostras")
-st.error("Sem processamento de positivas para formulário GERAL.")
+st.error("Processamento de positivas para formulário GERAL pendente.")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
