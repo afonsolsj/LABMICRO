@@ -338,8 +338,7 @@ def extract_fields_negative(report_text, df_name):
 def process_general(report_text, row_idx=None):
     global df_general
     if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):
-        fields = extract_fields_negative(report_text, "vigilance")
-        fields = extract_fields_positive(report_text, "general")
+        return
     else:
         fields = extract_fields_negative(report_text, "general")
     if not fields.get("n_mero_do_prontu_rio"):
@@ -380,8 +379,7 @@ def process_vigilance(report_text, row_idx=None):
 def process_smear(report_text, row_idx=None):
     global df_smear
     if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]): 
-        fields = extract_fields_negative(report_text, "vigilance")
-        fields = extract_fields_positive(report_text, "smear")
+        return
     else:
         fields = extract_fields_negative(report_text, "smear")
     if not fields.get("n_mero_do_prontu_rio"):
