@@ -70,9 +70,9 @@ with tab4:
                            "Paciente em ambulatório. Não é necessário verificação.")
         render_legend_item("Vermelho", ":material/skull:", "red",
                            "Óbito do paciente. Não é necessário verificação.")
-        render_legend_item("Amarelo", ":material/hotel:", "yellow",
+        render_legend_item("Amarelo", ":material/format_text_wrap:", "yellow",
                            "Valor dependente. É necessário verificação e preenchimento manual.")
-        render_legend_item("Vazio", ":material/hotel:", "blue",
+        render_legend_item("Vazio", ":material/format_text_overflow:", "blue",
                            "Valor não encontrado. É necessário verificação e preenchimento manual.")
     with st.expander("Desfecho", icon=":material/health_cross:", expanded=True):
         df = pd.DataFrame({"Situação": ["Internação", "Óbito", "Alta", "Transferência"], "Código": [1, 2, 3, 4]})
