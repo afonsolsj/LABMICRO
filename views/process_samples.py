@@ -269,15 +269,19 @@ def extract_fields_positive(report_text, df_name):
             elif patterns["ecim_neg"] in text:
                 ecim = 2
             return mcim, ecim
-        def code_ast(value):
-            if "s" in value:
-                return 1
-            elif "r" in value:
-                return 2
-            elif "i" in value:
-                return 3
-            else:
+        def result_ast(value):
+            if not value:
                 return 4
+            parts = value.lower().split()
+            for p in parts:
+                if p in ["s", "r", "i"]:
+                    if p == "s":
+                        return 1
+                    elif p == "r":
+                        return 2
+                    elif p == "i":
+                        return 3
+            return 4
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
@@ -285,14 +289,20 @@ def extract_fields_positive(report_text, df_name):
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
         if any(x in report_text.lower() for x in ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]) and type_micro == 2:
-            fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = code_ast(get_value("fluconazol").split("-")[0].strip()), code_ast(get_value("voriconazol").split("-")[0].strip()), code_ast(get_value("caspofungina").split("-")[0].strip()), code_ast(get_value("micafungina").split("-")[0].strip()), code_ast(get_value("anfotericina b").split("-")[0].strip()), code_ast(get_value("fluocitosina").split("-")[0].strip()), 1
+            fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = result_ast((get_value("fluconazol"))), result_ast((get_value("voriconazol"))), result_ast((get_value("caspofungina"))), result_ast((get_value("micafungina"))), result_ast((get_value("anfotericina b"))), result_ast((get_value("fluocitosina"))), 1
         else:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = "", "", "", "", "", "", 2
+        st.write(get_value("fluconazol").split("-")[0].strip())
         st.write(fluconazol)
+        st.write(get_value("voriconazol").split("-")[0].strip())
         st.write(voriconazol)
+        st.write(get_value("caspofungina").split("-")[0].strip())
         st.write(caspofungina)
+        st.write(get_value("micafungina").split("-")[0].strip())
         st.write(micafungina)
+        st.write(get_value("anfotericina b").split("-")[0].strip())
         st.write(anfotericina_b)
+        st.write(get_value("fluocitosina").split("-")[0].strip())
         st.write(fluocitosina)
         st.write(para_leveduras)
         if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprima", "nitrofurantoina"]) and type_micro == 0:
