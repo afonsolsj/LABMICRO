@@ -244,6 +244,8 @@ def extract_fields_positive(report_text, df_name):
                 return 2
             elif "i" in value:
                 return 3
+            else:
+                ""
         def classify_microorganism(value):
             val_lower = value.lower()
             def fuzzy_match(dic):
