@@ -292,19 +292,6 @@ def extract_fields_positive(report_text, df_name):
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = result_ast((get_value("fluconazol"))), result_ast((get_value("voriconazol"))), result_ast((get_value("caspofungina"))), result_ast((get_value("micafungina"))), result_ast((get_value("anfotericina b"))), result_ast((get_value("fluocitosina"))), 1
         else:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = "", "", "", "", "", "", 2
-        st.write(get_value("fluconazol").split("-")[0].strip())
-        st.write(fluconazol)
-        st.write(get_value("voriconazol").split("-")[0].strip())
-        st.write(voriconazol)
-        st.write(get_value("caspofungina").split("-")[0].strip())
-        st.write(caspofungina)
-        st.write(get_value("micafungina").split("-")[0].strip())
-        st.write(micafungina)
-        st.write(get_value("anfotericina b").split("-")[0].strip())
-        st.write(anfotericina_b)
-        st.write(get_value("fluocitosina").split("-")[0].strip())
-        st.write(fluocitosina)
-        st.write(para_leveduras)
         if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprima", "nitrofurantoina"]) and type_micro == 0:
             benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = result_ast(get_value("benzilpenicilina")), result_ast(get_value("ampicilina (iv)")), result_ast(get_value("oxacilina")), result_ast(get_value("ceftarolina")), 4, result_ast(get_value("estreptomicina")), result_ast(get_value("gentamicina")), result_ast(get_value("levofloxacina")), result_ast(get_value("eritromicina")), result_ast(get_value("clindamicina")), result_ast(get_value("linezolid")), result_ast(get_value("daptomicina")), result_ast(get_value("teicoplanina")), result_ast(get_value("vancomicina")), result_ast(get_value("tigeciclina")), result_ast(get_value("rifampicina")), result_ast(get_value("trimetoprima")), result_ast(get_value("nitrofurantoina")), 1
         else:
