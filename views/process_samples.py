@@ -551,7 +551,6 @@ def process_singular_report(report_text):
         process_smear(report_text)
     else:
         process_general(report_text)
-    st.write(report_text_lower)
 def process_text_pdf(text_pdf):
     if not text_pdf:
         return
