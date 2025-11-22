@@ -269,15 +269,24 @@ def extract_fields_positive(report_text, df_name):
             elif patterns["ecim_neg"] in text:
                 ecim = 2
             return mcim, ecim
-
+        def code_ast(value):
+            if "s" in value:
+                return 1
+            elif "r" in value:
+                return 2
+            elif "i" in value:
+                return 3
+            else:
+                return 4
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
-        fluconazol = get_value("fluconazol").split("-")[0].strip()
+        fluconazol = code_ast(get_value("fluconazol").split("-")[0].strip())
         st.write(fluconazol)
+        
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
