@@ -285,9 +285,9 @@ def extract_fields_positive(report_text, df_name):
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
         if any(x in report_text.lower() for x in ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]):
-            fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = code_ast(get_value("fluconazol").split("-")[0].strip()), code_ast(get_value("voriconazol").split("-")[0].strip()), code_ast(get_value("caspofungina").split("-")[0].strip()), code_ast(get_value("micafungina").split("-")[0].strip()), code_ast(get_value("anfotericina b").split("-")[0].strip()), code_ast(get_value("fluocitosina").split("-")[0].strip())
+            fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = code_ast(get_value("fluconazol").split("-")[0].strip()), code_ast(get_value("voriconazol").split("-")[0].strip()), code_ast(get_value("caspofungina").split("-")[0].strip()), code_ast(get_value("micafungina").split("-")[0].strip()), code_ast(get_value("anfotericina b").split("-")[0].strip()), code_ast(get_value("fluocitosina").split("-")[0].strip()), 1
         else:
-            fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = "", "", "", "", "", ""
+            fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = "", "", "", "", "", "", 2
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -301,6 +301,7 @@ def extract_fields_positive(report_text, df_name):
             "micafungina": micafungina,
             "anfotericina_b": anfotericina_b,
             "fluocitosina": fluocitosina,
+            "para_leveduras": para_leveduras
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
