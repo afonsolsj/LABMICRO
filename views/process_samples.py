@@ -245,24 +245,15 @@ def extract_fields_positive(report_text, df_name):
                     if score >= 80:
                         return True
                 return False
-            if fuzzy_match(microorganisms_gnb):
-                return 1
-            elif fuzzy_match(microorganisms_gpc):
-                return 0
-            elif fuzzy_match(microorganisms_gpb):
-                return 3
-            elif fuzzy_match(microorganisms_fy):
-                return 2
+            groups = [(microorganisms_gnb, 1), (microorganisms_gpc, 0), (microorganisms_gpb, 3), (microorganisms_fy, 2),]
+            for dic, code in groups:
+                if fuzzy_match(dic):
+                    return code
             first_word = value.split()[0].lower() if value else ""
             if first_word:
-                if any(first_word in item.lower() for item in microorganisms_gnb):
-                    return 1
-                if any(first_word in item.lower() for item in microorganisms_gpc):
-                    return 0
-                if any(first_word in item.lower() for item in microorganisms_gpb):
-                    return 3
-                if any(first_word in item.lower() for item in microorganisms_fy):
-                    return 2
+                for dic, code in groups:
+                    if any(first_word in item.lower() for item in dic):
+                        return code
             return ""
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
