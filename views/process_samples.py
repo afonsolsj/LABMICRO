@@ -269,6 +269,7 @@ def extract_fields_positive(report_text, df_name):
             elif patterns["ecim_neg"] in text:
                 ecim = 2
             return mcim, ecim
+
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
@@ -281,7 +282,7 @@ def extract_fields_positive(report_text, df_name):
             "qual_o_tipo_de_microorganismo": type_micro,
             "outro_microorganismo": other_micro,
             "apresenta_mcim": code_mcim,
-            "apresenta_ecim": code_ecim,
+            "apresenta_ecim": code_ecim
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -522,8 +523,6 @@ def process_singular_report(report_text):
         if any(x in procedencia_line for x in ["meac", "cpdhr", "maternidade escola"]):
             return
     if "paciente teste" in report_text_lower:
-        return
-    if "ver resultado do antibiograma no pedido":
         return
     if "bacterioscopia" in report_text_lower:
         return
