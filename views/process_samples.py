@@ -276,6 +276,8 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
+        fluconazol = get_value("fluconazol").split("-")[0].strip()
+        st.write(fluconazol)
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
