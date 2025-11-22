@@ -255,15 +255,33 @@ def extract_fields_positive(report_text, df_name):
                     if any(first_word in item.lower() for item in dic):
                         return code
             return ""
+        def get_cim_result(report_text):
+            text = report_text.lower()
+            patterns = {"mcim_pos": "inativação de carbapenêmico modificado): positivo", "mcim_neg": "inativação de carbapenêmico modificado): negativo", "ecim_pos": "(ecim-edta): positivo", "ecim_neg": "(ecim-edta): negativo"}
+            mcim = 4 
+            ecim = 4
+            if patterns["mcim_pos"] in text:
+                mcim = 1
+            elif patterns["mcim_neg"] in text:
+                mcim = 2
+            if patterns["ecim_pos"] in text:
+                ecim = 1
+            elif patterns["ecim_neg"] in text:
+                ecim = 2
+            return mcim, ecim
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
-        outro_micro_valor = isolate_micro if type_micro == "" and isolate_micro else ""
+        other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
+        mechanism = "", ""
+        code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
             "qual_o_tipo_de_microorganismo": type_micro,
-            "outro_microorganismo": outro_micro_valor,
+            "outro_microorganismo": other_micro,
+            "apresenta_mcim": code_mcim,
+            "apresenta_ecim": code_ecim
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -343,7 +361,7 @@ def extract_fields(report_text, df_name):
             return {"tipo": raw_material, "outro": ""}
     def get_negative_agent(report_text):
         text_lower = report_text.lower()
-        has_carbapenemicos = "carbapenêmico" in text_lower or "carbapenêmicos" in text_lower
+        has_carbapenemicos = "carbapenêmico" in text_lower
         has_vancomicina = "vancomicina" in text_lower
         if has_carbapenemicos and has_vancomicina:
             return 3
@@ -516,6 +534,7 @@ def process_singular_report(report_text):
         process_smear(report_text)
     else:
         process_general(report_text)
+    st.write(report_text_lower)
 def process_text_pdf(text_pdf):
     if not text_pdf:
         return
