@@ -246,20 +246,24 @@ def extract_fields_positive(report_text, df_name):
                         return True
                 return False
             if fuzzy_match(microorganisms_gnb):
-                return 1
+                return 1, ""
             elif fuzzy_match(microorganisms_gpc):
-                return 0
+                return 0, ""
             elif fuzzy_match(microorganisms_gpb):
-                return 3
+                return 3, ""
             elif fuzzy_match(microorganisms_fy):
-                return 2
+                return 2, ""
             else:
-                return ""
+                return "Outro", value
         iso1 = get_value("ISOLADO1 :")
+        if not iso1:
+            iso1 = get_value("ISOLADO2 :")
+        type, other = classify_microorganism(iso1)
         return {
             "resultado": 1,
             "qual_microorganismo": iso1,
-            "qual_o_tipo_de_microorganismo": classify_microorganism(iso1)
+            "qual_o_tipo_de_microorganismo": type,
+            "outro_microorganismo": other
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -499,6 +503,8 @@ def process_singular_report(report_text):
         procedencia_line = report_text_lower[procedencia_index:end_of_line]
         if any(x in procedencia_line for x in ["meac", "cpdhr", "maternidade escola"]):
             return
+    if "paciente teste" in report_text_lower:
+        return
     if "bacterioscopia" in report_text_lower:
         return
     if re.search(r"(material:\s*|material examinado:\s*)(" + "|".join(re.escape(term) for term in materials_vigilance.keys()) + r")", report_text_lower):
