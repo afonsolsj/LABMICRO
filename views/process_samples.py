@@ -246,24 +246,24 @@ def extract_fields_positive(report_text, df_name):
                         return True
                 return False
             if fuzzy_match(microorganisms_gnb):
-                return 1, ""
+                return 1
             elif fuzzy_match(microorganisms_gpc):
-                return 0, ""
+                return 0
             elif fuzzy_match(microorganisms_gpb):
-                return 3, ""
+                return 3
             elif fuzzy_match(microorganisms_fy):
-                return 2, ""
+                return 2
             else:
-                return "Outro", value
-        iso1 = get_value("ISOLADO1 :")
-        if not iso1:
-            iso1 = get_value("ISOLADO2 :")
-        type, other = classify_microorganism(iso1)
+                return ""
+        isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
+        type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
+        micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
+        outro_micro_valor = isolate_micro if type_micro == "" and isolate_micro else ""
         return {
             "resultado": 1,
-            "qual_microorganismo": iso1,
-            "qual_o_tipo_de_microorganismo": type,
-            "outro_microorganismo": other
+            "qual_microorganismo": micro_final,
+            "qual_o_tipo_de_microorganismo": type_micro,
+            "outro_microorganismo": outro_micro_valor
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
