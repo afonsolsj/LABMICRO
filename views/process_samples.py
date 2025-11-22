@@ -237,6 +237,13 @@ def extract_fields_positive(report_text, df_name):
                 value = line.split(":", 1)[-1].strip()
                 return value
             return ""
+        def code_ats(value):
+            if "s" in value:
+                return 1
+            elif "r" in value:
+                return 2
+            elif "i" in value:
+                return 3
         def classify_microorganism(value):
             val_lower = value.lower()
             def fuzzy_match(dic):
@@ -275,13 +282,32 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
+        fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = get_value("fluconazol").split("-")[0].strip(), get_value("voriconazol").split("-")[0].strip(),
+        get_value("caspofungina").split("-")[0].strip(), get_value("micafungina").split("-")[0].strip(), get_value("anfotericina_b").split("-")[0].strip(), get_value("fluocitosina").split("-")[0].strip()
+        if any(x != "" for x in [fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina]):
+            para_leveduras = 1
+            gram_positivo = 2
+            gram_negativo_gn_ambulat_rio = 2
+            gram_negativo_gn_hospitala = 2
+            antibiograma_realizado = 1
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
             "qual_o_tipo_de_microorganismo": type_micro,
             "outro_microorganismo": other_micro,
             "apresenta_mcim": code_mcim,
-            "apresenta_ecim": code_ecim
+            "apresenta_ecim": code_ecim,
+            "para_leveduras": para_leveduras,
+            "gram_positivo": gram_positivo,
+            "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio,
+            "gram_negativo_gn_hospitala": gram_negativo_gn_hospitala,
+            "antibiograma_realizado": antibiograma_realizado,
+            "fluconazol": fluconazol,
+            "voriconazol": voriconazol,
+            "caspofungina": caspofungina,
+            "micafungina": micafungina,
+            "anfotericina_b": anfotericina_b,
+            "fluocitosina": fluocitosina,
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -522,6 +548,8 @@ def process_singular_report(report_text):
         if any(x in procedencia_line for x in ["meac", "cpdhr", "maternidade escola"]):
             return
     if "paciente teste" in report_text_lower:
+        return
+    if "ver resultado do antibiograma no pedido":
         return
     if "bacterioscopia" in report_text_lower:
         return
