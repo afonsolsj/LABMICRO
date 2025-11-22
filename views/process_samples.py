@@ -237,15 +237,6 @@ def extract_fields_positive(report_text, df_name):
                 value = line.split(":", 1)[-1].strip()
                 return value
             return ""
-        def code_ats(value):
-            if "s" in value:
-                return 1
-            elif "r" in value:
-                return 2
-            elif "i" in value:
-                return 3
-            else:
-                ""
         def classify_microorganism(value):
             val_lower = value.lower()
             def fuzzy_match(dic):
@@ -284,9 +275,6 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
-        fluconazol = get_value("fluconazol")
-        st.write(fluconazol)
-        #voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = code_ats(get_value("fluconazol").split("-")[0].strip()), code_ats(get_value("voriconazol").split("-")[0].strip()), code_ats(get_value("caspofungina").split("-")[0].strip()), code_ats(get_value("micafungina").split("-")[0].strip()), code_ats(get_value("anfotericina_b").split("-")[0].strip()), code_ats(get_value("fluocitosina").split("-")[0].strip())
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -294,12 +282,6 @@ def extract_fields_positive(report_text, df_name):
             "outro_microorganismo": other_micro,
             "apresenta_mcim": code_mcim,
             "apresenta_ecim": code_ecim,
-            #"fluconazol": fluconazol,
-            #"voriconazol": voriconazol,
-            #"caspofungina": caspofungina,
-            #"micafungina": micafungina,
-            #"anfotericina_b": anfotericina_b,
-            #"fluocitosina": fluocitosina,
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
