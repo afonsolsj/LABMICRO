@@ -284,7 +284,8 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
-        fluconazol = code_ats(get_value("fluconazol").split("-")[0].strip())
+        fluconazol = get_value("fluconazol").split("-")[0].strip()
+        print(fluconazol)
         #voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = code_ats(get_value("fluconazol").split("-")[0].strip()), code_ats(get_value("voriconazol").split("-")[0].strip()), code_ats(get_value("caspofungina").split("-")[0].strip()), code_ats(get_value("micafungina").split("-")[0].strip()), code_ats(get_value("anfotericina_b").split("-")[0].strip()), code_ats(get_value("fluocitosina").split("-")[0].strip())
         return {
             "resultado": 1,
@@ -293,7 +294,7 @@ def extract_fields_positive(report_text, df_name):
             "outro_microorganismo": other_micro,
             "apresenta_mcim": code_mcim,
             "apresenta_ecim": code_ecim,
-            "fluconazol": fluconazol,
+            #"fluconazol": fluconazol,
             #"voriconazol": voriconazol,
             #"caspofungina": caspofungina,
             #"micafungina": micafungina,
