@@ -284,12 +284,6 @@ def extract_fields_positive(report_text, df_name):
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
         fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = code_ats(get_value("fluconazol").split("-")[0].strip()), code_ats(get_value("voriconazol").split("-")[0].strip()),
         code_ats(get_value("caspofungina").split("-")[0].strip()), code_ats(get_value("micafungina").split("-")[0].strip()), code_ats(get_value("anfotericina_b").split("-")[0].strip()), code_ats(get_value("fluocitosina").split("-")[0].strip())
-        if any(x != "" for x in [fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina]):
-            para_leveduras = 1
-            gram_positivo = 2
-            gram_negativo_gn_ambulat_rio = 2
-            gram_negativo_gn_hospitala = 2
-            antibiograma_realizado = 1
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -297,11 +291,6 @@ def extract_fields_positive(report_text, df_name):
             "outro_microorganismo": other_micro,
             "apresenta_mcim": code_mcim,
             "apresenta_ecim": code_ecim,
-            "para_leveduras": para_leveduras,
-            "gram_positivo": gram_positivo,
-            "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio,
-            "gram_negativo_gn_hospitala": gram_negativo_gn_hospitala,
-            "antibiograma_realizado": antibiograma_realizado,
             "fluconazol": fluconazol,
             "voriconazol": voriconazol,
             "caspofungina": caspofungina,
