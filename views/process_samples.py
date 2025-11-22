@@ -236,7 +236,24 @@ def extract_fields_positive(report_text, df_name):
                 value = line.split(":", 1)[-1].strip()
                 return value
             return ""
-        return {"qual_microorganismo": get_value("ISOLADO1 :")}
+        def classify_microorganism(value):
+            val_lower = value.lower().strip()
+            if val_lower in microorganisms_gnb:
+                return 1
+            elif val_lower in microorganisms_gpc:
+                return 0
+            elif val_lower in microorganisms_gpb:
+                return 3
+            elif val_lower in microorganisms_fy:
+                return 2
+            else:
+                return ""
+        iso1 = get_value("ISOLADO1 :")
+        return {
+            "resultado": 1,
+            "qual_microorganismo": iso1,
+            "qual_o_tipo_de_microorganismo": classify_microorganism(iso1)
+        }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
     def get_value(label):

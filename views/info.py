@@ -65,7 +65,7 @@ with tab3:
     render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", "microorganism_gpb", ":material/counter_3:")
     render_editor("Levedura", "microorganisms_fy", "yellow", "microorganism_fy", ":material/counter_4:")
 with tab4:
-    with st.expander("Cores", icon=":material/colors:", expanded=True):
+    with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
                            "Paciente em ambulatório. Não é necessário verificação.")
         render_legend_item("Vermelho", ":material/skull:", "red",
@@ -74,6 +74,18 @@ with tab4:
                            "Valor dependente. É necessário verificação e preenchimento manual.")
         render_legend_item("Vazio", ":material/format_text_overflow:", "blue",
                            "Valor não encontrado. É necessário verificação e preenchimento manual.")
-    with st.expander("Desfecho", icon=":material/health_cross:", expanded=True):
-        df = pd.DataFrame({"Situação": ["Internação", "Óbito", "Alta", "Transferência"], "Código": [1, 2, 3, 4]})
-        st.table(df.set_index("Situação"))
+    with st.expander("Desfecho", icon=":material/health_cross:"):
+        df1 = pd.DataFrame({"Situação": ["Internação", "Óbito", "Alta", "Transferência"], "Código": [1, 2, 3, 4]})
+        st.table(df1.set_index("Situação"))
+    with st.expander("Cultura de Vigilância", icon=":material/health_cross:"):
+        st.badge("Se positivo", icon=":material/check:", color="green")
+        df2 = pd.DataFrame({"Tipo": ["Carbapenêmico", "Vancomicina", "Carbapenêmico e Vancomicina"], "Código": [1, 2, 4]})
+        st.table(df2.set_index("Tipo"))
+        st.badge("Se negativo", icon=":material/block:", color="red")
+        df3 = pd.DataFrame({"Tipo": ["Carbapenêmico", "Vancomicina", "Carbapenêmico e Vancomicina"], "Código": [1, 2, 3]})
+        st.table(df3.set_index("Tipo"))
+    with st.expander("Baciloscopia", icon=":material/health_cross:"):
+        st.badge("Se positivo", icon=":material/check:", color="green")
+        df4 = pd.DataFrame({"Tipo": ["(+++)", "(++)", "(+)", "Presença abaixo de..."], "Código": [4, 3, 2, 1]})
+        st.table(df4.set_index("Tipo"))
+
