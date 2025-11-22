@@ -255,14 +255,6 @@ def extract_fields_positive(report_text, df_name):
                     if any(first_word in item.lower() for item in dic):
                         return code
             return ""
-        def code_inactivation(value):
-            if value == "positivo":
-                return 1
-            elif value == "negativo":
-                return 2
-            return
-        result_mcim = code_inactivation(get_value("Inativação de Carbapenêmico modificado):").split("|")[0].strip().lower())
-        result_ecim = code_inactivation(get_value("(eCIM-EDTA):").split("|")[0].strip().lower())
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
@@ -272,8 +264,6 @@ def extract_fields_positive(report_text, df_name):
             "qual_microorganismo": micro_final,
             "qual_o_tipo_de_microorganismo": type_micro,
             "outro_microorganismo": outro_micro_valor,
-            "apresenta_mcim": result_mcim,
-            "apresenta_ecim": result_ecim
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
