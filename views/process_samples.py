@@ -7,6 +7,7 @@ import pdfplumber
 import tempfile
 from pypdf import PdfReader, PdfWriter
 from datetime import datetime, timedelta
+from rapidfuzz import fuzz
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
@@ -237,14 +238,20 @@ def extract_fields_positive(report_text, df_name):
                 return value
             return ""
         def classify_microorganism(value):
-            val_lower = value.lower().strip()
-            if val_lower in microorganisms_gnb:
+            val_lower = value.lower()
+            def fuzzy_match(dic):
+                for item in dic:
+                    score = fuzz.token_set_ratio(val_lower, item.lower())
+                    if score >= 80:
+                        return True
+                return False
+            if fuzzy_match(microorganisms_gnb):
                 return 1
-            elif val_lower in microorganisms_gpc:
+            elif fuzzy_match(microorganisms_gpc):
                 return 0
-            elif val_lower in microorganisms_gpb:
+            elif fuzzy_match(microorganisms_gpb):
                 return 3
-            elif val_lower in microorganisms_fy:
+            elif fuzzy_match(microorganisms_fy):
                 return 2
             else:
                 return ""
