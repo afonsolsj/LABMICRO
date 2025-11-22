@@ -282,8 +282,8 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
-        fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = get_value("fluconazol").split("-")[0].strip(), get_value("voriconazol").split("-")[0].strip(),
-        get_value("caspofungina").split("-")[0].strip(), get_value("micafungina").split("-")[0].strip(), get_value("anfotericina_b").split("-")[0].strip(), get_value("fluocitosina").split("-")[0].strip()
+        fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina = code_ats(get_value("fluconazol").split("-")[0].strip()), code_ats(get_value("voriconazol").split("-")[0].strip()),
+        code_ats(get_value("caspofungina").split("-")[0].strip()), code_ats(get_value("micafungina").split("-")[0].strip()), code_ats(get_value("anfotericina_b").split("-")[0].strip()), code_ats(get_value("fluocitosina").split("-")[0].strip())
         if any(x != "" for x in [fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina]):
             para_leveduras = 1
             gram_positivo = 2
