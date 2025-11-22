@@ -284,10 +284,14 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
-        if any(x in report_text.lower() for x in ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]):
+        if any(x in report_text.lower() for x in ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]) and type_micro == 2:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = code_ast(get_value("fluconazol").split("-")[0].strip()), code_ast(get_value("voriconazol").split("-")[0].strip()), code_ast(get_value("caspofungina").split("-")[0].strip()), code_ast(get_value("micafungina").split("-")[0].strip()), code_ast(get_value("anfotericina b").split("-")[0].strip()), code_ast(get_value("fluocitosina").split("-")[0].strip()), 1
         else:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = "", "", "", "", "", "", 2
+        if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprima", "nitrofurantoina"]) and type_micro == 0:
+            benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = code_ast(get_value("benzilpenicilina").split("-")[0].strip()), code_ast(get_value("ampicilina").split("-")[0].strip()), code_ast(get_value("oxacilina").split("-")[0].strip()), code_ast(get_value("ceftarolina").split("-")[0].strip()), 4, code_ast(get_value("estreptomicina").split("-")[0].strip()), code_ast(get_value("gentamicina").split("-")[0].strip()), code_ast(get_value("levofloxacina").split("-")[0].strip()), code_ast(get_value("eritromicina").split("-")[0].strip()), code_ast(get_value("clindamicina").split("-")[0].strip()), code_ast(get_value("linezolida").split("-")[0].strip()), code_ast(get_value("daptomicina").split("-")[0].strip()), code_ast(get_value("teicoplanina").split("-")[0].strip()), code_ast(get_value("vancomicina").split("-")[0].strip()), code_ast(get_value("tigeciclina").split("-")[0].strip()), code_ast(get_value("rifampicina").split("-")[0].strip()), code_ast(get_value("sulfametaxazol").split("-")[0].strip()), code_ast(get_value("nitrofurantoina").split("-")[0].strip()), 1
+        else:
+            benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 2
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -301,7 +305,26 @@ def extract_fields_positive(report_text, df_name):
             "micafungina": micafungina,
             "anfotericina_b": anfotericina_b,
             "fluocitosina": fluocitosina,
-            "para_leveduras": para_leveduras
+            "para_leveduras": para_leveduras,
+            "benzilpenicilina": benzilpenicilina,
+            "ampicilina_gram_positivo": ampicilina_gram_positivo,
+            "oxacilina": oxacilina,
+            "ceftarolina_pneumonia": ceftarolina_pneumonia,
+            "ceftarolina_outra": ceftarolina_outra,
+            "estreptomicina": estreptomicina,
+            "gentamicina_gram_positivo": gentamicina_gram_positivo,
+            "levofloxacina_gram_positivo": levofloxacina_gram_positivo,
+            "eritromicina": eritromicina,
+            "clindamicina": clindamicina,
+            "linezolid": linezolid,
+            "daptomicina": daptomicina,
+            "teicoplanina": teicoplanina,
+            "vancomicina": vancomicina,
+            "tigeciclina_gram_positivo": tigeciclina_gram_positivo,
+            "rifampicina": rifampicina,
+            "trimetoprima_sulfametaxazol_gram_positivo": trimetoprima_sulfametaxazol_gram_positivo,
+            "nitrofurantoina_gram_positivo": nitrofurantoina_gram_positivo,
+            "gram_positivo": gram_positivo,
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
