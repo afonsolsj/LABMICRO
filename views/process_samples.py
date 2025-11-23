@@ -529,11 +529,11 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Função para filtrar pedidos
-def filter_blood_general(df):
+def filter_blood_general(df_general):
     df_general["pedido_inicial"] = df_general["n_mero_do_pedido"].astype(str).str[:-2]
     resultados = []
-    df_sangue = df_general[df_general["qual_tipo_de_material"].str.lower() == "sangue"]
-    df_outros = df_general[df_general["qual_tipo_de_material"].str.lower() != "sangue"]
+    df_sangue = df_general[df_general["qual_tipo_de_material"].astype(str).str.contains("5")]
+    df_outros = df_general[~df_general["qual_tipo_de_material"].astype(str).str.contains("5")]
     for pedido, grupo in df_sangue.groupby("pedido_inicial"):
         positivas = grupo[grupo["qual_microorganismo"].notna() & (grupo["qual_microorganismo"] != "")]
         negativas = grupo[grupo["qual_microorganismo"].isna() | (grupo["qual_microorganismo"] == "")]
