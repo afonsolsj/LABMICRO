@@ -530,7 +530,7 @@ def process_smear(report_text, row_idx=None):
 
 # Função para filtrar pedido
 def filter_blood_general(df):
-# 1. Criar coluna pedido_inicial removendo os 2 últimos dígitos
+    # 1. Criar coluna pedido_inicial removendo os 2 últimos dígitos
     df_general["pedido_inicial"] = df_general["n_mero_do_pedido"].astype(str).str[:-2]
 
     resultados = []
@@ -542,26 +542,37 @@ def filter_blood_general(df):
     # 3. Processar pedidos de sangue
     for pedido, grupo in df_sangue.groupby("pedido_inicial"):
 
-        positivas = grupo[grupo["qual_microorganismo"].notna() & (grupo["qual_microorganismo"] != "")]
-        negativas = grupo[grupo["qual_microorganismo"].isna() | (grupo["qual_microorganismo"] == "")]
+        positivas = grupo[
+            grupo["qual_microorganismo"].notna()
+            & (grupo["qual_microorganismo"] != "")
+        ]
+
+        negativas = grupo[
+            grupo["qual_microorganismo"].isna()
+            | (grupo["qual_microorganismo"] == "")
+        ]
 
         # Caso com uma única amostra
         if len(grupo) == 1:
-            resultados.append(grupo.iloc[0])
+            resultados.append(grupo.iloc[0].to_dict())
             continue
 
-        # Caso tenha positivas
         if len(positivas) > 0:
+            # 1 registro por microrganismo
             positivas_unicas = positivas.drop_duplicates(subset=["qual_microorganismo"])
-            resultados.extend(positivas_unicas.to_dict("records"))
+            for _, row in positivas_unicas.iterrows():
+                resultados.append(row.to_dict())
 
         else:
-            # Todas negativas → pega uma
-            resultados.append(negativas.iloc[0])
+            # Todas negativas → pegar apenas 1
+            resultados.append(negativas.iloc[0].to_dict())
 
     # 4. Juntar sangue filtrado + materiais normais
     df_final = pd.DataFrame(resultados)
-    df_final = pd.concat([df_final, df_outros], ignore_index=True)
+
+    # adicionar df_outros sem mexer na ordem
+    if len(df_outros) > 0:
+        df_final = pd.concat([df_final, df_outros], ignore_index=True)
 
     # 5. Remover coluna pedido_inicial antes de retornar
     if "pedido_inicial" in df_final.columns:
