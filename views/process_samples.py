@@ -304,6 +304,14 @@ def extract_fields_positive(report_text, df_name):
             ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio = result_ast(get_value("ampicilina")), result_ast(get_value("amoxicilina/ácido clavulânico (urine)")), result_ast(get_value("piperacilina/tazobactam")), result_ast(get_value("cefalexina")), result_ast(get_value("cefalotina")), result_ast(get_value("cefuroxima")), result_ast(get_value("cefuroxima axetil")), result_ast(get_value("ceftriaxona")), result_ast(get_value("cefepima")), result_ast(get_value("ertapenem")), result_ast(get_value("meropenem")), result_ast(get_value("amicacina")), result_ast(get_value("gentamicina")), result_ast(get_value("ácido nalidíxico")), result_ast(get_value("ciprofloxacino")), result_ast(get_value("norfloxacino")), result_ast(get_value("nitrofurantoina")), result_ast(get_value("trimetoprim/sulfametoxazol")), result_ast(get_value("levofloxacina")), 1
         else:
             ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 2
+        if gram_negativo_gn_ambulat_rio == 2 and gram_negativo_gn_hospitala == 2 and gram_positivo == 2 and para_leveduras == 2:
+            gram_negativo_gn_ambulat_rio = "" 
+            gram_negativo_gn_hospitala = "" 
+            gram_positivo = "" 
+            para_leveduras = ""
+            antibiograma_realizado = 2
+        else:
+            antibiograma_realizado = 1
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -382,7 +390,8 @@ def extract_fields_positive(report_text, df_name):
             "nitrofurantoina": nitrofurantoina,
             "trimetoprima_sulfametoxazol": trimetoprima_sulfametoxazol,
             "levofloxacina": levofloxacina,
-            "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio
+            "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio,
+            "antibiograma_realizado": antibiograma_realizado
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
