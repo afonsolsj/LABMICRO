@@ -530,29 +530,48 @@ def process_smear(report_text, row_idx=None):
 def filter_blood_general(df):
     if df.empty:
         return df
-    df_outros = df[df["qual_tipo_de_material"].str.upper() != "SANGUE"].copy()
-    df_sangue = df[df["qual_tipo_de_material"].str.upper() == "SANGUE"].copy()
+
+    # Filtra apenas materiais de sangue (se essa for sua regra)
+    if "qual_tipo_de_material" in df.columns:
+        df_outros = df[df["qual_tipo_de_material"].str.upper() != "SANGUE"].copy()
+        df_sangue = df[df["qual_tipo_de_material"].str.upper() == "SANGUE"].copy()
+    else:
+        # Se não existe essa coluna, tratar tudo como amostra principal
+        df_outros = pd.DataFrame(columns=df.columns)
+        df_sangue = df.copy()
+
     if df_sangue.empty:
         return df
-    df_sangue['pedido_base'] = df_sangue['n_mero_do_pedido'].apply(lambda x: str(x)[:-2] if pd.notna(x) and len(str(x)) > 2 else str(x))
+
+    # 🔵 Criar pedido_base removendo os 2 últimos dígitos
+    df_sangue['pedido_base'] = df_sangue['n_mero_do_pedido'].astype(str).str[:-2]
+
     rows_finais = []
     for pedido, grupo in df_sangue.groupby('pedido_base'):
         positivos = grupo[grupo['resultado'] == 1]
         negativos = grupo[grupo['resultado'] != 1]
+
+        # ✔ Se houver positivo → mantém 1 por microorganismo
         if not positivos.empty:
-            positivos_unicos = positivos.drop_duplicates(subset=['qual_microorganismo'])
+            positivos_unicos = positivos.drop_duplicates(subset=['microorganismo'])
             rows_finais.append(positivos_unicos)
+
+        # ✔ Se não houver positivos → mantém apenas 1 negativo
         else:
             if not negativos.empty:
                 rows_finais.append(negativos.iloc[[0]])
-    if rows_finais:
-        df_sangue_filtrado = pd.concat(rows_finais)
-    else:
-        df_sangue_filtrado = pd.DataFrame(columns=df.columns)
-    if 'pedido_base' in df_sangue_filtrado.columns:
-        df_sangue_filtrado = df_sangue_filtrado.drop(columns=['pedido_base'])
+
+    # Resultado consolidado
+    df_sangue_filtrado = pd.concat(rows_finais, ignore_index=True)
+
+    # Remover coluna auxiliar
+    df_sangue_filtrado = df_sangue_filtrado.drop(columns=["pedido_base"])
+
+    # Juntar com os demais materiais
     df_final = pd.concat([df_outros, df_sangue_filtrado], ignore_index=True)
+
     return df_final
+
 
 # Funções para tratamento de PDFs
 def split_pdf_in_chunks(pdf_file, max_pages=400):
