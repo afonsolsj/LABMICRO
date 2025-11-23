@@ -529,7 +529,8 @@ def extract_fields(report_text, df_name):
         "dados_microbiologia_complete": 2,
         "data_agora": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
-        "ver_resultado_em": check_see_result(report_lower)
+        "check_ver_resultado_em": check_see_result(report_lower),
+        "ver_resultado_em_pedido": get_value("ver resultado do antibiograma no")
     }
 
 # Funções de processamento
@@ -613,13 +614,13 @@ def filter_blood_general(df_general):
         adicionados = set()
         for _, row in positivas.iterrows():
             micro = row["qual_microorganismo"]
-            ver_res = str(row.get("ver_resultado_em", "")).strip().lower()
+            ver_res = str(row.get("check_ver_resultado_em", "")).strip().lower()
             if micro not in adicionados and ver_res == "não":
                 resultados.append(row.to_dict())
                 adicionados.add(micro)
         for _, row in positivas.iterrows():
             micro = row["qual_microorganismo"]
-            ver_res = str(row.get("ver_resultado_em", "")).strip().lower()
+            ver_res = str(row.get("check_ver_resultado_em", "")).strip().lower()
             if micro not in adicionados and ver_res == "sim":
                 resultados.append(row.to_dict())
                 adicionados.add(micro)
@@ -630,7 +631,7 @@ def filter_blood_general(df_general):
         df_final = pd.concat([df_final, df_outros], ignore_index=True)
     if len(df_vazio) > 0:
         df_final = pd.concat([df_final, df_vazio], ignore_index=True)
-    df_final.drop(columns=["pedido_inicial", "ver_resultado_em"], inplace=True, errors="ignore")
+    df_final.drop(columns=["pedido_inicial"], inplace=True, errors="ignore")
     return df_final
 
 # Funções para tratamento de PDFs
