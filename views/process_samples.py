@@ -615,13 +615,13 @@ def filter_blood_general(df_general):
         for _, row in positivas.iterrows():
             micro = row["qual_microorganismo"]
             ver_res = row.get("ver_resultado_em", "não")
-            if micro not in adicionados and ver_res == "sim":
+            if micro not in adicionados and ver_res != "sim":
                 resultados.append(row.to_dict())
                 adicionados.add(micro)
         for _, row in positivas.iterrows():
             micro = row["qual_microorganismo"]
             ver_res = row.get("ver_resultado_em", "não")
-            if micro not in adicionados and ver_res != "sim":
+            if micro not in adicionados and ver_res == "sim":
                 resultados.append(row.to_dict())
                 adicionados.add(micro)
         if len(adicionados) == 0 and len(negativas) > 0:
