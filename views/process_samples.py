@@ -528,51 +528,46 @@ def process_smear(report_text, row_idx=None):
                 if df_smear.at[row_idx, key] == "" or pd.isna(df_smear.at[row_idx, key]):
                     df_smear.at[row_idx, key] = val
 
+# Função para filtrar pedido
 def filter_blood_general(df):
-    if df.empty:
-        return df
+# 1. Criar coluna pedido_inicial removendo os 2 últimos dígitos
+    df_general["pedido_inicial"] = df_general["n_mero_do_pedido"].astype(str).str[:-2]
 
-    # Filtra apenas materiais de sangue (se essa for sua regra)
-    if "qual_tipo_de_material" in df.columns:
-        df_outros = df[df["qual_tipo_de_material"].str.upper() != "SANGUE"].copy()
-        df_sangue = df[df["qual_tipo_de_material"].str.upper() == "SANGUE"].copy()
-    else:
-        # Se não existe essa coluna, tratar tudo como amostra principal
-        df_outros = pd.DataFrame(columns=df.columns)
-        df_sangue = df.copy()
+    resultados = []
 
-    if df_sangue.empty:
-        return df
+    # 2. Separar sangue e não-sangue
+    df_sangue = df_general[df_general["qual_tipo_de_material"].str.lower() == "sangue"]
+    df_outros = df_general[df_general["qual_tipo_de_material"].str.lower() != "sangue"]
 
-    # 🔵 Criar pedido_base removendo os 2 últimos dígitos
-    df_sangue['pedido_base'] = df_sangue['n_mero_do_pedido'].astype(str).str[:-2]
+    # 3. Processar pedidos de sangue
+    for pedido, grupo in df_sangue.groupby("pedido_inicial"):
 
-    rows_finais = []
-    for pedido, grupo in df_sangue.groupby('pedido_base'):
-        positivos = grupo[grupo['resultado'] == 1]
-        negativos = grupo[grupo['resultado'] != 1]
+        positivas = grupo[grupo["qual_microorganismo"].notna() & (grupo["qual_microorganismo"] != "")]
+        negativas = grupo[grupo["qual_microorganismo"].isna() | (grupo["qual_microorganismo"] == "")]
 
-        # ✔ Se houver positivo → mantém 1 por microorganismo
-        if not positivos.empty:
-            positivos_unicos = positivos.drop_duplicates(subset=['qual_microorganismo'])
-            rows_finais.append(positivos_unicos)
+        # Caso com uma única amostra
+        if len(grupo) == 1:
+            resultados.append(grupo.iloc[0])
+            continue
 
-        # ✔ Se não houver positivos → mantém apenas 1 negativo
+        # Caso tenha positivas
+        if len(positivas) > 0:
+            positivas_unicas = positivas.drop_duplicates(subset=["qual_microorganismo"])
+            resultados.extend(positivas_unicas.to_dict("records"))
+
         else:
-            if not negativos.empty:
-                rows_finais.append(negativos.iloc[[0]])
+            # Todas negativas → pega uma
+            resultados.append(negativas.iloc[0])
 
-    # Resultado consolidado
-    df_sangue_filtrado = pd.concat(rows_finais, ignore_index=True)
+    # 4. Juntar sangue filtrado + materiais normais
+    df_final = pd.DataFrame(resultados)
+    df_final = pd.concat([df_final, df_outros], ignore_index=True)
 
-    # Remover coluna auxiliar
-    df_sangue_filtrado = df_sangue_filtrado.drop(columns=["pedido_base"])
-
-    # Juntar com os demais materiais
-    df_final = pd.concat([df_outros, df_sangue_filtrado], ignore_index=True)
+    # 5. Remover coluna pedido_inicial antes de retornar
+    if "pedido_inicial" in df_final.columns:
+        df_final.drop(columns=["pedido_inicial"], inplace=True)
 
     return df_final
-
 
 # Funções para tratamento de PDFs
 def split_pdf_in_chunks(pdf_file, max_pages=400):
