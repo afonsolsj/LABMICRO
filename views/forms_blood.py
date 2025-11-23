@@ -292,6 +292,7 @@ def extract_fields_positive(report_text, df_name):
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = result_ast((get_value("fluconazol"))), result_ast((get_value("voriconazol"))), result_ast((get_value("caspofungina"))), result_ast((get_value("micafungina"))), result_ast((get_value("anfotericina b"))), result_ast((get_value("fluocitosina"))), 1
         else:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = "", "", "", "", "", "", 2
+
         if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprima", "nitrofurantoina"]) and type_micro == 0:
             benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = result_ast(get_value("benzilpenicilina")), result_ast(get_value("ampicilina (iv)")), result_ast(get_value("oxacilina")), result_ast(get_value("ceftarolina")), 4, result_ast(get_value("estreptomicina")), result_ast(get_value("gentamicina")), result_ast(get_value("levofloxacina")), result_ast(get_value("eritromicina")), result_ast(get_value("clindamicina")), result_ast(get_value("linezolid")), result_ast(get_value("daptomicina")), result_ast(get_value("teicoplanina")), result_ast(get_value("vancomicina")), result_ast(get_value("tigeciclina")), result_ast(get_value("rifampicina")), result_ast(get_value("trimetoprima")), result_ast(get_value("nitrofurantoina")), 1
         else:
@@ -527,32 +528,6 @@ def process_smear(report_text, row_idx=None):
             if key in df_smear.columns:
                 if df_smear.at[row_idx, key] == "" or pd.isna(df_smear.at[row_idx, key]):
                     df_smear.at[row_idx, key] = val
-def filter_blood_general(df):
-    if df.empty:
-        return df
-    df_outros = df[df["qual_tipo_de_material"].str.upper() != "SANGUE"].copy()
-    df_sangue = df[df["qual_tipo_de_material"].str.upper() == "SANGUE"].copy()
-    if df_sangue.empty:
-        return df
-    df_sangue['pedido_base'] = df_sangue['n_mero_do_pedido'].apply(lambda x: str(x)[:-2] if pd.notna(x) and len(str(x)) > 2 else str(x))
-    rows_finais = []
-    for pedido, grupo in df_sangue.groupby('pedido_base'):
-        positivos = grupo[grupo['resultado'] == 1]
-        negativos = grupo[grupo['resultado'] != 1]
-        if not positivos.empty:
-            positivos_unicos = positivos.drop_duplicates(subset=['qual_microorganismo'])
-            rows_finais.append(positivos_unicos)
-        else:
-            if not negativos.empty:
-                rows_finais.append(negativos.iloc[[0]])
-    if rows_finais:
-        df_sangue_filtrado = pd.concat(rows_finais)
-    else:
-        df_sangue_filtrado = pd.DataFrame(columns=df.columns)
-    if 'pedido_base' in df_sangue_filtrado.columns:
-        df_sangue_filtrado = df_sangue_filtrado.drop(columns=['pedido_base'])
-    df_final = pd.concat([df_outros, df_sangue_filtrado], ignore_index=True)
-    return df_final
 
 # Funções para tratamento de PDFs
 def split_pdf_in_chunks(pdf_file, max_pages=400):
@@ -648,7 +623,6 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                         text = extract_text_pdf(part)
                         process_text_pdf(text)
                     st.success(f"Parte {idx} concluída!")
-        df_general = filter_blood_general(df_general)
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
