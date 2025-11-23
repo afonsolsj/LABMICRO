@@ -45,7 +45,8 @@ def render_editor(title, path_key, color, key_suffix, icon_selected):
 
 def render_dataframe_static(title, path_key, color, icon_selected):
     st.badge(title, icon=icon_selected, color=color)
-    st.dataframe(load_csv_from_github(paths[path_key]))
+    df, _ = load_csv_from_github(paths[path_key])
+    st.dataframe(df)
 
 def render_legend_item(badge_text, icon, color, description):
     col1, col2 = st.columns([2, 8], vertical_alignment="center")
