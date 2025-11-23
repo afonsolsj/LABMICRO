@@ -227,6 +227,11 @@ def extract_fields_positive(report_text, df_name):
         return {"resultado": 1,
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
+        def check_ver_resultado(report_lower):
+            if "ver resultado do antibiograma no" in report_lower.lower():
+                return "sim"
+            else:
+                return "não"
         def get_value(label):
             idx = report_lower.find(label.lower())
             if idx != -1:
@@ -288,6 +293,7 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
+        ver_resultado_em = check_ver_resultado(report_lower)
         if any(x in report_text.lower() for x in ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]) and type_micro == 2:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = result_ast((get_value("fluconazol"))), result_ast((get_value("voriconazol"))), result_ast((get_value("caspofungina"))), result_ast((get_value("micafungina"))), result_ast((get_value("anfotericina b"))), result_ast((get_value("fluocitosina"))), 1
         else:
@@ -391,7 +397,8 @@ def extract_fields_positive(report_text, df_name):
             "trimetoprima_sulfametoxazol": trimetoprima_sulfametoxazol,
             "levofloxacina": levofloxacina,
             "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio,
-            "antibiograma_realizado": antibiograma_realizado
+            "antibiograma_realizado": antibiograma_realizado,
+            "ver_resultado_em": ver_resultado_em
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -595,25 +602,36 @@ def process_smear(report_text, row_idx=None):
 def filter_blood_general(df_general):
     df_general["pedido_inicial"] = df_general["n_mero_do_pedido"].astype(str).str[:-2]
     resultados = []
-    df_sangue = df_general[df_general["qual_tipo_de_material"].astype(str).str.contains("5")]
-    df_outros = df_general[~df_general["qual_tipo_de_material"].astype(str).str.contains("5")]
+    df_vazio = df_general[df_general["n_mero_do_pedido"].astype(str) == ""]
+    df_sangue = df_general[df_general["qual_tipo_de_material"].astype(str).str.contains("5") & (df_general["n_mero_do_pedido"].astype(str) != "")]
+    df_outros = df_general[~df_general["qual_tipo_de_material"].astype(str).str.contains("5") & (df_general["n_mero_do_pedido"].astype(str) != "")]
     for pedido, grupo in df_sangue.groupby("pedido_inicial"):
         positivas = grupo[grupo["qual_microorganismo"].notna() & (grupo["qual_microorganismo"] != "")]
         negativas = grupo[grupo["qual_microorganismo"].isna() | (grupo["qual_microorganismo"] == "")]
         if len(grupo) == 1:
             resultados.append(grupo.iloc[0].to_dict())
             continue
-        if len(positivas) > 0:
-            positivas_unicas = positivas.drop_duplicates(subset=["qual_microorganismo"])
-            for _, row in positivas_unicas.iterrows():
+        adicionados = set()
+        for _, row in positivas.iterrows():
+            micro = row["qual_microorganismo"]
+            ver_res = row.get("ver_resultado_em", "não")
+            if micro not in adicionados and ver_res == "sim":
                 resultados.append(row.to_dict())
-        else:
+                adicionados.add(micro)
+        for _, row in positivas.iterrows():
+            micro = row["qual_microorganismo"]
+            ver_res = row.get("ver_resultado_em", "não")
+            if micro not in adicionados and ver_res != "sim":
+                resultados.append(row.to_dict())
+                adicionados.add(micro)
+        if len(adicionados) == 0 and len(negativas) > 0:
             resultados.append(negativas.iloc[0].to_dict())
     df_final = pd.DataFrame(resultados)
     if len(df_outros) > 0:
         df_final = pd.concat([df_final, df_outros], ignore_index=True)
-    if "pedido_inicial" in df_final.columns:
-        df_final.drop(columns=["pedido_inicial"], inplace=True)
+    if len(df_vazio) > 0:
+        df_final = pd.concat([df_final, df_vazio], ignore_index=True)
+    df_final.drop(columns=["pedido_inicial", "ver_resultado_em"], inplace=True, errors="ignore")
     return df_final
 
 # Funções para tratamento de PDFs
