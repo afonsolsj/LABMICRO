@@ -527,6 +527,7 @@ def process_smear(report_text, row_idx=None):
             if key in df_smear.columns:
                 if df_smear.at[row_idx, key] == "" or pd.isna(df_smear.at[row_idx, key]):
                     df_smear.at[row_idx, key] = val
+
 def filter_blood_general(df):
     if df.empty:
         return df
@@ -553,7 +554,7 @@ def filter_blood_general(df):
 
         # ✔ Se houver positivo → mantém 1 por microorganismo
         if not positivos.empty:
-            positivos_unicos = positivos.drop_duplicates(subset=['microorganismo'])
+            positivos_unicos = positivos.drop_duplicates(subset=['qual_microorganismo'])
             rows_finais.append(positivos_unicos)
 
         # ✔ Se não houver positivos → mantém apenas 1 negativo
