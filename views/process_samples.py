@@ -292,10 +292,18 @@ def extract_fields_positive(report_text, df_name):
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = result_ast((get_value("fluconazol"))), result_ast((get_value("voriconazol"))), result_ast((get_value("caspofungina"))), result_ast((get_value("micafungina"))), result_ast((get_value("anfotericina b"))), result_ast((get_value("fluocitosina"))), 1
         else:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = "", "", "", "", "", "", 2
-        if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprima", "nitrofurantoina"]) and type_micro == 0:
-            benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = result_ast(get_value("benzilpenicilina")), result_ast(get_value("ampicilina (iv)")), result_ast(get_value("oxacilina")), result_ast(get_value("ceftarolina")), 4, result_ast(get_value("estreptomicina")), result_ast(get_value("gentamicina")), result_ast(get_value("levofloxacina")), result_ast(get_value("eritromicina")), result_ast(get_value("clindamicina")), result_ast(get_value("linezolid")), result_ast(get_value("daptomicina")), result_ast(get_value("teicoplanina")), result_ast(get_value("vancomicina")), result_ast(get_value("tigeciclina")), result_ast(get_value("rifampicina")), result_ast(get_value("trimetoprima")), result_ast(get_value("nitrofurantoina")), 1
+        if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]) and type_micro == 0:
+            benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = result_ast(get_value("benzilpenicilina")), result_ast(get_value("ampicilina (iv)")), result_ast(get_value("oxacilina")), result_ast(get_value("ceftarolina")), 4, result_ast(get_value("estreptomicina")), result_ast(get_value("gentamicina")), result_ast(get_value("levofloxacina")), result_ast(get_value("eritromicina")), result_ast(get_value("clindamicina")), result_ast(get_value("linezolid")), result_ast(get_value("daptomicina")), result_ast(get_value("teicoplanina")), result_ast(get_value("vancomicina")), result_ast(get_value("tigeciclina")), result_ast(get_value("rifampicina")), result_ast(get_value("trimetoprim/sulfametoxazol")), result_ast(get_value("nitrofurantoina")), 1
         else:
             benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 2
+        if "ceftazidima/avibactam" in report_lower and type_micro == 1:
+            amoxicilina,aztreonam,cefiderocol,ceftalozone_tazobactam,ceftazidime_avibactam,ampicilina,ampicilina_sulbactam,piperacilina_tazobactam,cefoxitina,cefuroxima,ceftazidima,cefepima,ertapenem,imipenem,imipenem_relebactam,gn_levofloxacina,meropenem,meropenem_vaborbactam,amicacina,gentamicina,ciprofloxacina,tigeciclina,trimetoprim_sulfametozol,colistina,ceftriaxona,gram_negativo_gn_hospitala = result_ast(get_value("amoxicilina")), result_ast(get_value("aztreonam")), result_ast(get_value("cefiderocol")), result_ast(get_value("ceftolozano/tazobactam")), result_ast(get_value("ceftazidima_avibactam")), result_ast(get_value("ampicilina")), result_ast(get_value("ampicilina/sulbactam")), result_ast(get_value("piperacilina/tazobactam")), result_ast(get_value("cefoxitina")), result_ast(get_value("cefuroxima")), result_ast(get_value("ceftazidima")), result_ast(get_value("cefepima")), result_ast(get_value("ertapenem")), result_ast(get_value("imipenem")), result_ast(get_value("imipenem/relebactam")), result_ast(get_value("levofloxacina")), result_ast(get_value("meropenem")), result_ast(get_value("meropenem/vaborbactam")), result_ast(get_value("amicacina")), result_ast(get_value("gentamicina")), result_ast(get_value("ciprofloxacina")), result_ast(get_value("tigeciclina")), result_ast(get_value("trimetoprim/sulfametozol")), result_ast(get_value("polimixina b")), result_ast(get_value("ceftriaxona")), 1
+        else:
+            amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, gram_negativo_gn_hospitala = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 2
+        if "ceftazidima/avibactam" not in report_lower and type_micro == 1:
+            ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio = result_ast(get_value("ampicilina")), result_ast(get_value("amoxicilina/ácido clavulânico (urine)")), result_ast(get_value("piperacilina/tazobactam")), result_ast(get_value("cefalexina")), result_ast(get_value("cefalotina")), result_ast(get_value("cefuroxima")), result_ast(get_value("cefuroxima axetil")), result_ast(get_value("ceftriaxona")), result_ast(get_value("cefepima")), result_ast(get_value("ertapenem")), result_ast(get_value("meropenem")), result_ast(get_value("amicacina")), result_ast(get_value("gentamicina")), result_ast(get_value("ácido nalidíxico")), result_ast(get_value("ciprofloxacino")), result_ast(get_value("norfloxacino")), result_ast(get_value("nitrofurantoina")), result_ast(get_value("trimetoprim/sulfametoxazol")), result_ast(get_value("levofloxacina")), 1
+        else:
+            ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 2
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -329,6 +337,52 @@ def extract_fields_positive(report_text, df_name):
             "trimetoprima_sulfametaxazol_gram_positivo": trimetoprima_sulfametaxazol_gram_positivo,
             "nitrofurantoina_gram_positivo": nitrofurantoina_gram_positivo,
             "gram_positivo": gram_positivo,
+            "amoxicilina": amoxicilina,
+            "aztreonam": aztreonam,
+            "cefiderocol": cefiderocol,
+            "ceftalozone_tazobactam": ceftalozone_tazobactam,
+            "ceftazidime_avibactam": ceftazidime_avibactam,
+            "ampicilina": ampicilina,
+            "ampicilina_sulbactam": ampicilina_sulbactam,
+            "piperacilina_tazobactam": piperacilina_tazobactam,
+            "cefoxitina": cefoxitina,
+            "cefuroxima": cefuroxima,
+            "ceftazidima": ceftazidima,
+            "cefepima": cefepima,
+            "ertapenem": ertapenem,
+            "imipenem": imipenem,
+            "imipenem_relebactam": imipenem_relebactam,
+            "gn_levofloxacina": gn_levofloxacina,
+            "meropenem": meropenem,
+            "meropenem_vaborbactam": meropenem_vaborbactam,
+            "amicacina": amicacina,
+            "gentamicina": gentamicina,
+            "ciprofloxacina": ciprofloxacina,
+            "tigeciclina": tigeciclina,
+            "trimetoprim_sulfametozol": trimetoprim_sulfametozol,
+            "colistina": colistina,
+            "ceftriaxona": ceftriaxona,
+            "gram_negativo_gn_hospitala": gram_negativo_gn_hospitala,
+            "ampicilina_ambul": ampicilina_ambul,
+            "amoxicilina_cido_clavul_nico": amoxicilina_cido_clavul_nico,
+            "piperacilina_tazobactam_ambul": piperacilina_tazobactam_ambul,
+            "cefalexina": cefalexina,
+            "cefalotina": cefalotina,
+            "cefuroxima_ambul": cefuroxima_ambul,
+            "cefuroxima_axetil": cefuroxima_axetil,
+            "ceftriaxona_ambul": ceftriaxona_ambul,
+            "cefepima_ambul": cefepima_ambul,
+            "ertapenem_ambul": ertapenem_ambul,
+            "meropenem_ambul": meropenem_ambul,
+            "amicacina_ambul": amicacina_ambul,
+            "gentamicina_ambul": gentamicina_ambul,
+            "cido_nalidixico": cido_nalidixico,
+            "ciprofloxacino": ciprofloxacino,
+            "norfloxacino": norfloxacino,
+            "nitrofurantoina": nitrofurantoina,
+            "trimetoprima_sulfametoxazol": trimetoprima_sulfametoxazol,
+            "levofloxacina": levofloxacina,
+            "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
