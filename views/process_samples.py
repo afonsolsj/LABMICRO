@@ -630,7 +630,7 @@ def filter_blood_general(df_general):
         df_final = pd.concat([df_final, df_outros], ignore_index=True)
     if len(df_vazio) > 0:
         df_final = pd.concat([df_final, df_vazio], ignore_index=True)
-    df_final.drop(columns=["pedido_inicial"], inplace=True, errors="ignore")
+    df_final.drop(columns=["pedido_inicial", "ver_resultado_em"], inplace=True, errors="ignore")
     return df_final
 
 # Funções para tratamento de PDFs
