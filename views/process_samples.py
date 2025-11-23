@@ -227,11 +227,6 @@ def extract_fields_positive(report_text, df_name):
         return {"resultado": 1,
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
-        def check_ver_resultado(report_lower):
-            if "ver resultado do antibiograma no" in report_lower.lower():
-                return "sim"
-            else:
-                return "não"
         def get_value(label):
             idx = report_lower.find(label.lower())
             if idx != -1:
@@ -293,7 +288,6 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         mechanism = "", ""
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
-        ver_resultado_em = check_ver_resultado(report_lower)
         if any(x in report_text.lower() for x in ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]) and type_micro == 2:
             fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras = result_ast((get_value("fluconazol"))), result_ast((get_value("voriconazol"))), result_ast((get_value("caspofungina"))), result_ast((get_value("micafungina"))), result_ast((get_value("anfotericina b"))), result_ast((get_value("fluocitosina"))), 1
         else:
@@ -397,8 +391,7 @@ def extract_fields_positive(report_text, df_name):
             "trimetoprima_sulfametoxazol": trimetoprima_sulfametoxazol,
             "levofloxacina": levofloxacina,
             "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio,
-            "antibiograma_realizado": antibiograma_realizado,
-            "ver_resultado_em": ver_resultado_em
+            "antibiograma_realizado": antibiograma_realizado
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -506,7 +499,12 @@ def extract_fields(report_text, df_name):
                 return 1
             elif "feminino" in sexo_clean:
                 return 0
-        return ""    
+        return ""  
+    def check_see_result(report_lower):
+        if "ver resultado do antibiograma no" in report_lower.lower():
+            return "sim"
+        else:
+            return "não"  
     return {
         "hospital": 1,
         "hospital_de_origem": 1,
@@ -531,6 +529,7 @@ def extract_fields(report_text, df_name):
         "dados_microbiologia_complete": 2,
         "data_agora": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
+        "ver_resultado_em": check_see_result(report_lower)
     }
 
 # Funções de processamento
