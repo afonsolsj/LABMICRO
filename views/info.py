@@ -43,6 +43,10 @@ def render_editor(title, path_key, color, key_suffix, icon_selected):
         else:
             st.error("Erro ao atualizar base de dados.")
 
+def render_dataframe_static(title, path_key, color, icon_selected):
+    st.badge(title, icon=icon_selected, color=color)
+    st.dataframe(load_csv_from_github(paths[path_key]))
+
 def render_legend_item(badge_text, icon, color, description):
     col1, col2 = st.columns([2, 8], vertical_alignment="center")
     with col1:
@@ -60,10 +64,10 @@ with tab2:
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance", ":material/medication_liquid:")
     render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear",  ":material/hematology:")
 with tab3:
-    render_editor("Bacilos Gram Negativos", "microorganisms_gnb", "orange", "microorganism_gnb", ":material/counter_1:")
-    render_editor("Cocos Gram Positivos", "microorganisms_gpc", "violet", "microorganism_gpc", ":material/counter_2:")
-    render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", "microorganism_gpb", ":material/counter_3:")
-    render_editor("Levedura", "microorganisms_fy", "yellow", "microorganism_fy", ":material/counter_4:")
+    render_dataframe_static("Bacilos Gram Negativos", "microorganisms_gnb", "orange", ":material/counter_1:")
+    render_dataframe_static("Cocos Gram Positivos", "microorganisms_gpc", "violet", ":material/counter_2:")
+    render_dataframe_static("Bacilos Gram Positivos", "microorganisms_gpb", "grey", ":material/counter_3:")
+    render_dataframe_static("Levedura", "microorganisms_fy", "yellow", ":material/counter_4:")
 with tab4:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
