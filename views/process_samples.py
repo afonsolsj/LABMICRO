@@ -614,13 +614,13 @@ def filter_blood_general(df_general):
         adicionados = set()
         for _, row in positivas.iterrows():
             micro = row["qual_microorganismo"]
-            ver_res = row.get("ver_resultado_em", "não")
-            if micro not in adicionados and ver_res != "sim":
+            ver_res = str(row.get("ver_resultado_em", "")).strip().lower()
+            if micro not in adicionados and ver_res == "não":
                 resultados.append(row.to_dict())
                 adicionados.add(micro)
         for _, row in positivas.iterrows():
             micro = row["qual_microorganismo"]
-            ver_res = row.get("ver_resultado_em", "não")
+            ver_res = str(row.get("ver_resultado_em", "")).strip().lower()
             if micro not in adicionados and ver_res == "sim":
                 resultados.append(row.to_dict())
                 adicionados.add(micro)
@@ -633,7 +633,6 @@ def filter_blood_general(df_general):
         df_final = pd.concat([df_final, df_vazio], ignore_index=True)
     df_final.drop(columns=["pedido_inicial"], inplace=True, errors="ignore")
     return df_final
-
 
 # Funções para tratamento de PDFs
 def split_pdf_in_chunks(pdf_file, max_pages=400):
