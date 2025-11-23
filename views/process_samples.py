@@ -631,7 +631,21 @@ def filter_blood_general(df_general):
         df_final = pd.concat([df_final, df_outros], ignore_index=True)
     if len(df_vazio) > 0:
         df_final = pd.concat([df_final, df_vazio], ignore_index=True)
-    df_final.drop(columns=["pedido_inicial"], inplace=True, errors="ignore")
+    if "ver_resultado_em_pedido" in df_final.columns:
+        col_inicio = df_final.columns.get_loc("resultado")
+        for idx, row in df_final.iterrows():
+            valor_ref = str(row.get("ver_resultado_em_pedido", "")).strip()
+            if valor_ref == "":
+                continue
+            pedido_ref = valor_ref[:-2]
+            pedido_atual = str(row["pedido_inicial"])
+            if pedido_ref != pedido_atual:
+                linha_origem = df_final[df_final["pedido_inicial"] == pedido_ref]
+                if len(linha_origem) > 0:
+                    linha_origem = linha_origem.iloc[0]
+                    df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
+
+    df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido"], inplace=True, errors="ignore")
     return df_final
 
 # Funções para tratamento de PDFs
