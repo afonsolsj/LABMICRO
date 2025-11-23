@@ -644,7 +644,6 @@ def filter_blood_general(df_general):
                 if len(linha_origem) > 0:
                     linha_origem = linha_origem.iloc[0]
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
-
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido"], inplace=True, errors="ignore")
     return df_final
 
