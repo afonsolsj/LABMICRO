@@ -255,7 +255,7 @@ def extract_fields_positive(report_text, df_name):
                     if any(first_word in item.lower() for item in dic):
                         return code
             return ""
-        def get_mechanism(report_lower, oxacilina):
+        def get_mechanism(oxacilina, meropenem, imipenem, vancomicina, micro_final):
             if "(pos)" in get_value("ESBL"):
                 return "a"
             elif "Staphylococcus aureus" in micro_final and oxacilina == 2:
@@ -368,7 +368,7 @@ def extract_fields_positive(report_text, df_name):
             antibiograma_realizado = 2
         else:
             antibiograma_realizado = 1
-        mechanism = get_mechanism(report_lower, oxacilina, meropenem, imipenem)
+        mechanism = get_mechanism(oxacilina, meropenem, imipenem, vancomicina, micro_final)
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
         return {
             "resultado": 1,
