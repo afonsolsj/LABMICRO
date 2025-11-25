@@ -33,6 +33,20 @@ df_general = pd.DataFrame(columns=st.secrets["columns"]["general"]); df_general.
 df_vigilance = pd.DataFrame(columns=st.secrets["columns"]["vigilance"]); df_vigilance.name = "vigilance"
 df_smear = pd.DataFrame(columns=st.secrets["columns"]["smear_microscopy"]); df_smear.name = "smear"
 
+# Função de anotações
+def annotations_xlsx(writer, df, sheet_name):
+    worksheet = writer.sheets[sheet_name]
+    cols_to_check = ["gram_negativo_gn_ambulat_rio", "gram_negativo_gn_hospitala", "gram_positivo", "para_leveduras"]
+    for col in cols_to_check:
+        if col not in df.columns:
+            continue  
+        col_idx = df.columns.get_loc(col)
+        for row_idx, value in df[col].items():
+            if value == 1:
+                anotacao = str(df.at[row_idx, "laudo_unico"]) if "laudo_unico" in df.columns else ""
+                if anotacao.strip():
+                    worksheet.write_comment(row_idx + 1, col_idx, anotacao)
+
 # Função de estilização/download
 def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="relatorios_processados.zip"):
     status.update(label="Estilizando planilhas...", state="running", expanded=False)
@@ -47,6 +61,9 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                 excel_buffer = io.BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
                     nome_aba = "Dados"
+                    df_original = df.copy()
+                    if "laudo_unico" in df.columns:
+                        df = df.drop(columns=["laudo_unico"])
                     df.to_excel(writer, sheet_name=nome_aba, index=False)
                     workbook = writer.book
                     worksheet = writer.sheets[nome_aba]
@@ -93,6 +110,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         ref_agente = xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)
                         formula = f'=AND({ref_resultado}=1, ISBLANK({ref_agente}))'
                         worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
+                annotations_xlsx(writer, df_original, nome_aba)
                 excel_buffer.seek(0)
                 zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
         zip_buffer.seek(0)
@@ -588,7 +606,8 @@ def extract_fields(report_text, df_name):
         "data_agora": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
         "check_ver_resultado_em": check_see_result(report_lower),
-        "ver_resultado_em_pedido": get_value("ver resultado do antibiograma no")
+        "ver_resultado_em_pedido": get_value("ver resultado do antibiograma no"),
+        "laudo_unico": report_text
     }
 
 # Funções de processamento
