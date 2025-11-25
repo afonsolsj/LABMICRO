@@ -255,23 +255,28 @@ def extract_fields_positive(report_text, df_name):
                     if any(first_word in item.lower() for item in dic):
                         return code
             return ""
-        def get_mechanism(oxacilina, meropenem, imipenem, vancomicina, micro_final):
-            if "(pos)" in get_value("ESBL"):
-                return "a"
+        def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
+            if "(pos)" in get_value("esbl"):
+                return 1, ""
             elif "Staphylococcus aureus" in micro_final and oxacilina == 2:
-                return "b"
+                return 3, ""
             elif "Acinetobacter baumanni" in micro_final and (meropenem == 2 or imipenem == 2):
-                return "c"
+                return 10, ""
             elif "Enterococcus faecalis" in micro_final and vancomicina == 2:
-                return "d"
+                return 4, ""
             elif "Enterococcus faecium" in micro_final and vancomicina == 2:
-                return "e"
-            elif "Pseudomonas aeruginosa" in micro_final and (meropenem == 2 or imipenem == 2):
-                return "f"
-            elif "Pseudomonas" in micro_final and "aeruginosa" not in micro_final and (meropenem == 2 or imipenem == 2):
-                return "g"
-            elif any(x in micro_final for x in ["escherichia", "klebsiella", "enterobacter", "proteus", "serratia", "citrobacter", "morganella", "providencia", "hafnia", "raoultella"]) and (meropenem == 2 or imipenem == 2):
-                return "h"
+                return 7, ""
+            elif "Pseudomonas aeruginosa" in micro_final and (meropenem == 2 or ertapenem == 2):
+                return 6, ""
+            elif "Pseudomonas" in micro_final and "aeruginosa" not in micro_final and (meropenem == 2 or ertapenem == 2):
+                return 8, ""
+            elif any(x in micro_final for x in ["Escherichia", "Klebsiella", "Enterobacter", "Proteus", "Serratia", "Citrobacter", "Morganella", "Providencia", "Hafnia", "Raoultella"]) and (meropenem == 2 or imipenem == 2):
+                return 2, ""
+            elif any(x in report_lower for x in ["enzimas", "triagem", "intrinseca", "spm-1"]):
+                termos = [x for x in ["enzimas", "triagem", "intrinseca", "spm-1"] if x in report_lower]
+                return 5, termos
+            else:
+                return "", ""
         def get_cim_result(report_text):
             text = report_text.lower()
             patterns = {"mcim_pos": "inativação de carbapenêmico modificado): positivo", "mcim_neg": "inativação de carbapenêmico modificado): negativo", "ecim_pos": "(ecim-edta): positivo", "ecim_neg": "(ecim-edta): negativo"}
@@ -368,7 +373,8 @@ def extract_fields_positive(report_text, df_name):
             antibiograma_realizado = 2
         else:
             antibiograma_realizado = 1
-        mechanism = get_mechanism(oxacilina, meropenem, imipenem, vancomicina, micro_final)
+        mechanism, other_mechanism = get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final)
+        tem_mecanismo_resist_ncia = 1 if mechanism and other_mechanism else 2
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
         return {
             "resultado": 1,
@@ -449,7 +455,10 @@ def extract_fields_positive(report_text, df_name):
             "trimetoprima_sulfametoxazol": trimetoprima_sulfametoxazol,
             "levofloxacina": levofloxacina,
             "gram_negativo_gn_ambulat_rio": gram_negativo_gn_ambulat_rio,
-            "antibiograma_realizado": antibiograma_realizado
+            "antibiograma_realizado": antibiograma_realizado,
+            "qual_gene_de_mecanismo_res": mechanism,
+            "qual_outro_mecanismo_de_re": other_mechanism,
+            "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
