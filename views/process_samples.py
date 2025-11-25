@@ -357,6 +357,11 @@ def extract_fields_positive(report_text, df_name):
                 valores = [""] * len(campos)
                 gram_positivo = 2
                 return (*valores, gram_positivo)
+        def get_imunocromat(report_lower):
+            if "imunocromatografia" or "imunocromatográfico" in report_lower:
+                return 1
+            else:
+                return 2
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
@@ -375,7 +380,8 @@ def extract_fields_positive(report_text, df_name):
             antibiograma_realizado = 1
         mechanism, other_mechanism = get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final)
         tem_mecanismo_resist_ncia = 1 if mechanism and other_mechanism else 2
-        code_mcim, code_ecim = get_cim_result(report_text) if mechanism in [1, 3] else ("", "")
+        code_mcim, code_ecim = get_cim_result(report_text) if mechanism in (2, 6) else ("", "")
+        realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else ""
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -458,7 +464,8 @@ def extract_fields_positive(report_text, df_name):
             "antibiograma_realizado": antibiograma_realizado,
             "qual_gene_de_mecanismo_res": mechanism,
             "qual_outro_mecanismo_de_re": other_mechanism,
-            "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia
+            "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia,
+            "realizou_teste_imunogromat": realizou_teste_imunogromat
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
