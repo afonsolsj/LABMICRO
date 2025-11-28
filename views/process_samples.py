@@ -224,6 +224,12 @@ def extract_fields_positive(report_text, df_name):
                 return 3
             elif "+" in report_lower:
                 return 2
+            elif "em 100 campos examinados" in report_lower:
+                return 1
+            elif "positivo" in report_lower:
+                return 1
+            else:
+                ""
         return {"resultado": 1,
                 "se_positivo_marque": if_positive(report_lower)}
     elif df_name == "general":
@@ -275,8 +281,47 @@ def extract_fields_positive(report_text, df_name):
             elif any(x in report_lower for x in ["enzimas", "triagem", "intrinseca", "spm-1"]):
                 termos = [x for x in ["enzimas", "triagem", "intrinseca", "spm-1"] if x in report_lower]
                 return 5, termos
+            elif not any(x in micro_final for x in ["Escherichia", "Klebsiella", "Enterobacter", "Proteus", "Serratia", "Citrobacter", "Morganella", "Providencia", "Hafnia", "Raoultella"]) and (meropenem == 2 or imipenem == 2):
+                return 9, ""
             else:
                 return "", ""
+        def apresenta_gene_resistencia(report_text):
+            if " kpc " in report_text and " ndm " in report_text:
+                return 10
+            elif " kpc " in report_text and " imp " in report_text:
+                return 9
+            elif " ndm " in report_text and " imp " in report_text:
+                return 11
+            elif " kpc " in report_text and " vim " in report_text:
+                return 13
+            elif " ndm " in report_text and " vim " in report_text:
+                return 14
+            elif " imp " in report_text and " vim " in report_text:
+                return 15
+            elif " kpc " in report_text and " oxa " in report_text:
+                return 16
+            elif " oxa " in report_text and " imp " in report_text:
+                return 17
+            elif " oxa " in report_text and " vim " in report_text:
+                return 18
+            elif " ndm " in report_text and " oxa " in report_text:
+                return 19
+            elif "enzimático não detectado" in report_text:
+                return 8
+            elif "ndm" in report_text:
+                return 6
+            elif "vim" in report_text:
+                return 5
+            elif "imp" in report_text:
+                return 4
+            elif "oxa" in report_text:
+                return 3
+            elif "kpc" in report_text:
+                return 2
+            elif "não enzimático" in report_text:
+                return 1    
+            else:
+                return ""
         def get_cim_result(report_text):
             text = report_text.lower()
             patterns = {"mcim_pos": "inativação de carbapenêmico modificado): positivo", "mcim_neg": "inativação de carbapenêmico modificado): negativo", "ecim_pos": "(ecim-edta): positivo", "ecim_neg": "(ecim-edta): negativo"}
@@ -465,7 +510,8 @@ def extract_fields_positive(report_text, df_name):
             "qual_gene_de_mecanismo_res": mechanism,
             "qual_outro_mecanismo_de_re": other_mechanism,
             "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia,
-            "realizou_teste_imunogromat": realizou_teste_imunogromat
+            "realizou_teste_imunogromat": realizou_teste_imunogromat,
+            "apresenta_gene_resistencia": apresenta_gene_resistencia(report_text)
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -611,7 +657,7 @@ def extract_fields(report_text, df_name):
 def process_general(report_text, row_idx=None):
     global df_general
     fields = extract_fields(report_text, "general")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "SUBSTITUIR AQUI"]):    
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields_positive = extract_fields_positive(report_text, "general")
         if fields_positive:
             fields.update(fields_positive)
@@ -632,7 +678,7 @@ def process_general(report_text, row_idx=None):
 def process_vigilance(report_text, row_idx=None):
     global df_vigilance
     fields = extract_fields(report_text, "vigilance")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "SUBSTITUIR AQUI"]):    
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields_positive = extract_fields_positive(report_text, "vigilance")
         if fields_positive:
             fields.update(fields_positive)
@@ -653,7 +699,7 @@ def process_vigilance(report_text, row_idx=None):
 def process_smear(report_text, row_idx=None):
     global df_smear
     fields = extract_fields(report_text, "smear")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa", "SUBSTITUIR AQUI"]):    
+    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
         fields_positive = extract_fields_positive(report_text, "smear")
         if fields_positive:
             fields.update(fields_positive)
