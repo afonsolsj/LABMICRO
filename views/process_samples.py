@@ -104,7 +104,13 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
         st.exception(e)
 
 # Função de comparação
-def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem"):
+def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb):
+    all_microorganisms = {}
+    all_microorganisms.update(microorganisms_gnb)
+    all_microorganisms.update(microorganisms_gpc)
+    all_microorganisms.update(microorganisms_fy)
+    all_microorganisms.update(microorganisms_gpb)
+    normalized_microorganisms = {k.strip().upper(): v for k, v in all_microorganisms.items()}
     for df in dfs:
         if setor_col in df.columns:
             df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
@@ -147,6 +153,9 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                     if pd.notna(val) and str(val).strip() != "":
                         df.at[idx, outro_col] = val
                         df.at[idx, mat_col] = default_val
+        if "qual_microorganismo" in df.columns:
+            micro_col = "qual_microorganismo"
+            df[micro_col] = df[micro_col].astype(str).str.strip().str.upper().map(normalized_microorganisms).fillna(df[micro_col])
     return dfs
 
 # Função de desfecho
