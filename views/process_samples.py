@@ -7,7 +7,7 @@ import pdfplumber
 import tempfile
 from pypdf import PdfReader, PdfWriter
 from datetime import datetime, timedelta
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz, process
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
@@ -104,13 +104,13 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
         st.exception(e)
 
 # Função de comparação
-def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb):
+def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=80):
     all_microorganisms = {}
     all_microorganisms.update(microorganisms_gnb)
     all_microorganisms.update(microorganisms_gpc)
     all_microorganisms.update(microorganisms_fy)
     all_microorganisms.update(microorganisms_gpb)
-    normalized_microorganisms = {k.strip().upper(): v for k, v in all_microorganisms.items()}
+    micro_choices = list(all_microorganisms.keys())
     for df in dfs:
         if setor_col in df.columns:
             df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
@@ -155,7 +155,16 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                         df.at[idx, mat_col] = default_val
         if "qual_microorganismo" in df.columns:
             micro_col = "qual_microorganismo"
-            df[micro_col] = df[micro_col].astype(str).str.strip().str.upper().map(normalized_microorganisms).fillna(df[micro_col])
+            for idx, val in df[micro_col].items():
+                val_norm = str(val).strip()
+                if not val_norm:
+                    continue
+                best_match = process.extractOne(query=val_norm, choices=micro_choices, scorer=fuzz.ratio)
+                if best_match is not None:
+                    matched_string, score = best_match[0], best_match[1]
+                    if score >= similarity_threshold:
+                        code = all_microorganisms[matched_string]
+                        df.at[idx, micro_col] = code
     return dfs
 
 # Função de desfecho
@@ -873,7 +882,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
-        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
+        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=80)
     df_general = filter_blood_general(df_general)
     style_download(df_general, df_vigilance, df_smear)
     status.update(label="Concluído", state="complete", expanded=False)
