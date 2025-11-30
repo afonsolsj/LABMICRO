@@ -173,9 +173,14 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                     if score >= similarity_threshold:
                         code = all_microorganisms[matched_string]
                         df.at[idx, micro_col] = code
-        if "qual_o_tipo_de_microorganismo" in df.columns:
-            df["qual_o_tipo_de_microorganismo"] = df["qual_o_tipo_de_microorganismo"].astype(str).str.strip()
-            df.loc[df["qual_o_tipo_de_microorganismo"] == "Outro", "qual_o_tipo_de_microorganismo"] = 29
+        if "qual_microorganismo" in df.columns:
+            df["qual_microorganismo"] = df["qual_microorganismo"].astype(str).str.strip()
+            df.loc[df["qual_microorganismo"] == "Outro", "qual_microorganismo"] = 29
+        if "qual_microorganismo" in df.columns:
+            convertido = pd.to_numeric(df["qual_microorganismo"], errors='coerce')
+            mascara_texto = (convertido.isna() & df["qual_microorganismo"].notna() & (df["qual_microorganismo"] != ""))
+            df.loc[mascara_texto, "outro_microorganismo"] = df.loc[mascara_texto, "qual_microorganismo"]
+            df.loc[mascara_texto, "qual_microorganismo"] = 29
     return dfs
 
 # Função de desfecho
