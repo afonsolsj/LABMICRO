@@ -438,8 +438,12 @@ def extract_fields_positive(report_text, df_name):
                 return 2
         def is_in_dictionary(value):
             val = value.strip().lower()
-            all_lists = (microorganisms_gnb + microorganisms_gpc + microorganisms_gpb + microorganisms_fy)
-            return any(val == item.lower().strip() for item in all_lists)
+            gnb = list(microorganisms_gnb.keys())
+            gpc = list(microorganisms_gpc.keys())
+            gpb = list(microorganisms_gpb.keys())
+            fy  = list(microorganisms_fy.keys())
+            all_lists = gnb + gpc + gpb + fy
+            return val in all_lists
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
         type_micro = classify_microorganism(isolate_micro)
         exists_in_dict = is_in_dictionary(isolate_micro) if isolate_micro else False
