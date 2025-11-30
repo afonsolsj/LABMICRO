@@ -179,11 +179,12 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
         if "qual_microorganismo" in df.columns:
             df["qual_microorganismo"] = df["qual_microorganismo"].astype(str).str.strip()
             df.loc[df["qual_microorganismo"] == "Outro", "qual_microorganismo"] = 29
-        if "qual_microorganismo" in df.columns:
             convertido = pd.to_numeric(df["qual_microorganismo"], errors='coerce')
-            mascara_texto = (convertido.isna() & df["qual_microorganismo"].notna() & (df["qual_microorganismo"] != ""))
+            mascara_texto = (convertido.isna() & df["qual_microorganismo"].notna() & (df["qual_microorganismo"] != "") & (df["qual_microorganismo"] != "nan"))
             df.loc[mascara_texto, "outro_microorganismo"] = df.loc[mascara_texto, "qual_microorganismo"]
             df.loc[mascara_texto, "qual_microorganismo"] = 29
+            df["qual_microorganismo"] = pd.to_numeric(df["qual_microorganismo"], errors='coerce')
+            df["qual_microorganismo"] = df["qual_microorganismo"].astype("Int64")
     return dfs
 
 # Função de desfecho
