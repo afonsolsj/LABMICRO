@@ -53,7 +53,6 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                     blue_format = workbook.add_format({'bg_color': '#DDEBF7'})
                     green_format = workbook.add_format({'bg_color': '#C6EFCE'})
                     red_format = workbook.add_format({'bg_color': '#FFC7CE'})
-                    purple_format = workbook.add_format({'bg_color': '#E8DAEF'})
                     yellow_format = workbook.add_format({'bg_color': '#FFEB9C'})
                     max_row = len(df)
                     if max_row == 0:
@@ -75,8 +74,12 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         cell_range = (1, col_target, max_row, col_target)
                         ref_target = xl_rowcol_to_cell(1, col_target, row_abs=False, col_abs=False)
                         ref_check = xl_rowcol_to_cell(1, col_check, row_abs=False, col_abs=True)
-                        formula = f'=AND({ref_check}=15, ISBLANK({ref_target}))'
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})     
+                        formula = f'=AND({ref_check}=29, ISBLANK({ref_target}))'
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
+                    if "qual_microorganismo" in df.columns:
+                        col_idx = df.columns.get_loc("qual_microorganismo")
+                        cell_range = (1, col_idx, max_row, col_idx)
+                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '29', 'format': yellow_format})
                     if "setor_de_origem" in df.columns:
                         col_idx = df.columns.get_loc("setor_de_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
