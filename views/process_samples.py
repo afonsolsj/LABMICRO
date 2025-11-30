@@ -69,6 +69,10 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
                         worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
                         worksheet.conditional_format(*cell_range, {'type': 'no_blanks', 'format': yellow_format})
+                    if "qual_o_tipo_de_microorganismo" in df.columns:
+                        col_idx = df.columns.get_loc("qual_o_tipo_de_microorganismo")
+                        cell_range = (1, col_idx, max_row, col_idx)
+                        worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
                     if "setor_de_origem" in df.columns:
                         col_idx = df.columns.get_loc("setor_de_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
@@ -165,6 +169,8 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                     if score >= similarity_threshold:
                         code = all_microorganisms[matched_string]
                         df.at[idx, micro_col] = code
+        if "qual_o_tipo_de_microorganismo" in df.columns:
+            df.loc[df["qual_o_tipo_de_microorganismo"] == "Outro", "qual_o_tipo_de_microorganismo"] = 29
     return dfs
 
 # Função de desfecho
