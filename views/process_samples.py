@@ -332,17 +332,17 @@ def extract_fields_positive(report_text, df_name):
                 return 19
             elif "enzimático não detectado" in report_text:
                 return 8
-            elif "ndm" in report_text:
+            elif " ndm " in report_text:
                 return 6
-            elif "vim" in report_text:
+            elif " vim " in report_text:
                 return 5
-            elif "imp" in report_text:
+            elif " imp " in report_text:
                 return 4
-            elif "oxa" in report_text:
+            elif " oxa " in report_text:
                 return 3
-            elif "kpc" in report_text:
+            elif " kpc " in report_text:
                 return 2
-            elif "não enzimático" in report_text:
+            elif " não enzimático " in report_text:
                 return 1    
             else:
                 return ""
