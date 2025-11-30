@@ -174,6 +174,7 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                         code = all_microorganisms[matched_string]
                         df.at[idx, micro_col] = code
         if "qual_o_tipo_de_microorganismo" in df.columns:
+            df["qual_o_tipo_de_microorganismo"] = df["qual_o_tipo_de_microorganismo"].astype(str).str.strip()
             df.loc[df["qual_o_tipo_de_microorganismo"] == "Outro", "qual_o_tipo_de_microorganismo"] = 29
     return dfs
 
@@ -283,6 +284,11 @@ def extract_fields_positive(report_text, df_name):
             for dic, code in groups:
                 if fuzzy_match(dic):
                     return code
+            first_word = value.split()[0].lower() if value else ""
+            if first_word:
+                for dic, code in groups:
+                    if any(first_word in item.lower() for item in dic):
+                        return code
             return ""
         def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
             if "(pos)" in get_value("esbl"):
@@ -430,10 +436,19 @@ def extract_fields_positive(report_text, df_name):
                 return 1
             else:
                 return 2
+        def is_in_dictionary(value):
+            val = value.strip().lower()
+            all_lists = (microorganisms_gnb + microorganisms_gpc + microorganisms_gpb + microorganisms_fy)
+            return any(val == item.lower().strip() for item in all_lists)
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :")
-        type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :"))
-        micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro
-        other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
+        type_micro = classify_microorganism(isolate_micro)
+        exists_in_dict = is_in_dictionary(isolate_micro) if isolate_micro else False
+        if type_micro != "" and exists_in_dict:
+            micro_final = isolate_micro
+            other_micro = ""
+        else:
+            micro_final = "Outro" if isolate_micro else ""
+            other_micro = isolate_micro if isolate_micro else ""
         (fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras) = get_leveduras_values(get_value, result_ast, report_text, type_micro)
         (benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo) = get_gram_positivo_values(get_value, result_ast, report_text, type_micro)
         (amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, gram_negativo_gn_hospitala) = get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro)
