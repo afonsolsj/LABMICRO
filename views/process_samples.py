@@ -69,10 +69,14 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
                         worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
                         worksheet.conditional_format(*cell_range, {'type': 'no_blanks', 'format': yellow_format})
-                    if "qual_o_tipo_de_microorganismo" in df.columns:
-                        col_idx = df.columns.get_loc("qual_o_tipo_de_microorganismo")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
+                    if "qual_o_tipo_de_microorganismo" in df.columns and "qual_microorganismo" in df.columns:
+                        col_target = df.columns.get_loc("qual_o_tipo_de_microorganismo")
+                        col_check = df.columns.get_loc("qual_microorganismo")
+                        cell_range = (1, col_target, max_row, col_target)
+                        ref_target = xl_rowcol_to_cell(1, col_target, row_abs=False, col_abs=False)
+                        ref_check = xl_rowcol_to_cell(1, col_check, row_abs=False, col_abs=True)
+                        formula = f'=AND({ref_check}=15, ISBLANK({ref_target}))'
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})     
                     if "setor_de_origem" in df.columns:
                         col_idx = df.columns.get_loc("setor_de_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
@@ -279,11 +283,6 @@ def extract_fields_positive(report_text, df_name):
             for dic, code in groups:
                 if fuzzy_match(dic):
                     return code
-            first_word = value.split()[0].lower() if value else ""
-            if first_word:
-                for dic, code in groups:
-                    if any(first_word in item.lower() for item in dic):
-                        return code
             return ""
         def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
             if "(pos)" in get_value("esbl"):
