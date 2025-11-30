@@ -462,7 +462,7 @@ def extract_fields_positive(report_text, df_name):
         else:
             antibiograma_realizado = 1
         mechanism, other_mechanism = get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final)
-        tem_mecanismo_resist_ncia = 1 if mechanism and other_mechanism else 2
+        tem_mecanismo_resist_ncia = 1 if mechanism != "" else 2
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in (2, 6) else ("", "")
         realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else ""
         return {
