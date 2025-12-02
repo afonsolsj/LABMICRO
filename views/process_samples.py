@@ -381,13 +381,13 @@ def extract_fields_positive(report_text, df_name):
                     elif p == "i":
                         return 3
             return 4
-        def get_gn_hospitalar_values(get_value, result_ast, report_lower):
+        def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
-            if "AMB" not in get_value("Prontuário..:"):
+            if "AMB" not in get_value("Prontuário..:") and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
-            elif "ceftazidima/avibactam" in report_lower:
+            elif "ceftazidima/avibactam" in report_lower and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
@@ -395,13 +395,13 @@ def extract_fields_positive(report_text, df_name):
                 valores = [""] * len(campos)
                 gram_negativo_gn_hospitala = 2
                 return (*valores, gram_negativo_gn_hospitala)
-        def get_gn_ambulatorial_values(get_value, result_ast, report_lower):
+        def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
-            if "AMB" in get_value("Prontuário..:"):
+            if "AMB" in get_value("Prontuário..:") and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_ambulatorio = 1
                 return (*valores, gram_negativo_gn_ambulatorio)
-            elif "ceftazidima/avibactam" not in report_lower:
+            elif "ceftazidima/avibactam" not in report_lower and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_ambulatorio = 1
                 return (*valores, gram_negativo_gn_ambulatorio)
@@ -409,9 +409,9 @@ def extract_fields_positive(report_text, df_name):
                 valores = [""] * len(campos)
                 gram_negativo_gn_ambulatorio = 2
                 return (*valores, gram_negativo_gn_ambulatorio)
-        def get_leveduras_values(get_value, result_ast, report_text):
+        def get_leveduras_values(get_value, result_ast, report_text, type_micro):
             campos = ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]
-            if any(x in report_text.lower() for x in campos):
+            if any(x in report_text.lower() for x in campos) and type_micro == 2:
                 valores = [result_ast(get_value(c)) for c in campos]
                 para_leveduras = 1
                 return (*valores, para_leveduras)
@@ -419,9 +419,9 @@ def extract_fields_positive(report_text, df_name):
                 valores = [""] * len(campos)
                 para_leveduras = 2
                 return (*valores, para_leveduras)
-        def get_gram_positivo_values(get_value, result_ast, report_text):
+        def get_gram_positivo_values(get_value, result_ast, report_text, type_micro):
             campos = ["benzilpenicilina", "ampicilina (iv)", "oxacilina", "ceftarolina", "ESTE_E_FIXO_4", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]
-            if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]):
+            if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]) and type_micro == 0:
                 valores = []
                 for c in campos:
                     if c == "ESTE_E_FIXO_4":
