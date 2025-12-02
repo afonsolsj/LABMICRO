@@ -445,8 +445,8 @@ def extract_fields_positive(report_text, df_name):
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
         (fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras) = get_leveduras_values(get_value, result_ast, report_text)
         (benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo) = get_gram_positivo_values(get_value, result_ast, report_text)
-        (amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, gram_negativo_gn_hospitala) = get_gn_hospitalar_values(get_value, result_ast, report_lower)
-        (ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio) = get_gn_ambulatorial_values(get_value, result_ast, report_lower)
+        (amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, gram_negativo_gn_hospitala) = get_gn_hospitalar_values(get_value, result_ast, report_text)
+        (ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio) = get_gn_ambulatorial_values(get_value, result_ast, report_text)
         if gram_negativo_gn_ambulat_rio == 2 and gram_negativo_gn_hospitala == 2 and gram_positivo == 2 and para_leveduras == 2:
             gram_negativo_gn_ambulat_rio = "" 
             gram_negativo_gn_hospitala = "" 
@@ -897,6 +897,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=85)
+    df_blood = df_general.copy()
     df_general = filter_blood_general(df_general)
-    style_download(df_general, df_vigilance, df_smear)
+    style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
