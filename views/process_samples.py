@@ -457,6 +457,7 @@ def extract_fields_positive(report_text, df_name):
         tem_mecanismo_resist_ncia = 1 if mechanism != "" else 2
         code_mcim, code_ecim = get_cim_result(report_text) if mechanism in (2, 6) else ("", "")
         realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else ""
+        via_coleta = get_value("Sítio da coleta:")
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -541,7 +542,8 @@ def extract_fields_positive(report_text, df_name):
             "qual_outro_mecanismo_de_re": other_mechanism,
             "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia,
             "realizou_teste_imunogromat": realizou_teste_imunogromat,
-            "apresenta_gene_resistencia": apresenta_gene_resistencia(report_text)
+            "apresenta_gene_resistencia": apresenta_gene_resistencia(report_text),
+            "via_coleta": via_coleta
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
@@ -794,7 +796,7 @@ def filter_general(df_general):
                 if len(linha_origem) > 0:
                     linha_origem = linha_origem.iloc[0]
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
-    df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido"], inplace=True, errors="ignore")
+    df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "via_coleta"], inplace=True, errors="ignore")
     return df_final
 def filter_only_blood(df):
     if "qual_tipo_de_material" in df.columns:
