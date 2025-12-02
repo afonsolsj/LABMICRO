@@ -115,7 +115,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="r
         st.exception(e)
 
 # Função de comparação
-def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=70):
+def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=85):
     all_microorganisms = {}
     all_microorganisms.update(microorganisms_gnb)
     all_microorganisms.update(microorganisms_gpc)
@@ -902,7 +902,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
-        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=70)
+        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=85)
     df_general = filter_blood_general(df_general)
     style_download(df_general, df_vigilance, df_smear)
     status.update(label="Concluído", state="complete", expanded=False)
