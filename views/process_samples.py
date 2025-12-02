@@ -383,11 +383,7 @@ def extract_fields_positive(report_text, df_name):
             return 4
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
-            if "amb" not in get_value("Prontuário..:") and type_micro == 1:
-                valores = [result_ast(get_value(c)) for c in campos]
-                gram_negativo_gn_hospitala = 1
-                return (*valores, gram_negativo_gn_hospitala)
-            elif "ceftazidima/avibactam" in report_lower and type_micro == 1:
+            if ("amb" not in get_value("Prontuário..:") and type_micro == 1) or ("ceftazidima/avibactam" in report_lower and type_micro == 1):
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
@@ -397,11 +393,7 @@ def extract_fields_positive(report_text, df_name):
                 return (*valores, gram_negativo_gn_hospitala)
         def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
-            if "amb" in get_value("Prontuário..:") and type_micro == 1:
-                valores = [result_ast(get_value(c)) for c in campos]
-                gram_negativo_gn_ambulatorio = 1
-                return (*valores, gram_negativo_gn_ambulatorio)
-            elif "ceftazidima/avibactam" not in report_lower and type_micro == 1:
+            if ("amb" in get_value("Prontuário..:") and type_micro == 1) or ("ceftazidima/avibactam" not in report_lower and type_micro == 1):
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_ambulatorio = 1
                 return (*valores, gram_negativo_gn_ambulatorio)
