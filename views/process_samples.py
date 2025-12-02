@@ -7,7 +7,6 @@ import pdfplumber
 import tempfile
 from pypdf import PdfReader, PdfWriter
 from datetime import datetime, timedelta
-from rapidfuzz import fuzz, process
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
@@ -414,7 +413,7 @@ def extract_fields_positive(report_text, df_name):
                 empty_mic = [""] * len(campos)
                 gram_negativo_gn_hospitala = 2
                 return (*empty_ast, *empty_mic, gram_negativo_gn_hospitala)
-        def get_gn_ambulatorial_values(get_value, report_lower, type_micro):
+        def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = [
                 "ampicilina", "amoxicilina/ácido clavulânico", "piperacilina/tazobactam", 
                 "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", 
@@ -438,7 +437,7 @@ def extract_fields_positive(report_text, df_name):
                 empty_mic = [""] * len(campos)
                 gram_negativo_gn_ambulatorio = 2
                 return (*empty_ast, *empty_mic, gram_negativo_gn_ambulatorio)
-        def get_leveduras_values(get_value, report_text, type_micro):
+        def get_leveduras_values(get_value, result_ast, report_lower, type_micro):
             campos = [
                 "fluconazol", "voriconazol", "caspofungina", 
                 "micafungina", "anfotericina b", "fluocitosina"
@@ -457,7 +456,7 @@ def extract_fields_positive(report_text, df_name):
                 empty_mic = [""] * len(campos)
                 para_leveduras = 2
                 return (*empty_ast, *empty_mic, para_leveduras)
-        def get_gram_positivo_values(get_value, report_text, type_micro):
+        def get_gram_positivo_values(get_value, result_ast, report_lower, type_micro):
             campos = [
                 "benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", 
                 "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", 
@@ -488,10 +487,10 @@ def extract_fields_positive(report_text, df_name):
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :")) 
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro 
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
-        (fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, mic_fluconazol, mic_voriconazol, mic_caspofungina, mic_micafungina, mic_anfotericina, mic_fluocitosina, para_leveduras) = get_leveduras_values(get_value, report_text, type_micro)
-        (benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, mic_benzilpenicilina, mic_ampicilina_gram_positivo, mic_oxacilina, mic_ceftarolina_outra, mic_estreptomicina, mic_gentamicina_gram_positivo, mic_levofloxacina_gram_positivo, mic_eritromicina, mic_clindamicina, mic_linezolid, mic_daptomicina, mic_teicoplanina, mic_vancomicina, mic_tigeciclina_gram_positivo, mic_rifampicina, mic_trimetoprima_sulfametaxazol_gram_positivo, mic_nitrofurantoina_gram_positivo, gram_positivo) = get_gram_positivo_values(get_value, report_text, type_micro)
-        (amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, mic_amoxicilina, mic_aztreonam, mic_cefiderocol, mic_ceftalozone_tazobactam, mic_ceftazidime_avibactam, mic_ampicilina, mic_ampicilina_sulbactam, mic_piperacilina_tazobactam, mic_cefoxitina, mic_cefuroxima, mic_ceftazidima, mic_cefepima, mic_ertapenem, mic_imipenem, mic_imipenem_relebactam, mic_gn_levofloxacina, mic_meropenem, mic_meropenem_vaborbactam, mic_amicacina, mic_gentamicina, mic_ciprofloxacina, mic_tigeciclina, mic_trimetoprim_sulfametozol, mic_colistina, mic_ceftriaxona, gram_negativo_gn_hospitala) = get_gn_hospitalar_values(get_value, report_text, type_micro)
-        (ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, mic_ampicilina_ambul, mic_amoxicilina_acido_clavul_nico, mic_piperacilina_tazobactam_ambul, mic_cefalexina, mic_cefalotina, mic_cefuroxima_ambul, mic_cefuroxima_axetil, mic_ceftriaxona_ambul, mic_cefepima_ambul, mic_ertapenem_ambul, mic_meropenem_ambul, mic_amicacina_ambul, mic_gentamicina_ambul, mic_cido_nalidixico, mic_ciprofloxacino, mic_norfloxacino, mic_nitrofurantoina, mic_trimetoprima_sulfametoxazol, mic_levofloxacina, gram_negativo_gn_ambulatorio) = get_gn_ambulatorial_values(get_value, report_text, type_micro)
+        (fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, mic_fluconazol, mic_voriconazol, mic_caspofungina, mic_micafungina, mic_anfotericina, mic_fluocitosina, para_leveduras) = get_leveduras_values(get_value, result_ast, report_text, type_micro)
+        (benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, mic_benzilpenicilina, mic_ampicilina_gram_positivo, mic_oxacilina, mic_ceftarolina_outra, mic_estreptomicina, mic_gentamicina_gram_positivo, mic_levofloxacina_gram_positivo, mic_eritromicina, mic_clindamicina, mic_linezolid, mic_daptomicina, mic_teicoplanina, mic_vancomicina, mic_tigeciclina_gram_positivo, mic_rifampicina, mic_trimetoprima_sulfametaxazol_gram_positivo, mic_nitrofurantoina_gram_positivo, gram_positivo) = get_gram_positivo_values(get_value, result_ast, report_text, type_micro)
+        (amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, mic_amoxicilina, mic_aztreonam, mic_cefiderocol, mic_ceftalozone_tazobactam, mic_ceftazidime_avibactam, mic_ampicilina, mic_ampicilina_sulbactam, mic_piperacilina_tazobactam, mic_cefoxitina, mic_cefuroxima, mic_ceftazidima, mic_cefepima, mic_ertapenem, mic_imipenem, mic_imipenem_relebactam, mic_gn_levofloxacina, mic_meropenem, mic_meropenem_vaborbactam, mic_amicacina, mic_gentamicina, mic_ciprofloxacina, mic_tigeciclina, mic_trimetoprim_sulfametozol, mic_colistina, mic_ceftriaxona, gram_negativo_gn_hospitala) = get_gn_hospitalar_values(get_value, result_ast, report_text, type_micro)
+        (ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, mic_ampicilina_ambul, mic_amoxicilina_acido_clavul_nico, mic_piperacilina_tazobactam_ambul, mic_cefalexina, mic_cefalotina, mic_cefuroxima_ambul, mic_cefuroxima_axetil, mic_ceftriaxona_ambul, mic_cefepima_ambul, mic_ertapenem_ambul, mic_meropenem_ambul, mic_amicacina_ambul, mic_gentamicina_ambul, mic_cido_nalidixico, mic_ciprofloxacino, mic_norfloxacino, mic_nitrofurantoina, mic_trimetoprima_sulfametoxazol, mic_levofloxacina, gram_negativo_gn_ambulatorio) = get_gn_ambulatorial_values(get_value, result_ast, report_text, type_micro)
         if gram_negativo_gn_ambulat_rio == 2 and gram_negativo_gn_hospitala == 2 and gram_positivo == 2 and para_leveduras == 2:
             gram_negativo_gn_ambulat_rio = "" 
             gram_negativo_gn_hospitala = "" 
