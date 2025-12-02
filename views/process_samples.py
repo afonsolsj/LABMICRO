@@ -383,7 +383,7 @@ def extract_fields_positive(report_text, df_name):
             return 4
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
-            if "AMB" not in get_value("Prontuário..:") and type_micro == 1:
+            if "amb" not in get_value("Prontuário..:") and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
@@ -397,7 +397,7 @@ def extract_fields_positive(report_text, df_name):
                 return (*valores, gram_negativo_gn_hospitala)
         def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
-            if "AMB" in get_value("Prontuário..:") and type_micro == 1:
+            if "amb" in get_value("Prontuário..:") and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_ambulatorio = 1
                 return (*valores, gram_negativo_gn_ambulatorio)
@@ -800,7 +800,7 @@ def filter_general(df_general):
     return df_final
 def filter_only_blood(df):
     if "qual_tipo_de_material" in df.columns:
-        mask = df["qual_tipo_de_material"].astype(str).str.contains("Sangue", case=False, na=False)
+        mask = df["qual_tipo_de_material"].astype(str).str.strip() == "5"
         return df[mask]
     return df
 
@@ -905,5 +905,5 @@ if st.button("Iniciar processamento", disabled=is_disabled):
     df_blood = df_general.copy()
     df_blood = filter_only_blood(df_blood)
     df_general = filter_general(df_general)
-    style_download(df_general, df_vigilance, df_smear, df_blood, nome_arquivo_zip="relatorios_processados.zip")
+    style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
