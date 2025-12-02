@@ -820,7 +820,55 @@ def filter_only_blood_and_rename(df):
         "cat_tempo_de_libera_o_dias": "categ_entrega",
         "dados_microbiologia_complete": "form_1_complete"
     }
-    df_final = df_filtered.rename(columns=novos_nomes)
+    
+    df_renamed = df_filtered.rename(columns=novos_nomes)
+    cols_to_drop = [
+        "outro_microorganismo", "qual_o_tipo_de_microorganismo", "tem_mecanismo_resist_ncia", 
+        "qual_gene_de_mecanismo_res", "qual_outro_mecanismo_de_re", "apresenta_mcim", 
+        "apresenta_ecim", "apresenta_carbapenase", "realizou_teste_imunogromat", 
+        "data_do_teste_imunogromato", "tempo_de_realiza_o_do_test", "apresenta_gene_resistencia", 
+        "antibiograma_realizado", "gram_negativo_gn_hospitala", "amoxicilina", 
+        "mic_amoxicilna_cido_clavul", "aztreonam", "mic_aztreonam", "cefiderocol", 
+        "mic_cefiderocol", "ceftalozone_tazobactam", "mic_ceftalozone_tazobactam", 
+        "ceftazidime_avibactam", "mic_ceftazidime_avibactam", "ampicilina", "mic_ampicilina", 
+        "ampicilina_sulbactam", "mic_ampicilina_sulbactam", "piperacilina_tazobactam", 
+        "mic_piperacilina_tazobactam", "cefoxitina", "mic_cefoxitina", "cefuroxima", 
+        "mic_cefuroxima", "ceftazidima", "mic_ceftazidima", "cefepima", "mic_cefepima", 
+        "ertapenem", "mic_ertapenem", "imipenem", "mic_imipenem", "imipenem_relebactam", 
+        "mic_imipenem_relebactam", "gn_levofloxacina", "mic_gn_levofloxacina", "meropenem", 
+        "mic_meropenem", "meropenem_vaborbactam", "mic_meropenem_vaborbactam", "amicacina", 
+        "mic_amicacina", "gentamicina", "mic_gentamicina", "ciprofloxacina", 
+        "mic_ciprofloxacina", "tigeciclina", "mic_tigeciclina", "trimetoprim_sulfametozol", 
+        "mic_trimetoprim_sulfametozol", "colistina", "mic_colistina", "ceftriaxona", 
+        "mic_ceftriaxona", "gram_negativo_gn_ambulat_rio", "ampicilina_ambul", 
+        "mic_ampicilina_ambul", "amoxicilina_cido_clavul_nico", 
+        "mic_amoxicilina_cido_clavul_nico", "piperacilina_tazobactam_ambul", 
+        "mic_piperacilina_tazobactam_ambul", "cefalexina", "mic_cefalexina", "cefalotina", 
+        "mic_cefalotina", "cefuroxima_ambul", "mic_cefuroxima_ambul", "cefuroxima_axetil", 
+        "mic_cefuroxima_axetil", "ceftriaxona_ambul", "mic_ceftriaxona_ambul", 
+        "cefepima_ambul", "mic_cefepima_ambul", "ertapenem_ambul", "mic_ertapenem_ambul", 
+        "meropenem_ambul", "mic_meropenem_ambul", "amicacina_ambul", "mic_amicacina_ambul", 
+        "gentamicina_ambul", "mic_gentamicina_ambul", "cido_nalidixico", "mic_cido_nalidixico", 
+        "ciprofloxacino", "mic_ciprofloxacino", "norfloxacino", "mic_norfloxacino", 
+        "nitrofurantoina", "mic_nitrofurantoina", "trimetoprima_sulfametoxazol", 
+        "mic_trimetoprima_sulfametoxazol", "levofloxacina", "mic_levofloxacina", 
+        "gram_positivo", "benzilpenicilina", "mic_benzilpenicilina", "ampicilina_gram_positivo", 
+        "mic_ampicilina_gram_positivo", "oxacilina", "mic_oxacilina", "ceftarolina_pneumonia", 
+        "mic_ceftarolina_pneumonia", "ceftarolina_outra", "mic_ceftarolina_outra", 
+        "estreptomicina", "mic_estreptomicina", "gentamicina_gram_positivo", 
+        "mic_gentamicina_gram_positivo", "levofloxacina_gram_positivo", 
+        "mic_levofloxacina_gram_positivo", "eritromicina", "mic_eritromicina", "clindamicina", 
+        "mic_clindamicina", "linezolid", "mic_linezolid", "daptomicina", "mic_daptomicina", 
+        "teicoplanina", "mic_teicoplanina", "vancomicina", "mic_vancomicina", 
+        "tigeciclina_gram_positivo", "mic_tigeciclina_gram_positivo", "rifampicina", 
+        "mic_rifampicina", "trimetoprima_sulfametaxazol_gram_positivo", 
+        "mic_trimetoprima_sulfametaxazol_gram_positivo", "nitrofurantoina_gram_positivo", 
+        "mic_nitrofurantoina_gram_positivo", "para_leveduras", "fluconazol", "mic_fluconazol", 
+        "voriconazol", "mic_voriconazol", "caspofungina", "mic_caspofungina", "micafungina", 
+        "mic_micafungina", "anfotericina_b", "mic_anfotericina", "fluocitosina", 
+        "mic_fluocitosina"
+    ]
+    df_final = df_renamed.drop(columns=cols_to_drop, errors='ignore')
     return df_final
 
 # Funções para tratamento de PDFs
