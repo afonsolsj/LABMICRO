@@ -381,12 +381,14 @@ def extract_fields_positive(report_text, df_name):
                     elif p == "i":
                         return 3
             return 4
+
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
-            is_amb = "amb" in get_value("Procedência.:")
-            has_special_drug = "ceftazidima/avibactam" in report_lower
-            should_process = type_micro == 1 and (not is_amb or has_special_drug)
-            if should_process:
+            if "amb" not in get_value("Procedência.:") and type_micro == 1:
+                valores = [result_ast(get_value(c)) for c in campos]
+                gram_negativo_gn_hospitala = 1
+                return (*valores, gram_negativo_gn_hospitala)
+            elif "ceftazidima/avibactam" in report_lower and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
@@ -396,17 +398,18 @@ def extract_fields_positive(report_text, df_name):
                 return (*valores, gram_negativo_gn_hospitala)
         def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
-            is_amb = "amb" in get_value("Procedência.:")
-            has_special_drug = "ceftazidima/avibactam" in report_lower
-            should_process = type_micro == 1 and is_amb and not has_special_drug
-            if should_process:
+            if "amb" in get_value("Procedência.:") and type_micro == 1:
+                valores = [result_ast(get_value(c)) for c in campos]
+                gram_negativo_gn_ambulatorio = 1
+                return (*valores, gram_negativo_gn_ambulatorio)
+            elif "ceftazidima/avibactam" not in report_lower and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_ambulatorio = 1
                 return (*valores, gram_negativo_gn_ambulatorio)
             else:
                 valores = [""] * len(campos)
                 gram_negativo_gn_ambulatorio = 2
-                return (*valores, gram_negativo_gn_ambulatorio)
+                return (*valores, gram_negativo_gn_ambulatorio) 
         def get_leveduras_values(get_value, result_ast, report_text, type_micro):
             campos = ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]
             if any(x in report_text.lower() for x in campos) and type_micro == 2:
@@ -798,11 +801,26 @@ def filter_general(df_general):
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "via_coleta"], inplace=True, errors="ignore")
     return df_final
-def filter_only_blood(df):
+def filter_only_blood_and_rename(df):
     if "qual_tipo_de_material" in df.columns:
         mask = df["qual_tipo_de_material"].astype(str).str.strip() == "5"
-        return df[mask]
-    return df
+        df_filtered = df[mask].copy()
+    else:
+        df_filtered = df.copy()
+    novos_nomes = {
+        "id": "record_id",
+        "n_mero_do_pedido": "numero_pedido",
+        "n_mero_do_prontu_rio": "prontuario",
+        "setor_de_origem": "setor_origem",
+        "qual_microorganismo": "micro_positivo",
+        "data_de_entrada": "data_entrada",
+        "data_da_libera_o": "data_liberacao",
+        "tempo_de_libera_o_dias": "prazo_entrega",
+        "cat_tempo_de_libera_o_dias": "categ_entrega",
+        "dados_microbiologia_complete": "form_1_complete"
+    }
+    df_final = df_filtered.rename(columns=novos_nomes)
+    return df_final
 
 # Funções para tratamento de PDFs
 def split_pdf_in_chunks(pdf_file, max_pages=400):
