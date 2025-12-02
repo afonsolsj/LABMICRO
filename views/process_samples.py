@@ -381,11 +381,9 @@ def extract_fields_positive(report_text, df_name):
                     elif p == "i":
                         return 3
             return 4
-
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
             if "amb" not in get_value("Procedência.:") and type_micro == 1:
-                print(get_value("Procedência.:"))
                 valores = [result_ast(get_value(c)) for c in campos]
                 gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
@@ -802,7 +800,7 @@ def filter_general(df_general):
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "via_coleta"], inplace=True, errors="ignore")
     return df_final
-def filter_only_blood_and_rename(df):
+def filter_only_blood(df):
     if "qual_tipo_de_material" in df.columns:
         mask = df["qual_tipo_de_material"].astype(str).str.strip() == "5"
         df_filtered = df[mask].copy()
