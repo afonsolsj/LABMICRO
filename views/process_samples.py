@@ -166,16 +166,18 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                         df.at[idx, mat_col] = default_val
         if "qual_microorganismo" in df.columns:
             micro_col = "qual_microorganismo"
+            sorted_micro_names = sorted(all_microorganisms.keys(), key=len, reverse=True)
             for idx, val in df[micro_col].items():
-                val_norm = str(val).strip()
+                val_norm = str(val).strip().lower()
                 if not val_norm:
-                    continue
-                best_match = process.extractOne(query=val_norm, choices=micro_choices, scorer=fuzz.ratio)
-                if best_match is not None:
-                    matched_string, score = best_match[0], best_match[1]
-                    if score >= similarity_threshold:
-                        code = all_microorganisms[matched_string]
+                    continue      
+                match_found = False
+                for micro_name in sorted_micro_names:
+                    if micro_name.lower() in val_norm:
+                        code = all_microorganisms[micro_name]
                         df.at[idx, micro_col] = code
+                        match_found = True
+                        break
         if "qual_microorganismo" in df.columns:
             df["qual_microorganismo"] = df["qual_microorganismo"].astype(str).str.strip()
             df.loc[df["qual_microorganismo"] == "Outro", "qual_microorganismo"] = 29
@@ -282,22 +284,14 @@ def extract_fields_positive(report_text, df_name):
                 return value
             return ""
         def classify_microorganism(value):
-            val_lower = value.lower()
-            def fuzzy_match(dic):
-                for item in dic:
-                    score = fuzz.token_set_ratio(val_lower, item.lower())
-                    if score >= 80:
-                        return True
-                return False
-            groups = [(microorganisms_gnb, 1), (microorganisms_gpc, 0), (microorganisms_gpb, 3), (microorganisms_fy, 2),]
+            if not value:
+                return ""
+            val_lower = value.lower().strip()
+            groups = [(microorganisms_gnb, 1), (microorganisms_gpc, 0), (microorganisms_gpb, 3), (microorganisms_fy, 2)]
             for dic, code in groups:
-                if fuzzy_match(dic):
-                    return code
-            first_word = value.split()[0].lower() if value else ""
-            if first_word:
-                for dic, code in groups:
-                    if any(first_word in item.lower() for item in dic):
-                        return code
+                for item in dic:
+                    if item.lower() in val_lower:
+                        return code                        
             return ""
         def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
             if "(pos)" in get_value("esbl"):
