@@ -287,11 +287,14 @@ def extract_fields_positive(report_text, df_name):
             if not value:
                 return ""
             val_lower = value.lower().strip()
+            if not val_lower:
+                return ""
+            first_word = val_lower.split()[0] 
             groups = [(microorganisms_gnb, 1), (microorganisms_gpc, 0), (microorganisms_gpb, 3), (microorganisms_fy, 2)]
             for dic, code in groups:
                 for item in dic:
-                    if item.lower() in val_lower:
-                        return code                        
+                    if item.lower() == first_word:
+                        return code
             return ""
         def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
             if "(pos)" in get_value("esbl"):
