@@ -34,11 +34,11 @@ df_vigilance = pd.DataFrame(columns=st.secrets["columns"]["vigilance"]); df_vigi
 df_smear = pd.DataFrame(columns=st.secrets["columns"]["smear_microscopy"]); df_smear.name = "smear"
 
 # Função de estilização/download
-def style_download(df_geral, df_vigilancia, df_baciloscopia, nome_arquivo_zip="relatorios_processados.zip"):
+def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arquivo_zip="relatorios_processados.zip"):
     status.update(label="Estilizando planilhas...", state="running", expanded=False)
     try:
         zip_buffer = io.BytesIO()
-        dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia}
+        dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia, "Hemocultura.xlsx": df_blood}
         cols_required = ["record_id", "id", "hospital_de_origem", "n_mero_do_pedido", "n_mero_do_prontu_rio", "sexo", "idade", "idade_anos", "data_da_entrada", "setor_de_origem", "tipo_de_material", "qual_tipo_de_material", "data_da_libera_o", "resultado", "data_agora", "formulrio_complete"]
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for nome_arquivo_excel, df in dfs_para_exportar.items():
@@ -899,5 +899,5 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=85)
     df_blood = df_general.copy()
     df_general = filter_blood_general(df_general)
-    style_download(df_general, df_vigilance, df_smear, df_blood)
+    style_download(df_general, df_vigilance, df_smear, df_blood, nome_arquivo_zip="relatorios_processados.zip")
     status.update(label="Concluído", state="complete", expanded=False)
