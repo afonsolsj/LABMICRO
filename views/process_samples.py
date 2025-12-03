@@ -284,12 +284,14 @@ def extract_fields_positive(report_text, df_name):
         def classify_microorganism(value):
             if not value:
                 return ""
-            first_word = value.split()[0].lower()
+            first_word_input = value.strip().split()[0].lower()
             groups = [(microorganisms_gpc, 0), (microorganisms_gnb, 1), (microorganisms_fy, 2), (microorganisms_gpb, 3)]
             for dic, code in groups:
                 for item in dic:
-                    if first_word in item.lower():
-                        return code      
+                    if not item: continue
+                    first_word_dict = item.strip().split()[0].lower()
+                    if first_word_input == first_word_dict:
+                        return code     
             return ""
         def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
             if "(pos)" in get_value("esbl"):
