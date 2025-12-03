@@ -381,9 +381,10 @@ def extract_fields_positive(report_text, df_name):
             return 4
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
-            condicao_padrao = "AMB" not in get_value("Procedência.:") and type_micro == 1
-            condicao_droga = "ceftazidima/avibactam" in report_lower and type_micro == 1
-            if condicao_padrao or condicao_droga:
+            tem_medicamento_hospitalar = "ceftazidima/avibactam" in report_lower
+            nao_e_ambulatorio = "AMB" not in get_value("Procedência.:")
+            eh_hospitalar = (type_micro == 1) and (tem_medicamento_hospitalar or nao_e_ambulatorio)
+            if eh_hospitalar:
                 valores = [result_ast(get_value(c)) for c in campos]
                 if all(v == 4 for v in valores):
                      valores = [""] * len(campos)
@@ -397,13 +398,16 @@ def extract_fields_positive(report_text, df_name):
                 return (*valores, gram_negativo_gn_hospitala)
         def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
-            if "AMB" in get_value("Procedência.:") and type_micro == 1:
+            tem_medicamento_hospitalar = "ceftazidima/avibactam" in report_lower
+            eh_local_amb = "AMB" in get_value("Procedência.:")
+            eh_ambulatorial = (type_micro == 1) and (not tem_medicamento_hospitalar and eh_local_amb)
+            if eh_ambulatorial:
                 valores = [result_ast(get_value(c)) for c in campos]
                 if all(v == 4 for v in valores):
                      valores = [""] * len(campos)
                      gram_negativo_gn_ambulatorio = 2
                 else:
-                     gram_negativo_gn_ambulatorio = 1  
+                     gram_negativo_gn_ambulatorio = 1 
                 return (*valores, gram_negativo_gn_ambulatorio)
             else:
                 valores = [""] * len(campos)
