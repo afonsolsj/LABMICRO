@@ -757,7 +757,7 @@ def process_smear(report_text, row_idx=None):
                     df_smear.at[row_idx, key] = val
 
 # Função para filtrar pedidos
-def filter_blood_general(df_general):
+def filter_general(df_general):
     df_general["pedido_inicial"] = df_general["n_mero_do_pedido"].astype(str).str[:-2]
     resultados = []
     df_vazio = df_general[df_general["n_mero_do_pedido"].astype(str) == ""]
@@ -802,7 +802,7 @@ def filter_blood_general(df_general):
                 if len(linha_origem) > 0:
                     linha_origem = linha_origem.iloc[0]
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
-    df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido"], inplace=True, errors="ignore")
+    df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "laudo_unico", "via_coleta"], inplace=True, errors="ignore")
     return df_final
 
 # Funções para tratamento de PDFs
@@ -903,6 +903,6 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=70)
-    df_general = filter_blood_general(df_general)
+    df_general = filter_general(df_general)
     style_download(df_general, df_vigilance, df_smear)
     status.update(label="Concluído", state="complete", expanded=False)
