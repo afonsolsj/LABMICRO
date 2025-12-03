@@ -165,17 +165,14 @@ def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_or
                         df.at[idx, outro_col] = val
                         df.at[idx, mat_col] = default_val
         if "qual_microorganismo" in df.columns:
-            micro_col = "qual_microorganismo"
-            for idx, val in df[micro_col].items():
-                val_norm = str(val).strip()
-                if not val_norm:
-                    continue
-                best_match = process.extractOne(query=val_norm, choices=micro_choices, scorer=fuzz.ratio)
-                if best_match is not None:
-                    matched_string, score = best_match[0], best_match[1]
-                    if score >= similarity_threshold:
-                        code = all_microorganisms[matched_string]
-                        df.at[idx, micro_col] = code
+                    micro_col = "qual_microorganismo"
+                    for idx, val in df[micro_col].items():
+                        val_norm = str(val).strip().lower()
+                        if not val_norm:
+                            continue
+                        if val_norm in all_microorganisms:
+                            code = all_microorganisms[val_norm]
+                            df.at[idx, micro_col] = code
         if "qual_microorganismo" in df.columns:
             df["qual_microorganismo"] = df["qual_microorganismo"].astype(str).str.strip()
             df.loc[df["qual_microorganismo"] == "Outro", "qual_microorganismo"] = 29
