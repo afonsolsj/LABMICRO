@@ -282,22 +282,14 @@ def extract_fields_positive(report_text, df_name):
                 return value
             return ""
         def classify_microorganism(value):
-            val_lower = value.lower()
-            def fuzzy_match(dic):
-                for item in dic:
-                    score = fuzz.token_set_ratio(val_lower, item.lower())
-                    if score >= 80:
-                        return True
-                return False
-            groups = [(microorganisms_gnb, 1), (microorganisms_gpc, 0), (microorganisms_gpb, 3), (microorganisms_fy, 2),]
+            if not value:
+                return ""
+            first_word = value.split()[0].lower()
+            groups = [(microorganisms_gpc, 0), (microorganisms_gnb, 1), (microorganisms_fy, 2), (microorganisms_gpb, 3)]
             for dic, code in groups:
-                if fuzzy_match(dic):
-                    return code
-            first_word = value.split()[0].lower() if value else ""
-            if first_word:
-                for dic, code in groups:
-                    if any(first_word in item.lower() for item in dic):
-                        return code
+                for item in dic:
+                    if first_word in item.lower():
+                        return code      
             return ""
         def get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final):
             if "(pos)" in get_value("esbl"):
@@ -389,13 +381,15 @@ def extract_fields_positive(report_text, df_name):
             return 4
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
-            if "AMB" not in get_value("Procedência.:") and type_micro == 1:
+            condicao_padrao = "AMB" not in get_value("Procedência.:") and type_micro == 1
+            condicao_droga = "ceftazidima/avibactam" in report_lower and type_micro == 1
+            if condicao_padrao or condicao_droga:
                 valores = [result_ast(get_value(c)) for c in campos]
-                gram_negativo_gn_hospitala = 1
-                return (*valores, gram_negativo_gn_hospitala)
-            elif "ceftazidima/avibactam" in report_lower and type_micro == 1:
-                valores = [result_ast(get_value(c)) for c in campos]
-                gram_negativo_gn_hospitala = 1
+                if all(v == 4 for v in valores):
+                     valores = [""] * len(campos)
+                     gram_negativo_gn_hospitala = 2
+                else:
+                     gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
             else:
                 valores = [""] * len(campos)
@@ -405,11 +399,11 @@ def extract_fields_positive(report_text, df_name):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
             if "AMB" in get_value("Procedência.:") and type_micro == 1:
                 valores = [result_ast(get_value(c)) for c in campos]
-                gram_negativo_gn_ambulatorio = 1
-                return (*valores, gram_negativo_gn_ambulatorio)
-            elif "ceftazidima/avibactam" not in report_lower and type_micro == 1:
-                valores = [result_ast(get_value(c)) for c in campos]
-                gram_negativo_gn_ambulatorio = 1
+                if all(v == 4 for v in valores):
+                     valores = [""] * len(campos)
+                     gram_negativo_gn_ambulatorio = 2
+                else:
+                     gram_negativo_gn_ambulatorio = 1  
                 return (*valores, gram_negativo_gn_ambulatorio)
             else:
                 valores = [""] * len(campos)
