@@ -430,17 +430,18 @@ def extract_fields_positive(report_text, df_name):
                 return (*valores, para_leveduras)
         def get_gram_positivo_values(get_value, result_ast, report_text, type_micro):
             campos = ["benzilpenicilina", "ampicilina (iv)", "oxacilina", "ceftarolina", "ESTE_E_FIXO_4", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]
-            if any(x in report_text.lower() for x in ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]) and type_micro == 0:
+            filtros = ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]
+            if any(x in report_text.lower() for x in filtros) and type_micro == 0:
                 valores = []
                 for c in campos:
                     if c == "ESTE_E_FIXO_4":
-                        valores.append(4)
+                        valores.append((4, "")) 
                     else:
                         valores.append(result_ast(get_value(c)))
                 gram_positivo = 1
                 return (*valores, gram_positivo)
             else:
-                valores = [""] * len(campos)
+                valores = [(4, "")] * len(campos)
                 gram_positivo = 2
                 return (*valores, gram_positivo)
         def get_imunocromat(report_lower):
@@ -488,24 +489,42 @@ def extract_fields_positive(report_text, df_name):
             "fluocitosina": fluocitosina[0],
             "mic_fluocitosina": fluocitosina[1],
             "para_leveduras": para_leveduras,
-            "benzilpenicilina": benzilpenicilina,
-            "ampicilina_gram_positivo": ampicilina_gram_positivo,
-            "oxacilina": oxacilina,
-            "ceftarolina_pneumonia": ceftarolina_pneumonia,
-            "ceftarolina_outra": ceftarolina_outra,
-            "estreptomicina": estreptomicina,
-            "gentamicina_gram_positivo": gentamicina_gram_positivo,
-            "levofloxacina_gram_positivo": levofloxacina_gram_positivo,
-            "eritromicina": eritromicina,
-            "clindamicina": clindamicina,
-            "linezolid": linezolid,
-            "daptomicina": daptomicina,
-            "teicoplanina": teicoplanina,
-            "vancomicina": vancomicina,
-            "tigeciclina_gram_positivo": tigeciclina_gram_positivo,
-            "rifampicina": rifampicina,
-            "trimetoprima_sulfametaxazol_gram_positivo": trimetoprima_sulfametaxazol_gram_positivo,
-            "nitrofurantoina_gram_positivo": nitrofurantoina_gram_positivo,
+            "benzilpenicilina": benzilpenicilina[0],
+            "mic_benzilpenicilina": benzilpenicilina[1],
+            "ampicilina_gram_positivo": ampicilina_gram_positivo[0],
+            "mic_ampicilina_gram_positivo": ampicilina_gram_positivo[1],
+            "oxacilina": oxacilina[0],
+            "mic_oxacilina": oxacilina[1],
+            "ceftarolina_pneumonia": ceftarolina_pneumonia[0],
+            "mic_ceftarolina_pneumonia": ceftarolina_pneumonia[1],
+            "ceftarolina_outra": ceftarolina_outra[0],
+            "mic_ceftarolina_outra": ceftarolina_outra[1],
+            "estreptomicina": estreptomicina[0],
+            "mic_estreptomicina": estreptomicina[1],
+            "gentamicina_gram_positivo": gentamicina_gram_positivo[0],
+            "mic_gentamicina_gram_positivo": gentamicina_gram_positivo[1],
+            "levofloxacina_gram_positivo": levofloxacina_gram_positivo[0],
+            "mic_levofloxacina_gram_positivo": levofloxacina_gram_positivo[1],
+            "eritromicina": eritromicina[0],
+            "mic_eritromicina": eritromicina[1],
+            "clindamicina": clindamicina[0],
+            "mic_clindamicina": clindamicina[1],
+            "linezolid": linezolid[0],
+            "mic_linezolid": linezolid[1],
+            "daptomicina": daptomicina[0],
+            "mic_daptomicina": daptomicina[1],
+            "teicoplanina": teicoplanina[0],
+            "mic_teicoplanina": teicoplanina[1],
+            "vancomicina": vancomicina[0],
+            "mic_vancomicina": vancomicina[1],
+            "tigeciclina_gram_positivo": tigeciclina_gram_positivo[0],
+            "mic_tigeciclina_gram_positivo": tigeciclina_gram_positivo[1],
+            "rifampicina": rifampicina[0],
+            "mic_rifampicina": rifampicina[1],
+            "trimetoprima_sulfametaxazol_gram_positivo": trimetoprima_sulfametaxazol_gram_positivo[0],
+            "mic_trimetoprima_sulfametaxazol_gram_positivo": trimetoprima_sulfametaxazol_gram_positivo[1],
+            "nitrofurantoina_gram_positivo": nitrofurantoina_gram_positivo[0],
+            "mic_nitrofurantoina_gram_positivo": nitrofurantoina_gram_positivo[1],
             "gram_positivo": gram_positivo,
             "amoxicilina": amoxicilina,
             "aztreonam": aztreonam,
