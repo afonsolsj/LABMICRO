@@ -685,7 +685,8 @@ def extract_fields(report_text, df_name):
         "data_agora": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
         "check_ver_resultado_em": check_see_result(report_lower),
-        "ver_resultado_em_pedido": get_value("ver resultado do antibiograma no")
+        "ver_resultado_em_pedido": get_value("ver resultado do antibiograma no"),
+        "via_coleta": get_value("Sítio da coleta:"),
     }
 
 # Funções de processamento
