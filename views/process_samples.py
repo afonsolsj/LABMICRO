@@ -405,18 +405,19 @@ def extract_fields_positive(report_text, df_name):
         def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
             campos = ["ampicilina", "amoxicilina/ácido clavulânico (urine)", "piperacilina/tazobactam", "cefalexina", "cefalotina", "cefuroxima", "cefuroxima axetil", "ceftriaxona", "cefepima", "ertapenem", "meropenem", "amicacina", "gentamicina", "ácido nalidíxico", "ciprofloxacino", "norfloxacino", "nitrofurantoina", "trimetoprim/sulfametoxazol", "levofloxacina",]
             tem_medicamento_hospitalar = "ceftazidima/avibactam" in report_lower
-            eh_local_amb = "AMB" in get_value("Procedência.:")
+            proc_val = get_value("Procedência.:")
+            eh_local_amb = "AMB" in (proc_val if proc_val else "")
             eh_ambulatorial = (type_micro == 1) and (not tem_medicamento_hospitalar and eh_local_amb)
             if eh_ambulatorial:
                 valores = [result_ast(get_value(c)) for c in campos]
-                if all(v == 4 for v in valores):
-                     valores = [""] * len(campos)
-                     gram_negativo_gn_ambulatorio = 2
+                if all(v[0] == 4 for v in valores):
+                    valores = [("", "")] * len(campos)
+                    gram_negativo_gn_ambulatorio = 2
                 else:
-                     gram_negativo_gn_ambulatorio = 1 
+                    gram_negativo_gn_ambulatorio = 1 
                 return (*valores, gram_negativo_gn_ambulatorio)
             else:
-                valores = [""] * len(campos)
+                valores = [("", "")] * len(campos)
                 gram_negativo_gn_ambulatorio = 2
                 return (*valores, gram_negativo_gn_ambulatorio)
         def get_leveduras_values(get_value, result_ast, report_text, type_micro):
