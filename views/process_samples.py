@@ -387,18 +387,19 @@ def extract_fields_positive(report_text, df_name):
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
             tem_medicamento_hospitalar = "ceftazidima/avibactam" in report_lower
-            nao_e_ambulatorio = "AMB" not in get_value("Procedência.:")
+            proc_val = get_value("Procedência.:")
+            nao_e_ambulatorio = "AMB" not in (proc_val if proc_val else "")
             eh_hospitalar = (type_micro == 1) and (tem_medicamento_hospitalar or nao_e_ambulatorio)
             if eh_hospitalar:
                 valores = [result_ast(get_value(c)) for c in campos]
-                if all(v == 4 for v in valores):
-                     valores = [""] * len(campos)
-                     gram_negativo_gn_hospitala = 2
+                if all(v[0] == 4 for v in valores):
+                    valores = [("", "")] * len(campos)
+                    gram_negativo_gn_hospitala = 2
                 else:
-                     gram_negativo_gn_hospitala = 1
+                    gram_negativo_gn_hospitala = 1
                 return (*valores, gram_negativo_gn_hospitala)
             else:
-                valores = [""] * len(campos)
+                valores = [("", "")] * len(campos)
                 gram_negativo_gn_hospitala = 2
                 return (*valores, gram_negativo_gn_hospitala)
         def get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro):
