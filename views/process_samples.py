@@ -425,7 +425,7 @@ def extract_fields_positive(report_text, df_name):
                 para_leveduras = 1
                 return (*valores, para_leveduras)
             else:
-                valores = [""] * len(campos)
+                valores = [(4, "")] * len(campos) 
                 para_leveduras = 2
                 return (*valores, para_leveduras)
         def get_gram_positivo_values(get_value, result_ast, report_text, type_micro):
