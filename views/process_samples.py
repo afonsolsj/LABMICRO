@@ -367,17 +367,23 @@ def extract_fields_positive(report_text, df_name):
             return mcim, ecim
         def result_ast(value):
             if not value:
-                return 4
-            parts = value.lower().split()
-            for p in parts:
-                if p in ["s", "r", "i"]:
-                    if p == "s":
-                        return 1
-                    elif p == "r":
-                        return 2
-                    elif p == "i":
-                        return 3
-            return 4
+                return 4, ""
+            texto = value.lower()
+            status_code = 4
+            parts = texto.split()
+            if "s" in parts:
+                status_code = 1
+            elif "r" in parts:
+                status_code = 2
+            elif "i" in parts:
+                status_code = 3
+            padrao_mic = r"([<>]?=?\s*\d+([.,]\d+)?)"
+            match = re.search(padrao_mic, value)
+            if match:
+                mic_value = match.group(0).strip()
+            else:
+                mic_value = ""
+            return status_code, mic_value
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
             campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
             tem_medicamento_hospitalar = "ceftazidima/avibactam" in report_lower
@@ -469,12 +475,18 @@ def extract_fields_positive(report_text, df_name):
             "outro_microorganismo": other_micro,
             "apresenta_mcim": code_mcim,
             "apresenta_ecim": code_ecim,
-            "fluconazol": fluconazol,
-            "voriconazol": voriconazol,
-            "caspofungina": caspofungina,
-            "micafungina": micafungina,
-            "anfotericina_b": anfotericina_b,
-            "fluocitosina": fluocitosina,
+            "fluconazol": fluconazol[0],
+            "mic_fluconazol": fluconazol[1],
+            "voriconazol": voriconazol[0],
+            "mic_voriconazol": voriconazol[1],
+            "caspofungina": caspofungina[0],
+            "mic_caspofungina": caspofungina[1],
+            "micafungina": micafungina[0],
+            "mic_micafungina": micafungina[1],
+            "anfotericina_b": anfotericina_b[0],
+            "mic_anfotericina": anfotericina_b[1],
+            "fluocitosina": fluocitosina[0],
+            "mic_fluocitosina": fluocitosina[1],
             "para_leveduras": para_leveduras,
             "benzilpenicilina": benzilpenicilina,
             "ampicilina_gram_positivo": ampicilina_gram_positivo,
