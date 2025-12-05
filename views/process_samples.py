@@ -120,32 +120,15 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arqu
         st.exception(e)
 
 # Função de comparação
-def compare_data(dfs, substitution_dict, materials_dicts, microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, blood_collection=blood_collection):
+def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb):
     all_microorganisms = {}
     all_microorganisms.update(microorganisms_gnb)
     all_microorganisms.update(microorganisms_gpc)
     all_microorganisms.update(microorganisms_fy)
     all_microorganisms.update(microorganisms_gpb)
-    possiveis_colunas_setor = ["setor_de_origem", "setor_origem"]
     for df in dfs:
-        coluna_encontrada = None
-        for col in possiveis_colunas_setor:
-            if col in df.columns:
-                coluna_encontrada = col
-                break
-        if coluna_encontrada:
-            df[coluna_encontrada] = df[coluna_encontrada].str.upper().map(substitution_dict).fillna(df[coluna_encontrada])
-        if "via_coleta" in df.columns and blood_collection:
-            for idx, val in df["via_coleta"].items():
-                if pd.isna(val): 
-                    continue
-                val_str = str(val).upper()
-                match = False
-                for trecho_chave, codigo in blood_collection.items():
-                    if trecho_chave.upper() in val_str:
-                        df.at[idx, "via_coleta"] = codigo
-                        match = True
-                        break
+        if setor_col in df.columns:
+            df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
         if df is df_general and "qual_tipo_de_material" in df.columns:
             mat_col = "qual_tipo_de_material"
             outro_col = "outro_tipo_de_material"
@@ -1068,10 +1051,10 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                     st.success(f"Parte {idx} concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
-            df_list = [df_general, df_vigilance, df_smear, df_blood]
-            df_general, df_vigilance, df_smear, df_blood = fill_outcome(uploaded_reports_discharge, df_list)
-        df_blood = filter_blood(df_blood)
-        df_general, df_vigilance, df_smear, df_blood = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
+            df_list = [df_general, df_vigilance, df_smear]
+            df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
+        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
     df_general = filter_general(df_general)
+    df_blood = filter_blood(df_blood)
     style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
