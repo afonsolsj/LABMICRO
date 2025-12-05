@@ -923,7 +923,7 @@ def filter_blood(df):
     mic_micafungina anfotericina_b mic_anfotericina fluocitosina mic_fluocitosina 
     qual_tipo_de_material outro_tipo_de_material desfecho_do_paciente observa_es 
     check_ver_resultado_em ver_resultado_em_pedido laudo_unico outro_microorganismo 
-    qual_o_tipo_de_microorganismo
+    qual_o_tipo_de_microorganismo faz_parte_projeto_cdc_rfa
     """.split()
     df_filter_blood = df_filter_blood.drop(columns=colunas_para_remover, errors='ignore')  
     novos_nomes = {
@@ -939,6 +939,13 @@ def filter_blood(df):
         "qual_microorganismo": "micro_positivo"
     }
     df_filter_blood = df_filter_blood.rename(columns=novos_nomes)
+    ordem_final = [
+        "record_id", "hospital", "numero_pedido", "prontuario", "setor_origem", 
+        "via_coleta", "resultado", "micro_positivo", "micro_contaminado", 
+        "data_entrada", "data_liberacao", "prazo_entrega", "categ_entrega", 
+        "data_agora", "form_1_complete"
+    ]
+    df_filter_blood = df_filter_blood.reindex(columns=ordem_final)
     return df_filter_blood
 
 # Funções para tratamento de PDFs
