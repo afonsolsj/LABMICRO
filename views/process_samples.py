@@ -883,9 +883,18 @@ def filter_general(df_general):
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "laudo_unico", "via_coleta"], inplace=True, errors="ignore")
     return df_final
-def filter_blood(df):
+def filter_blood(df, blood_collection=blood_collection, microorganism_blood_positive=microorganism_blood_positive, microorganism_blood_contaminated=microorganism_blood_contaminated):
     df_filter_blood = df[df['qual_tipo_de_material'].str.lower().str.strip() == "sangue"].copy()
     df_filter_blood['micro_contaminado'] = None
+    if "via_coleta" in df_filter_blood.columns and blood_collection:
+        for idx, val in df_filter_blood["via_coleta"].items():
+            if pd.isna(val): 
+                continue
+            val_str = str(val).upper()
+            for trecho_chave, codigo in blood_collection.items():
+                if trecho_chave.upper() in val_str:
+                    df_filter_blood.at[idx, "via_coleta"] = codigo
+                    break
     colunas_para_remover = """
     tem_mecanismo_resist_ncia qual_gene_de_mecanismo_res qual_outro_mecanismo_de_re 
     apresenta_mcim apresenta_ecim apresenta_carbapenase realizou_teste_imunogromat 
@@ -944,6 +953,23 @@ def filter_blood(df):
         "qual_microorganismo": "micro_positivo"
     }
     df_filter_blood = df_filter_blood.rename(columns=novos_nomes)
+    if "micro_positivo" in df_filter_blood.columns and "resultado" in df_filter_blood.columns:
+        for idx, val in df_filter_blood["micro_positivo"].items():
+            if pd.isna(val):
+                continue
+            val_str = str(val).upper() 
+            found = False 
+            if microorganism_blood_positive:
+                for key in microorganism_blood_positive:
+                    if key.upper() in val_str:
+                        df_filter_blood.at[idx, "resultado"] = 1
+                        found = True
+                        break
+            if not found and microorganism_blood_contaminated:
+                for key in microorganism_blood_contaminated:
+                    if key.upper() in val_str:
+                        df_filter_blood.at[idx, "resultado"] = 2
+                        break
     if 'resultado' in df_filter_blood.columns:
          df_filter_blood['resultado'] = df_filter_blood['resultado'].replace(0, 2)
     ordem_final = [
