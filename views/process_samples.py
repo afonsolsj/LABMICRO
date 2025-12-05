@@ -85,8 +85,13 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arqu
                         col_idx = df.columns.get_loc("qual_microorganismo")
                         cell_range = (1, col_idx, max_row, col_idx)
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '29', 'format': yellow_format})
-                    if "setor_de_origem" in df.columns or "setor_origem" in df.columns:
+                    if "setor_de_origem" in df.columns:
                         col_idx = df.columns.get_loc("setor_de_origem")
+                        cell_range = (1, col_idx, max_row, col_idx)
+                        first_cell = xl_rowcol_to_cell(1, col_idx)
+                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
+                    if "setor_origem" in df.columns:
+                        col_idx = df.columns.get_loc("setor_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
                         first_cell = xl_rowcol_to_cell(1, col_idx)
                         worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
