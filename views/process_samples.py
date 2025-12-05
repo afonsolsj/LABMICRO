@@ -7,7 +7,6 @@ import pdfplumber
 import tempfile
 from pypdf import PdfReader, PdfWriter
 from datetime import datetime, timedelta
-from rapidfuzz import fuzz, process
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 # Planilhas auxiliares GitHub
@@ -763,7 +762,7 @@ def extract_fields(report_text, df_name):
         "column_aux1": "".join(re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ\s]+", get_value("Prontuário..:"))).strip(),
         "check_ver_resultado_em": check_see_result(report_lower),
         "ver_resultado_em_pedido": get_value("ver resultado do antibiograma no"),
-        "via_coleta": get_value("Sítio da coleta:"),
+        "via_coleta": (get_value("Sítio da coleta:") or "").split('|')[0].strip(),
     }
 
 # Funções de processamento
@@ -880,7 +879,7 @@ def filter_general(df_general):
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "laudo_unico", "via_coleta"], inplace=True, errors="ignore")
     return df_final
 def filter_blood(df):
-    df_filter_blood = df[df['qual_tipo_de_material'] == 5].copy()
+    df_filter_blood = df[df['qual_tipo_de_material'].str.lower().str.strip() == "sangue"].copy()
     return df_filter_blood
 
 # Funções para tratamento de PDFs
@@ -980,8 +979,8 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         if uploaded_reports_discharge:
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
+            df_blood = df_general.copy()
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb, similarity_threshold=70)
-    df_blood = df_general.copy()
     df_general = filter_general(df_general)
     df_blood = filter_blood(df_blood)
     style_download(df_general, df_vigilance, df_smear, df_blood)
