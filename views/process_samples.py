@@ -968,21 +968,22 @@ def filter_blood(df, substitution_departments=substitution_departments, blood_co
                     df_filter_blood.at[idx, "setor_origem"] = novo_valor
                     break
     if "micro_positivo" in df_filter_blood.columns and "resultado" in df_filter_blood.columns and "numero_pedido" in df_filter_blood.columns:
-        temp_classification = {} 
+        temp_classification = {}
         for idx, val in df_filter_blood["micro_positivo"].items():
             if pd.isna(val): continue
             val_str = str(val).upper()
-            found = False
-            if microorganism_blood_positive:
-                for trecho, codigo in microorganism_blood_positive.items():
-                    if trecho.upper() in val_str:
-                        temp_classification[idx] = {'code': codigo, 'type': 'pathogen', 'matched_key': trecho}
-                        found = True
-                        break
-            if not found and microorganism_blood_contaminated:
+            found_classification = False
+            if microorganism_blood_contaminated:
                 for trecho, codigo in microorganism_blood_contaminated.items():
                     if trecho.upper() in val_str:
                         temp_classification[idx] = {'code': codigo, 'type': 'contaminant', 'matched_key': trecho}
+                        found_classification = True
+                        break
+            if not found_classification and microorganism_blood_positive:
+                for trecho, codigo in microorganism_blood_positive.items():
+                    if trecho.upper() in val_str:
+                        temp_classification[idx] = {'code': codigo, 'type': 'pathogen', 'matched_key': trecho}
+                        found_classification = True
                         break
         df_filter_blood['temp_group_id'] = df_filter_blood['numero_pedido'].astype(str).apply(lambda x: x[:-2] if len(x) > 2 else x)
         grupos = df_filter_blood.groupby('temp_group_id')
@@ -996,28 +997,30 @@ def filter_blood(df, substitution_departments=substitution_departments, blood_co
                 if idx not in temp_classification:
                     continue 
                 info = temp_classification[idx]
-                final_decision = None
+                matched_key = info['matched_key']
                 if info['type'] == 'pathogen':
-                    final_decision = 'infection'
-                elif info['type'] == 'contaminant':
-                    count_match = contaminants_in_group.count(info['code'])
-                    if count_match >= 2 or total_samples == 1:
-                        final_decision = 'infection'
-                    else:
-                        final_decision = 'contamination'
-                if final_decision == 'infection':
                     df_filter_blood.at[idx, "resultado"] = 1
-                    codigo_final = info['code']
-                    if microorganism_blood_positive and info['matched_key'] in microorganism_blood_positive:
-                        codigo_final = microorganism_blood_positive[info['matched_key']]
-                    df_filter_blood.at[idx, "micro_positivo"] = codigo_final
-                elif final_decision == 'contamination':
-                    df_filter_blood.at[idx, "resultado"] = 3
-                    codigo_final = info['code']
-                    if microorganism_blood_contaminated and info['matched_key'] in microorganism_blood_contaminated:
-                         codigo_final = microorganism_blood_contaminated[info['matched_key']]
-                    df_filter_blood.at[idx, "micro_contaminado"] = codigo_final
-                    df_filter_blood.at[idx, "micro_positivo"] = None
+                    df_filter_blood.at[idx, "micro_positivo"] = info['code']
+                elif info['type'] == 'contaminant':
+                    if total_samples == 1:
+                        if matched_key in microorganism_blood_positive:
+                            final_code = microorganism_blood_positive[matched_key]
+                        else:
+                            final_code = info['code']
+                        df_filter_blood.at[idx, "resultado"] = 1
+                        df_filter_blood.at[idx, "micro_positivo"] = final_code
+                    else:
+                        count_match = contaminants_in_group.count(info['code'])
+                        if count_match == 1:
+                            df_filter_blood.at[idx, "resultado"] = 3
+                            df_filter_blood.at[idx, "micro_contaminado"] = info['code']
+                            df_filter_blood.at[idx, "micro_positivo"] = None
+                        else:
+                            df_filter_blood.at[idx, "resultado"] = 1
+                            final_code = info['code']
+                            if matched_key in microorganism_blood_positive:
+                                final_code = microorganism_blood_positive[matched_key]
+                            df_filter_blood.at[idx, "micro_positivo"] = final_code
         df_filter_blood = df_filter_blood.drop(columns=['temp_group_id'])
     if 'resultado' in df_filter_blood.columns:
          df_filter_blood['resultado'] = df_filter_blood['resultado'].replace(0, 2)
