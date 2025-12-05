@@ -1067,9 +1067,9 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                         process_text_pdf(text)
                     st.success(f"Parte {idx} concluída!")
         if uploaded_reports_discharge:
-            df_list = [df_general, df_vigilance, df_smear]
-            df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
             df_blood = df_general.copy()
+            df_list = [df_general, df_vigilance, df_smear, df_blood]
+            df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
     df_general = filter_general(df_general)
     df_blood = filter_blood(df_blood)
