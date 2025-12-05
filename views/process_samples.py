@@ -85,7 +85,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arqu
                         col_idx = df.columns.get_loc("qual_microorganismo")
                         cell_range = (1, col_idx, max_row, col_idx)
                         worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '29', 'format': yellow_format})
-                    if "setor_de_origem" in df.columns:
+                    if "setor_de_origem" in df.columns or "setor_origem" in df.columns:
                         col_idx = df.columns.get_loc("setor_de_origem")
                         cell_range = (1, col_idx, max_row, col_idx)
                         first_cell = xl_rowcol_to_cell(1, col_idx)
@@ -883,11 +883,9 @@ def filter_general(df_general):
                     df_final.loc[idx, df_final.columns[col_inicio:]] = linha_origem[col_inicio:]
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "laudo_unico", "via_coleta"], inplace=True, errors="ignore")
     return df_final
-def filter_blood(df, substitution_dict, setor_col="setor_origem", blood_collection=blood_collection, microorganism_blood_positive=microorganism_blood_positive, microorganism_blood_contaminated=microorganism_blood_contaminated):
+def filter_blood(df, substitution_departments=substitution_departments, blood_collection=blood_collection, microorganism_blood_positive=microorganism_blood_positive, microorganism_blood_contaminated=microorganism_blood_contaminated):
     df_filter_blood = df[df['qual_tipo_de_material'].str.lower().str.strip() == "sangue"].copy()
     df_filter_blood['micro_contaminado'] = None
-    if setor_col in df.columns:
-        df[setor_col] = df[setor_col].str.upper().map(substitution_dict).fillna(df[setor_col])
     if "via_coleta" in df_filter_blood.columns and blood_collection:
         for idx, val in df_filter_blood["via_coleta"].items():
             if pd.isna(val): 
@@ -955,6 +953,15 @@ def filter_blood(df, substitution_dict, setor_col="setor_origem", blood_collecti
         "qual_microorganismo": "micro_positivo"
     }
     df_filter_blood = df_filter_blood.rename(columns=novos_nomes)
+    if "setor_origem" in df_filter_blood.columns and substitution_departments:
+        for idx, val in df_filter_blood["setor_origem"].items():
+            if pd.isna(val):
+                continue
+            val_str = str(val).upper()
+            for trecho_chave, novo_valor in substitution_departments.items():
+                if trecho_chave.upper() in val_str:
+                    df_filter_blood.at[idx, "setor_origem"] = novo_valor
+                    break
     if "micro_positivo" in df_filter_blood.columns and "resultado" in df_filter_blood.columns:
         for idx, val in df_filter_blood["micro_positivo"].items():
             if pd.isna(val):
@@ -1086,6 +1093,6 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
     df_general = filter_general(df_general)
-    df_blood = filter_blood(df_blood, substitution_departments)
+    df_blood = filter_blood(df_blood)
     style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
