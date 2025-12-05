@@ -880,6 +880,8 @@ def filter_general(df_general):
     return df_final
 def filter_blood(df):
     df_filter_blood = df[df['qual_tipo_de_material'].str.lower().str.strip() == "sangue"].copy()
+    df_filter_blood['micro_positivo'] = None
+    df_filter_blood['micro_contaminado'] = None
     colunas_para_remover = """
     tem_mecanismo_resist_ncia qual_gene_de_mecanismo_res qual_outro_mecanismo_de_re 
     apresenta_mcim apresenta_ecim apresenta_carbapenase realizou_teste_imunogromat 
@@ -919,9 +921,23 @@ def filter_blood(df):
     mic_trimetoprima_sulfametaxazol_gram_positivo nitrofurantoina_gram_positivo 
     mic_nitrofurantoina_gram_positivo para_leveduras fluconazol mic_fluconazol 
     voriconazol mic_voriconazol caspofungina mic_caspofungina micafungina 
-    mic_micafungina anfotericina_b mic_anfotericina fluocitosina mic_fluocitosina
+    mic_micafungina anfotericina_b mic_anfotericina fluocitosina mic_fluocitosina 
+    qual_tipo_de_material outro_tipo_de_material desfecho_do_paciente observa_es 
+    check_ver_resultado_em ver_resultado_em_pedido laudo_unico outro_microorganismo
     """.split()
-    df_filter_blood = df_filter_blood.drop(columns=colunas_para_remover, errors='ignore')
+    df_filter_blood = df_filter_blood.drop(columns=colunas_para_remover, errors='ignore')  
+    novos_nomes = {
+        "id": "record_id",
+        "n_mero_do_pedido": "numero_pedido",
+        "n_mero_do_prontu_rio": "prontuario",
+        "setor_de_origem": "setor_origem",
+        "data_de_entrada": "data_entrada",
+        "data_da_libera_o": "data_liberacao",
+        "tempo_de_libera_o_dias": "prazo_entrega",
+        "cat_tempo_de_libera_o_dias": "categ_entrega",
+        "dados_microbiologia_complete": "form_1_complete"
+    }
+    df_filter_blood = df_filter_blood.rename(columns=novos_nomes)
     return df_filter_blood
 
 # Funções para tratamento de PDFs
