@@ -962,7 +962,10 @@ def filter_blood(df, substitution_departments=substitution_departments, blood_co
         for idx, val in df_filter_blood["setor_origem"].items():
             if pd.isna(val):
                 continue
+            
             val_str = str(val).upper()
+            
+            # Tenta encontrar uma chave. Se achar, substitui.
             for trecho_chave, novo_valor in substitution_departments.items():
                 if trecho_chave.upper() in val_str:
                     df_filter_blood.at[idx, "setor_origem"] = novo_valor
