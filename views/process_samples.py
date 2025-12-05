@@ -1070,8 +1070,8 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             df_blood = df_general.copy()
             df_list = [df_general, df_vigilance, df_smear, df_blood]
             df_general, df_vigilance, df_smear, df_blood = fill_outcome(uploaded_reports_discharge, df_list)
+        df_blood = filter_blood(df_blood)
         df_general, df_vigilance, df_smear, df_blood = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
     df_general = filter_general(df_general)
-    df_blood = filter_blood(df_blood)
     style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
