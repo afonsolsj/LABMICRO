@@ -26,6 +26,12 @@ microorganisms_gpb_df = pd.read_csv("assets/files/microorganisms_gpb.csv")
 microorganisms_gpb = dict(zip(microorganisms_gpb_df["Microrganismo"].str.lower(), microorganisms_gpb_df["Código"]))
 microorganisms_fy_df = pd.read_csv("assets/files/microorganisms_fy.csv")
 microorganisms_fy = dict(zip(microorganisms_fy_df["Microrganismo"].str.lower(), microorganisms_fy_df["Código"]))
+microorganism_blood_negative_df = pd.read_csv("assets/files/microorganism_blood_negative.csv")
+microorganism_blood_negative = dict(zip(microorganism_blood_negative_df["Microrganismo"].str.lower(), microorganism_blood_negative_df["Código"]))
+microorganism_blood_positive_df = pd.read_csv("assets/files/microorganism_blood_positive.csv")
+microorganism_blood_positive = dict(zip(microorganism_blood_positive_df["Microrganismo"].str.lower(), microorganism_blood_positive_df["Código"]))
+blood_collection_df = pd.read_csv("assets/files/blood_collection.csv")
+blood_collection = dict(zip(blood_collection_df["Sitio"].str.lower(), blood_collection_df["Código"]))
 
 # Planilhas para download
 df_general = pd.DataFrame(columns=st.secrets["columns"]["general"]); df_general.name = "general"
@@ -939,6 +945,8 @@ def filter_blood(df):
         "qual_microorganismo": "micro_positivo"
     }
     df_filter_blood = df_filter_blood.rename(columns=novos_nomes)
+    if 'resultado' in df_filter_blood.columns:
+         df_filter_blood['resultado'] = df_filter_blood['resultado'].replace(0, 2)
     ordem_final = [
         "record_id", "hospital", "numero_pedido", "prontuario", "setor_origem", 
         "via_coleta", "resultado", "micro_positivo", "micro_contaminado", 
