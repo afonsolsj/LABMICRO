@@ -799,7 +799,8 @@ def process_general(report_text, row_idx=None):
         for key, val in fields.items():
             if key in new_row:
                 new_row[key] = val
-        new_row["id"] = get_next_id(df_general, start_id_general, "id")
+        #new_row["id"] = get_next_id(df_general, start_id_general, "id")
+        new_row["id"] = None
         df_general = pd.concat([df_general, pd.DataFrame([new_row])], ignore_index=True)
     else:
         for key, val in fields.items():
@@ -820,7 +821,8 @@ def process_vigilance(report_text, row_idx=None):
         for key, val in fields.items():
             if key in new_row:
                 new_row[key] = val
-        new_row["record_id"] = get_next_id(df_vigilance, start_id_vigilance, "record_id")
+        #new_row["record_id"] = get_next_id(df_vigilance, start_id_vigilance, "record_id")
+        new_row["record_id"] = None
         df_vigilance = pd.concat([df_vigilance, pd.DataFrame([new_row])], ignore_index=True)
     else:
         for key, val in fields.items():
@@ -841,7 +843,8 @@ def process_smear(report_text, row_idx=None):
         for key, val in fields.items():
             if key in new_row:
                 new_row[key] = val
-        new_row["record_id"] = get_next_id(df_smear, start_id_smear, "record_id")
+        #new_row["record_id"] = get_next_id(df_smear, start_id_smear, "record_id")
+        new_row["record_id"] = None
         df_smear = pd.concat([df_smear, pd.DataFrame([new_row])], ignore_index=True)
     else:
         for key, val in fields.items():
@@ -1130,13 +1133,15 @@ uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar"
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     start_id_general = st.number_input("Geral", value=None, step=1)
 with col2:
     start_id_vigilance = st.number_input("Cultura de vigilância", value=None, step=1)
 with col3:
     start_id_smear = st.number_input("Baciloscopia", value=None, step=1)
+with col4:
+    start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
 st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
@@ -1169,5 +1174,17 @@ if st.button("Iniciar processamento", disabled=is_disabled):
     df_vigilance = apply_filter_hospital(df_vigilance, filter_hospital)
     df_smear = apply_filter_hospital(df_smear, filter_hospital)
     df_blood = apply_filter_hospital(df_blood, filter_hospital)
+    st_gen = int(start_id_general) if start_id_general is not None else 1
+    st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
+    st_smear = int(start_id_smear) if start_id_smear is not None else 1
+    st_blood = int(start_id_blood) if start_id_blood is not None else 1
+    if not df_general.empty:
+        df_general['id'] = range(st_gen, st_gen + len(df_general))
+    if not df_vigilance.empty:
+        df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
+    if not df_smear.empty:
+        df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
+    if not df_blood.empty:
+        df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
     style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
