@@ -1045,18 +1045,18 @@ def apply_filter_hospital(df, choice):
     if choice == "Todos" or df is None or df.empty:
         return df
     if choice == "MEAC":
-        valor_filtro = 2
+        valores_aceitos = [2, ""]
     elif choice == "HUWC":
-        valor_filtro = 1
+        valores_aceitos = [1, ""]
     else:
         return df
     mask = pd.Series(False, index=df.index)
     colunas_encontradas = False
     if "hospital" in df.columns:
-        mask = mask | (df["hospital"] == valor_filtro)
+        mask = mask | (df["hospital"].isin(valores_aceitos))
         colunas_encontradas = True
     if "hospital_de_origem" in df.columns:
-        mask = mask | (df["hospital_de_origem"] == valor_filtro)
+        mask = mask | (df["hospital_de_origem"].isin(valores_aceitos))
         colunas_encontradas = True
     if not colunas_encontradas:
         return df
