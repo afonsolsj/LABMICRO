@@ -1100,8 +1100,8 @@ def process_singular_report(report_text):
         if end_of_line == -1:
             end_of_line = len(report_text_lower)
         procedencia_line = report_text_lower[procedencia_index:end_of_line]
-        #if any(x in procedencia_line for x in ["meac", "cpdhr", "maternidade escola"]):
-        #    return
+        if any(x in procedencia_line for x in ["cpdhr"]):
+            return
     if "paciente teste" in report_text_lower:
         return
     if "bacterioscopia" in report_text_lower:
