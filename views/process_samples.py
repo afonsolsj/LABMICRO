@@ -1126,7 +1126,6 @@ def process_text_pdf(text_pdf):
 
 # Código principal da página
 st.title("Compilação de amostras")
-st.error("Processamento de positivas para formulário GERAL pendente.")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
