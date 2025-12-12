@@ -44,7 +44,7 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arqu
     try:
         zip_buffer = io.BytesIO()
         dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia, "Hemocultura.xlsx": df_blood}
-        cols_required = ["record_id", "id", "hospital_de_origem", "n_mero_do_pedido", "n_mero_do_prontu_rio", "sexo", "idade", "idade_anos", "data_da_entrada", "setor_de_origem", "tipo_de_material", "qual_tipo_de_material", "data_da_libera_o", "resultado", "data_agora", "formulrio_complete"]
+        cols_required = ["record_id", "id","hospital", "hospital_de_origem", "n_mero_do_pedido", "n_mero_do_prontu_rio", "sexo", "idade", "idade_anos", "data_da_entrada", "setor_de_origem", "tipo_de_material", "qual_tipo_de_material", "data_da_libera_o", "resultado", "data_agora", "formulrio_complete"]
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for nome_arquivo_excel, df in dfs_para_exportar.items():
                 if df is None or df.empty:
