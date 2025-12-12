@@ -747,7 +747,9 @@ def extract_fields(report_text, df_name):
         else:
             return "não"
     def check_hospital(get_value):
-        if "MEAC" in get_value("Procedência.:").split("|")[0].strip() or "MATERNIDADE" in get_value("Procedência.:").split("|")[0].strip().lower():
+        procedencia = get_value("Procedência.:").split("|")[0].strip().lower()
+        print(procedencia)
+        if "meac" in procedencia or "maternidade" in procedencia:
             return 2
         else:
             return 1
