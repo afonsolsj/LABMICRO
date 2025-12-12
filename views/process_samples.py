@@ -751,6 +751,8 @@ def extract_fields(report_text, df_name):
         print(procedencia)
         if "meac" in procedencia or "maternidade" in procedencia:
             return 2
+        elif "" in procedencia:
+            return ""
         else:
             return 1
     return {
