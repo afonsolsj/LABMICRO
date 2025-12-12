@@ -745,10 +745,17 @@ def extract_fields(report_text, df_name):
         if "ver resultado do antibiograma no" in report_lower.lower():
             return "sim"
         else:
-            return "não"  
+            return "não"
+    def check_hospital(get_value):
+        if "meac" in get_value("Procedência.:").split("|")[0].strip() or "maternidade" in get_value("Procedência.:").split("|")[0].strip().lower():
+            return 2
+        elif "huwc" in get_value("Procedência.:").split("|")[0].strip().lower():
+            return 1
+        else:
+            return ""
     return {
-        "hospital": 1,
-        "hospital_de_origem": 1,
+        "hospital": check_hospital(get_value),
+        "hospital_de_origem": check_hospital(get_value),
         "faz_parte_projeto_cdc_rfa": 2,
         "faz_parte_projeto_cdc_rfa_ck21_2104": 2,
         "n_mero_do_pedido": get_sample_number(),
@@ -1071,8 +1078,8 @@ def process_singular_report(report_text):
         if end_of_line == -1:
             end_of_line = len(report_text_lower)
         procedencia_line = report_text_lower[procedencia_index:end_of_line]
-        if any(x in procedencia_line for x in ["meac", "cpdhr", "maternidade escola"]):
-            return
+        #if any(x in procedencia_line for x in ["meac", "cpdhr", "maternidade escola"]):
+        #    return
     if "paciente teste" in report_text_lower:
         return
     if "bacterioscopia" in report_text_lower:
