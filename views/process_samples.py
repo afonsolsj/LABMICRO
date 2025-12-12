@@ -747,12 +747,12 @@ def extract_fields(report_text, df_name):
         else:
             return "não"
     def check_hospital(get_value):
-        procedencia = get_value("Procedência.:").split("|")[0].strip().lower()
-        print(procedencia)
+        valor = get_value("Procedência.:")
+        if not valor or not valor.strip():
+            return ""
+        procedencia = valor.split("|")[0].strip().lower()
         if "meac" in procedencia or "maternidade" in procedencia:
             return 2
-        elif "" in procedencia:
-            return ""
         else:
             return 1
     return {
@@ -1041,6 +1041,26 @@ def filter_blood(df, substitution_departments=substitution_departments, blood_co
     ]
     df_filter_blood = df_filter_blood.reindex(columns=ordem_final)
     return df_filter_blood
+def apply_filter_hospital(df, choice):
+    if choice == "Todos" or df is None or df.empty:
+        return df
+    if choice == "MEAC":
+        valor_filtro = 2
+    elif choice == "HUWC":
+        valor_filtro = 1
+    else:
+        return df
+    mask = pd.Series(False, index=df.index)
+    colunas_encontradas = False
+    if "hospital" in df.columns:
+        mask = mask | (df["hospital"] == valor_filtro)
+        colunas_encontradas = True
+    if "hospital_de_origem" in df.columns:
+        mask = mask | (df["hospital_de_origem"] == valor_filtro)
+        colunas_encontradas = True
+    if not colunas_encontradas:
+        return df
+    return df[mask]
 
 # Funções para tratamento de PDFs
 def split_pdf_in_chunks(pdf_file, max_pages=400):
@@ -1119,6 +1139,9 @@ with col2:
 with col3:
     start_id_smear = st.number_input("Baciloscopia", value=None, step=1)
 
+st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
+filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
+
 conditions_met = uploaded_files and uploaded_reports_discharge
 is_disabled = not conditions_met
 
@@ -1143,5 +1166,9 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
     df_general = filter_general(df_general)
     df_blood = filter_blood(df_blood)
+    df_general = apply_filter_hospital(df_general, filter_hospital)
+    df_vigilance = apply_filter_hospital(df_vigilance, filter_hospital)
+    df_smear = apply_filter_hospital(df_smear, filter_hospital)
+    df_blood = apply_filter_hospital(df_blood, filter_hospital)
     style_download(df_general, df_vigilance, df_smear, df_blood)
     status.update(label="Concluído", state="complete", expanded=False)
