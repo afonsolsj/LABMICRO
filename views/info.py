@@ -54,7 +54,7 @@ def render_legend_item(badge_text, icon, color, description):
 st.title("Informações")
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["Data do exame pendente mais antigo", "Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
-    render_editor("Data do exame pendente", "pending_exam", "orange", ":material/today:")
+    render_editor("Data do exame pendente", "pending_exam", "orange", "date", ":material/today:")
 with tab2:
     render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
 with tab3:
@@ -62,10 +62,10 @@ with tab3:
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance", ":material/medication_liquid:")
     render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear",  ":material/hematology:")
 with tab4:
-    render_editor("Bacilos Gram Negativos", "microorganisms_gnb", "orange", ":material/counter_1:")
-    render_editor("Cocos Gram Positivos", "microorganisms_gpc", "violet", ":material/counter_2:")
-    render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", ":material/counter_3:")
-    render_editor("Levedura", "microorganisms_fy", "yellow", ":material/counter_4:")
+    render_editor("Bacilos Gram Negativos", "microorganisms_gnb", "orange", "gnb", ":material/counter_1:")
+    render_editor("Cocos Gram Positivos", "microorganisms_gpc", "violet", "gpc", ":material/counter_2:")
+    render_editor("Bacilos Gram Positivos", "microorganisms_gpb", "grey", "gpb", ":material/counter_3:")
+    render_editor("Levedura", "microorganisms_fy", "yellow", "fy", ":material/counter_4:")
 with tab5:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
