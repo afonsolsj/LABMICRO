@@ -34,7 +34,7 @@ def update_csv_on_github(df, file_path, sha):
 def render_editor(title, path_key, color, key_suffix, icon_selected):
     st.badge(title, icon=icon_selected, color=color)
     df, sha = load_csv_from_github(paths[path_key])
-    edited = st.data_editor(df, num_rows="dynamic", use_container_width=True, key=f"{key_suffix}_editor")
+    edited = st.data_editor(df, num_rows="dynamic", width='stretch', key=f"{key_suffix}_editor")
     if st.button(f"Atualizar {title}", key=f"save_{key_suffix}"):
         if "Código" in edited.columns:
             edited = edited.sort_values("Código").reset_index(drop=True)
