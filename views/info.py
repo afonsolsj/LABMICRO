@@ -57,19 +57,21 @@ def render_legend_item(badge_text, icon, color, description):
 
 # Código principal da página
 st.title("Informações")
-tab1, tab2, tab3, tab4 = st.tabs(["Setores", "Materiais", "Microrganismos", "Legendas"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Data do exame pendente mais antigo", "Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
-    render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
+    st.write("Aqui você pode ver e atualizar as informações sobre o data do exame pendente mais antigo.")
 with tab2:
+    render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
+with tab3:
     render_editor("Materiais (Geral)", "material_general", "blue", "general", ":material/fluid_med:")
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance", ":material/medication_liquid:")
     render_editor("Materiais (Baciloscopia)", "material_smear_microscopy", "green", "smear",  ":material/hematology:")
-with tab3:
+with tab4:
     render_dataframe_static("Bacilos Gram Negativos", "microorganisms_gnb", "orange", ":material/counter_1:")
     render_dataframe_static("Cocos Gram Positivos", "microorganisms_gpc", "violet", ":material/counter_2:")
     render_dataframe_static("Bacilos Gram Positivos", "microorganisms_gpb", "grey", ":material/counter_3:")
     render_dataframe_static("Levedura", "microorganisms_fy", "yellow", ":material/counter_4:")
-with tab4:
+with tab5:
     with st.expander("Cores", icon=":material/colors:"):
         render_legend_item("Ambulatório", ":material/check_circle:", "green",
                            "Paciente em ambulatório. Não é necessário verificação.")
