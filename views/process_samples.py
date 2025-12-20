@@ -1150,7 +1150,7 @@ with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
-month = st.selectbox("4️⃣ Selecione o mês de início:", list(month_map.keys()))
+month = st.selectbox("4️⃣ Selecione o mês do relatório:", list(month_map.keys()))
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
