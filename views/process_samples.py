@@ -1101,8 +1101,7 @@ def process_singular_report(report_text, selected_month_name):
     if date_match:
         report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
         selected_month_num = month_map[selected_month_name]
-        ano_atual = datetime.now().year 
-        if report_date.month != selected_month_num or report_date.year != ano_atual:
+        if report_date.month != selected_month_num:
             return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
