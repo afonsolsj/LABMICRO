@@ -1094,9 +1094,19 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text):
+def process_singular_report(report_text, selected_month_name):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
+    date_match = re.search(r"data solicitação:\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
+    if date_match:
+        date_str = date_match.group(1)
+        try:
+            report_date = datetime.strptime(date_str, "%d/%m/%Y")
+            selected_month_num = month_map[selected_month_name]
+            if report_date.month < selected_month_num:
+                return
+        except ValueError:
+            pass
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -1118,14 +1128,14 @@ def process_singular_report(report_text):
         process_smear(report_text)
     else:
         process_general(report_text)
-def process_text_pdf(text_pdf):
+def process_text_pdf(text_pdf, selected_month):
     if not text_pdf:
         return
     delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
     reports = re.split(delimiter_pattern, text_pdf)
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
-            process_singular_report(report_chunk)
+            process_singular_report(report_chunk, selected_month)
 
 # Código principal da página
 st.title("Compilação de amostras")
@@ -1143,7 +1153,10 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
+month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
+month = st.selectbox("4️⃣ Selecione o mês de início:", list(month_map.keys()))
+
+st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
 
 conditions_met = uploaded_files and uploaded_reports_discharge
@@ -1161,7 +1174,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                     st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
-                        process_text_pdf(text)
+                        process_text_pdf(text, month)
                     st.success(f"Parte {idx} concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
