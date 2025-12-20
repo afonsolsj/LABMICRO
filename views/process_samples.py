@@ -1156,8 +1156,11 @@ with col_m:
 with col_a:
     ano_selecionado = st.selectbox("Ano", [2024, 2025, 2026, 2027, 2028])
 with col_t:
-    st.write("")
-    apenas_mes_selecionado = st.toggle("Apenas o mês selecionado", value=True)
+    st.write("") 
+    if "filtro_modo" not in st.session_state:
+        st.session_state.filtro_modo = True
+    label_dinamico = "Apenas o mês selecionado" if st.session_state.filtro_modo else "A partir do mês selecionado"
+    apenas_mes_selecionado = st.toggle(label=label_dinamico, value=True, key="filtro_modo")
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
