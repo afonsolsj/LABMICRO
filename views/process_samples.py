@@ -1099,14 +1099,11 @@ def process_singular_report(report_text, selected_month_name):
     report_text_lower = report_text_clean.lower()
     date_match = re.search(r"data solicitação:\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
     if date_match:
-        date_str = date_match.group(1)
-        try:
-            report_date = datetime.strptime(date_str, "%d/%m/%Y")
-            selected_month_num = month_map[selected_month_name]
-            if report_date.month < selected_month_num:
-                return
-        except ValueError:
-            pass
+        report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
+        selected_month_num = month_map[selected_month_name]
+        ano_atual = datetime.now().year 
+        if report_date.month != selected_month_num or report_date.year != ano_atual:
+            return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
