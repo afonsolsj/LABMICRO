@@ -19,7 +19,8 @@ if not st.session_state.logged_in:
 st.sidebar.markdown(f"""<div style="text-align: center; font-size: 12px;">{"Feito por Saraiva."}</div>""", unsafe_allow_html=True)
 main_page = st.Page(page='views/main.py', title="Página principal", icon=':material/home:')
 process_samples_page = st.Page(page='views/process_samples.py', title="Compilação de amostras", icon=':material/biotech:')
+remove_duplicates_page = st.Page(page='views/remove_duplicates.py', title="Remoção de duplicatas", icon=':material/delete:')
 info_page = st.Page(page='views/info.py', title="Informações", icon=':material/info:')
-pg = st.navigation(pages=[main_page, process_samples_page, info_page])
+pg = st.navigation(pages=[main_page, process_samples_page, remove_duplicates_page, info_page])
 
 pg.run()
