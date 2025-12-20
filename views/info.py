@@ -7,7 +7,7 @@ from io import StringIO
 # Variáveis
 github_token = st.secrets["github"]["token"]
 repo = "afonsolsj/LABMICRO"
-paths = {"departments": "assets/files/departments.csv", "microorganisms_gnb": "assets/files/microorganisms_gnb.csv", "microorganisms_gpb": "assets/files/microorganisms_gpb.csv", "microorganisms_gpc": "assets/files/microorganisms_gpc.csv", "microorganisms_fy": "assets/files/microorganisms_fy.csv", "material_general": "assets/files/materials_general.csv", "material_vigilance": "assets/files/materials_vigilance.csv", "material_smear_microscopy": "assets/files/materials_smear_microscopy.csv"}
+paths = {"departments": "assets/files/departments.csv","pending_exam": "assets/files/pending_exam.csv", "microorganisms_gnb": "assets/files/microorganisms_gnb.csv", "microorganisms_gpb": "assets/files/microorganisms_gpb.csv", "microorganisms_gpc": "assets/files/microorganisms_gpc.csv", "microorganisms_fy": "assets/files/microorganisms_fy.csv", "material_general": "assets/files/materials_general.csv", "material_vigilance": "assets/files/materials_vigilance.csv", "material_smear_microscopy": "assets/files/materials_smear_microscopy.csv"}
 
 # Funções
 def load_csv_from_github(file_path):
@@ -59,7 +59,7 @@ def render_legend_item(badge_text, icon, color, description):
 st.title("Informações")
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["Data do exame pendente mais antigo", "Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
-    st.write("Aqui você pode ver e atualizar as informações sobre o data do exame pendente mais antigo.")
+    render_dataframe_static("Exame pendente", "pending_exam", "orange", ":material/today:")
 with tab2:
     render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
 with tab3:
