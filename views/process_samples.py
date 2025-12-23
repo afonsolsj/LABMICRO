@@ -1172,22 +1172,17 @@ with col4:
 
 
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
-st.markdown('<p style="font-size: 14px;">4️⃣ Configuração de Filtragem</p>', unsafe_allow_html=True)
-filter_mode = st.radio(
-    "Como deseja filtrar os laudos?",
-    ["Por data", "Por relatório de pedidos"],
-    help="Por data: Processa a partir do mês/ano selecionado. Por relatório: Processa apenas os pedidos listados no PDF enviado."
-)
+st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o modo de filtragem</p>', unsafe_allow_html=True)
+filter_mode = st.radio(["Por data", "Por relatório de pedidos"])
 col_m, col_a = st.columns([2, 1])
 valid_ids = set() 
 if filter_mode == "Por data":
     with col_m:
-        month = st.selectbox("Mês de início", list(month_map.keys()))
+        month = st.selectbox("Mês", list(month_map.keys()))
     with col_a:
         selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
     uploaded_filter_report = None
 else:
-    st.info("Envie o PDF contendo a lista de pedidos ('Relatório de Pedidos'). O sistema processará apenas as amostras listadas nele.")
     uploaded_filter_report = st.file_uploader("Relatório de Pedidos (PDF)", type=["pdf"], key="filter_pdf")
     month = list(month_map.keys())[0] 
     selected_year = datetime.now().year 
