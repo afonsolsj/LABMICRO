@@ -1189,7 +1189,7 @@ else:
     if uploaded_filter_report:
         with st.spinner("Lendo lista de pedidos..."):
             valid_ids = extract_ids_from_filter_report(uploaded_filter_report)
-            print(f"IDs válidos: {valid_ids}")
+        print(f"IDs válidos: {valid_ids}")
         st.success(f"{len(valid_ids)} pedidos identificados para filtragem.")
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
