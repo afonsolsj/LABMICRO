@@ -1113,7 +1113,7 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
                 selected_month_num = month_map[selected_month_name]
                 data_corte = datetime(selected_year, selected_month_num, 1)
                 if report_date < data_corte:
-                    return # Data antiga, aborta
+                    return
             except ValueError:
                 pass
     if "cpdhr" in report_text_lower or "paciente teste" in report_text_lower:
