@@ -1097,27 +1097,26 @@ def extract_text_pdf(pdf_file):
 def process_singular_report(report_text, selected_month_name, selected_year, filter_mode, valid_ids=None):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
-    should_process = False
-    if filter_mode == "A partir da data":
+    if filter_mode == "Por relatório de pedidos":
+        sample_match = re.search(r"Pedido\s*\.*\s*:\s*(\d+)", report_text, re.IGNORECASE)
+        if sample_match:
+            sample_number = sample_match.group(1).strip()
+            # Se NÃO estiver na lista permitida, interrompe IMEDIATAMENTE
+            if valid_ids is not None and sample_number not in valid_ids:
+                return 
+        else:
+            return 
+    elif filter_mode == "A partir da data":
         date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
         if date_match:
             try:
                 report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
                 selected_month_num = month_map[selected_month_name]
                 data_corte = datetime(selected_year, selected_month_num, 1)
-                if report_date >= data_corte:
-                    should_process = True
+                if report_date < data_corte:
+                    return # Data anterior à desejada
             except ValueError:
-                pass
-    elif filter_mode == "Por relatório de pedidos":
-        if valid_ids:
-            sample_match = re.search(r"Pedido......:\s*(\d+)", report_text, re.IGNORECASE)
-            if sample_match:
-                sample_number = sample_match.group(1).strip()
-                if sample_number in valid_ids:
-                    should_process = True
-    if not should_process:
-        return
+                return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
