@@ -1173,7 +1173,7 @@ with col4:
 
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
 st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o modo de filtragem</p>', unsafe_allow_html=True)
-filter_mode = st.radio("hidden", ["Por data", "Por relatório de pedidos"])
+filter_mode = st.radio(["Por data", "Por relatório de pedidos"], label_visibility="hidden")
 col_m, col_a = st.columns([2, 1])
 valid_ids = set() 
 if filter_mode == "Por data":
