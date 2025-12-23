@@ -1187,10 +1187,9 @@ else:
     month = list(month_map.keys())[0] 
     selected_year = datetime.now().year 
     if uploaded_filter_report:
-        with st.spinner("Lendo lista de pedidos..."):
+        with st.status("Lendo lista de pedidos...", expanded=False):
             valid_ids = extract_ids_from_filter_report(uploaded_filter_report)
-        print(f"IDs válidos: {valid_ids}")
-        st.success(f"{len(valid_ids)} pedidos identificados para filtragem.")
+        st.status.StatusContainer.update(f"{len(valid_ids)} pedidos identificados.", state="complete")
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
