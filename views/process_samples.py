@@ -1152,6 +1152,7 @@ def extract_ids_from_filter_report(pdf_file):
     if not text:
         return set()
     ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
+    print(ids)
     return ids
 
 # Código principal da página
@@ -1183,7 +1184,7 @@ if filter_mode == "Por data":
         selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
     uploaded_filter_report = None
 else:
-    uploaded_filter_report = st.file_uploader("Relatório de Pedidos (PDF)", type=["pdf"], key="filter_pdf")
+    uploaded_filter_report = st.file_uploader("Envie o relatório de pedidos", type=["pdf"], key="filter_pdf")
     month = list(month_map.keys())[0] 
     selected_year = datetime.now().year 
     if uploaded_filter_report:
