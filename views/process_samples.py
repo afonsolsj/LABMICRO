@@ -1192,6 +1192,8 @@ else:
             if not text:
                 set()
             valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
+        print(valid_ids)
+        st.write(valid_ids)   
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
