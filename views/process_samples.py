@@ -1188,8 +1188,10 @@ else:
     selected_year = datetime.now().year 
     if uploaded_filter_report:
         with st.spinner("Lendo lista de pedidos..."):
-            valid_ids = extract_ids_from_filter_report(uploaded_filter_report)
-        st.markdown(f"✓ {len(valid_ids)} pedidos identificados.")
+            text = extract_text_pdf(uploaded_filter_report)
+            if not text:
+                set()
+            valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
