@@ -1111,7 +1111,7 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
                 pass
     elif filter_mode == "Por relatório de pedidos":
         if valid_ids:
-            sample_match = re.search(r"Pedido:\s*(\d+)", report_text, re.IGNORECASE)
+            sample_match = re.search(r"Pedido......:\s*(\d+)", report_text, re.IGNORECASE)
             if sample_match:
                 sample_number = sample_match.group(1).strip()
                 if sample_number in valid_ids:
@@ -1187,13 +1187,10 @@ else:
     month = list(month_map.keys())[0] 
     selected_year = datetime.now().year 
     if uploaded_filter_report:
-        with st.spinner("Lendo lista de pedidos..."):
-            text = extract_text_pdf(uploaded_filter_report)
-            if not text:
-                set()
-            valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
-        print(valid_ids)
-        st.write(valid_ids)   
+        text = extract_text_pdf(uploaded_filter_report)
+        if not text:
+            set()
+        valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
