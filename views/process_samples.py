@@ -1114,8 +1114,6 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
             sample_match = re.search(r"Pedido......:\s*(\d+)", report_text, re.IGNORECASE)
             if sample_match:
                 sample_number = sample_match.group(1).strip()
-                print(sample_number)
-                st.markdown(f"ID do pedido: {sample_number}")
                 if sample_number in valid_ids:
                     should_process = True
     if not should_process:
