@@ -1098,41 +1098,31 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     if filter_mode == "Por relatório de pedidos":
-        sample_match = re.search(r"Pedido\s*\.*\s*:\s*(\d+)", report_text, re.IGNORECASE)
+        sample_match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
         if sample_match:
             sample_number = sample_match.group(1).strip()
-            # Se NÃO estiver na lista permitida, interrompe IMEDIATAMENTE
-            if valid_ids is not None and sample_number not in valid_ids:
-                return 
+            if valid_ids and (sample_number not in valid_ids):
+                return
         else:
-            return 
+            return
     elif filter_mode == "A partir da data":
-        date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
+        date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})", report_text_lower)
         if date_match:
             try:
                 report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
                 selected_month_num = month_map[selected_month_name]
                 data_corte = datetime(selected_year, selected_month_num, 1)
                 if report_date < data_corte:
-                    return # Data anterior à desejada
+                    return # Data antiga, aborta
             except ValueError:
-                return
-    procedencia_index = report_text_lower.find("procedência.:")
-    if procedencia_index != -1:
-        end_of_line = report_text_lower.find("\n", procedencia_index)
-        if end_of_line == -1:
-            end_of_line = len(report_text_lower)
-        procedencia_line = report_text_lower[procedencia_index:end_of_line]
-        if any(x in procedencia_line for x in ["cpdhr"]):
-            return
-    if "paciente teste" in report_text_lower:
+                pass
+    if "cpdhr" in report_text_lower or "paciente teste" in report_text_lower:
         return
-    if "bacterioscopia" in report_text_lower:
+    if "bacterioscopia" in report_text_lower and "baar" not in report_text_lower:
         return
-    if re.search(r"(material:\s*|material examinado:\s*)(" + "|".join(re.escape(term) for term in materials_vigilance.keys()) + r")", report_text_lower):
-        if "faltando reagente" in report_text_lower:
-            return
-        else:
+    is_vigilance = any(re.search(r"(material:\s*|material examinado:\s*)" + re.escape(term), report_text_lower) for term in materials_vigilance.keys())
+    if is_vigilance:
+        if "faltando reagente" not in report_text_lower:
             process_vigilance(report_text)
     elif "baar" in report_text_lower:
         process_smear(report_text)
@@ -1166,7 +1156,7 @@ with col4:
 
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
 st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o modo de filtragem</p>', unsafe_allow_html=True)
-filter_mode = st.radio("Filtro", ["A partir da data", "Por relatório de pedidos"], label_visibility="collapsed")
+filter_mode = st.radio("Filtro", ["Por relatório de pedidos", "A partir da data selecionada"], label_visibility="collapsed")
 col_m, col_a = st.columns([2, 1])
 valid_ids = set() 
 if filter_mode == "A partir da data":
