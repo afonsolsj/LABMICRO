@@ -1098,7 +1098,7 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     should_process = False
-    if filter_mode == "Por data":
+    if filter_mode == "A partir da data":
         date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
         if date_match:
             try:
@@ -1147,12 +1147,6 @@ def process_text_pdf(text_pdf, selected_month, selected_year, filter_mode, valid
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
             process_singular_report(report_chunk, selected_month, selected_year, filter_mode, valid_ids)
-def extract_ids_from_filter_report(pdf_file):
-    text = extract_text_pdf(pdf_file)
-    if not text:
-        return set()
-    ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
-    return ids
 
 # Código principal da página
 st.title("Compilação de amostras")
@@ -1173,10 +1167,10 @@ with col4:
 
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
 st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o modo de filtragem</p>', unsafe_allow_html=True)
-filter_mode = st.radio("Filtro", ["Por data", "Por relatório de pedidos"], label_visibility="collapsed")
+filter_mode = st.radio("Filtro", ["A partir da data", "Por relatório de pedidos"], label_visibility="collapsed")
 col_m, col_a = st.columns([2, 1])
 valid_ids = set() 
-if filter_mode == "Por data":
+if filter_mode == "A partir da data":
     with col_m:
         month = st.selectbox("Mês", list(month_map.keys()))
     with col_a:
@@ -1185,12 +1179,7 @@ if filter_mode == "Por data":
 else:
     uploaded_filter_report = st.file_uploader("Envie o relatório de pedidos", type=["pdf"], key="filter_pdf")
     month = list(month_map.keys())[0] 
-    selected_year = datetime.now().year 
-    if uploaded_filter_report:
-        text = extract_text_pdf(uploaded_filter_report)
-        if not text:
-            set()
-        valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
+    selected_year = datetime.now().year
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
@@ -1203,6 +1192,11 @@ is_disabled = not conditions_met
 if st.button("Iniciar processamento", disabled=is_disabled):
     st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
     with st.status("Extraindo dados...", expanded=False) as status:
+        if uploaded_filter_report:
+            text = extract_text_pdf(uploaded_filter_report)
+            if not text:
+                set()
+            valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
         if uploaded_files:
             for pdf_file in uploaded_files:
                 with st.spinner("Dividindo PDF em partes menores..."):
