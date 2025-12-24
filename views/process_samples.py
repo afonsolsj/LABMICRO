@@ -1094,28 +1094,15 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text, selected_month_name, selected_year, filter_mode, valid_ids=None):
+def process_singular_report(report_text, selected_month_name, selected_year, filter_mode, valid_ids):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     if filter_mode == "Por relatório de pedidos":
         sample_match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
-        if sample_match:
-            sample_number = sample_match.group(1).strip()
-            if valid_ids and (sample_number not in valid_ids):
-                return
-        else:
+        if sample_match not in valid_ids:
             return
-    elif filter_mode == "A partir da data":
-        date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})", report_text_lower)
-        if date_match:
-            try:
-                report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
-                selected_month_num = month_map[selected_month_name]
-                data_corte = datetime(selected_year, selected_month_num, 1)
-                if report_date < data_corte:
-                    return
-            except ValueError:
-                pass
+    elif filter_mode == "A partir do mês selecionado":
+        return
     if "cpdhr" in report_text_lower or "paciente teste" in report_text_lower:
         return
     if "bacterioscopia" in report_text_lower and "baar" not in report_text_lower:
