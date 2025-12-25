@@ -1151,22 +1151,28 @@ with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
 st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
-
-st.caption(f"**Filtros ativos:** Geral: {st.session_state.get('f_gen', 'Todos')} | "
-           f"Vigilância: {st.session_state.get('f_vig', 'Todos')} | "
-           f"Baciloscopia: {st.session_state.get('f_smear', 'Todos')} | "
-           f"Hemocultura: {st.session_state.get('f_blood', 'Todos')}")
-with st.popover("Editar"):
-    def render_filter_row(label, key):
-        col_label, col_radio = st.columns([1.2, 3.8]) 
-        with col_label:
-            st.markdown(f'<p style="margin-top: 10px; font-size: 15px; white-space: nowrap;">{label}</p>', unsafe_allow_html=True)  
-        with col_radio:
-            return st.radio(label, ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
-    filter_gen = render_filter_row("Geral:", "f_gen")
-    filter_vig = render_filter_row("Vigilância:", "f_vig")
-    filter_smear = render_filter_row("Baciloscopia:", "f_smear")
-    filter_blood_sel = render_filter_row("Hemocultura:", "f_blood")
+col_resumo, col_botao = st.columns([0.85, 0.15])
+with col_resumo:
+    st.markdown(f"""
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
+            <strong>Filtros ativos:</strong> Geral: {st.session_state.get('f_gen', 'Todos')} | 
+            Vigilância: {st.session_state.get('f_vig', 'Todos')} | 
+            Baciloscopia: {st.session_state.get('f_smear', 'Todos')} | 
+            Hemocultura: {st.session_state.get('f_blood', 'Todos')}
+        </p>
+    """, unsafe_allow_html=True)
+with col_botao:
+    with st.popover("Editar"):
+        def render_filter_row(label, key):
+            c1, c2 = st.columns([1.2, 3.8]) 
+            with c1:
+                st.markdown(f'<p style="margin-top: 10px; font-size: 15px; white-space: nowrap;">{label}</p>', unsafe_allow_html=True)
+            with c2:
+                return st.radio(label, ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
+        filter_gen = render_filter_row("Geral:", "f_gen")
+        filter_vig = render_filter_row("Vigilância:", "f_vig")
+        filter_smear = render_filter_row("Baciloscopia:", "f_smear")
+        filter_blood_sel = render_filter_row("Hemocultura:", "f_blood")
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
