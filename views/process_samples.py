@@ -1153,7 +1153,14 @@ with col4:
 st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 col_resumo, col_botao = st.columns([0.85, 0.15])
 with col_resumo:
-    st.markdown(f"Filtros ativos: Geral: {st.session_state.get('f_gen', 'Todos')} | Vigilância: {st.session_state.get('f_vig', 'Todos')} | Baciloscopia: {st.session_state.get('f_smear', 'Todos')} | Hemocultura: {st.session_state.get('f_blood', 'Todos')}", unsafe_allow_html=True)
+    st.markdown(f"""
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
+            <strong>Filtros ativos:</strong> Geral: {st.session_state.get('f_gen', 'Todos')} | 
+            Vigilância: {st.session_state.get('f_vig', 'Todos')} | 
+            Baciloscopia: {st.session_state.get('f_smear', 'Todos')} | 
+            Hemocultura: {st.session_state.get('f_blood', 'Todos')}
+        </p>
+    """, unsafe_allow_html=True)
 with col_botao:
     with st.popover("Editar"):
         def render_filter_row(label, key):
