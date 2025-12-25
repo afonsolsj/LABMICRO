@@ -5,6 +5,7 @@ import io
 import zipfile
 import pdfplumber
 import tempfile
+import fitz
 from pypdf import PdfReader, PdfWriter
 from datetime import datetime, timedelta
 from xlsxwriter.utility import xl_rowcol_to_cell
@@ -33,13 +34,30 @@ microorganism_blood_positive = dict(zip(microorganism_blood_positive_df["Microrg
 blood_collection_df = pd.read_csv("assets/files/blood_collection.csv")
 blood_collection = dict(zip(blood_collection_df["Sitio"].str.lower(), blood_collection_df["Código"]))
 
+# Destacar pedidos encontrados/não encontrados
+def paint_request_pdf(input_pdf_file, found_ids, all_ids):
+    input_pdf_file.seek(0)
+    pdf_bytes = input_pdf_file.read()
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    for page in doc:
+        page_width = page.rect.width
+        for order_id in all_ids:
+            text_instances = page.search_for(str(order_id))
+            for inst in text_instances:
+                line_rect = fitz.Rect(0, inst.y0, page_width, inst.y1)
+                color = (0.7, 1, 0.7) if order_id in found_ids else (1, 0.7, 0.7)
+                annot = page.add_highlight_annot(line_rect)
+                annot.set_colors(stroke=color)
+                annot.update()
+    return doc.tobytes()
+
 # Planilhas para download
 df_general = pd.DataFrame(columns=st.secrets["columns"]["general"]); df_general.name = "general"
 df_vigilance = pd.DataFrame(columns=st.secrets["columns"]["vigilance"]); df_vigilance.name = "vigilance"
 df_smear = pd.DataFrame(columns=st.secrets["columns"]["smear_microscopy"]); df_smear.name = "smear"
 
 # Função de estilização/download
-def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arquivo_zip="relatorios_processados.zip"):
+def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, pdf_report=None, nome_arquivo_zip="relatorios_processados.zip"):
     status.update(label="Estilizando planilhas...", state="running", expanded=False)
     try:
         zip_buffer = io.BytesIO()
@@ -116,6 +134,8 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, nome_arqu
                         worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
                 excel_buffer.seek(0)
                 zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
+            if pdf_report:
+                zip_file.writestr("Relatório de pedidos.pdf", pdf_report)
         zip_buffer.seek(0)
         st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
         st.download_button(label="Baixar (.zip)", data=zip_buffer,
@@ -1094,7 +1114,7 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text, valid_ids):
+def process_singular_report(report_text, valid_ids, tracker):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
@@ -1103,6 +1123,7 @@ def process_singular_report(report_text, valid_ids):
     sample_match = int(match.group(1))
     if sample_match not in valid_ids:
         return
+    tracker.add(sample_match)
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -1124,14 +1145,14 @@ def process_singular_report(report_text, valid_ids):
         process_smear(report_text)
     else:
         process_general(report_text)
-def process_text_pdf(text_pdf, valid_ids):
+def process_text_pdf(text_pdf, valid_ids, tracker):
     if not text_pdf:
         return
     delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
     reports = re.split(delimiter_pattern, text_pdf)
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
-            process_singular_report(report_chunk, valid_ids)
+            process_singular_report(report_chunk, valid_ids, tracker)
 
 # Código principal da página
 st.title("Compilação de amostras")
@@ -1178,6 +1199,7 @@ conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_repo
 is_disabled = not conditions_met
 
 if st.button("Iniciar processamento", disabled=is_disabled):
+    ids_found_report = set()
     st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
     with st.status("Extraindo dados...", expanded=False) as status:
         if uploaded_reports_request:
@@ -1193,7 +1215,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                 for idx, part in enumerate(pdf_parts, start=1):
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
-                        process_text_pdf(text, valid_ids)
+                        process_text_pdf(text, valid_ids, ids_found_report)
                 st.markdown("✅ Extração de dados concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
@@ -1218,5 +1240,8 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
     if not df_blood.empty:
         df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
-    style_download(df_general, df_vigilance, df_smear, df_blood)
+    pdf_solicitacao_colorido = None
+    if uploaded_reports_request:
+        pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
+    style_download(df_general, df_vigilance, df_smear, df_blood, pdf_report=pdf_solicitacao_colorido)
     status.update(label="Concluído", state="complete", expanded=False)
