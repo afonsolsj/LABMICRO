@@ -1094,15 +1094,36 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text, valid_ids):
+def process_singular_report(report_text, valid_ids, filter_mode, selected_year, selected_month):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
-    match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
-    if not match:
-        return
-    sample_match = int(match.group(1))
-    if sample_match not in valid_ids:
-        return
+    if filter_mode == "A partir do mês selecionado":
+        date_match = re.search(r"Dt\.Recebimento:\s*(\d{2}/\d{2}/\d{4})", report_text, re.IGNORECASE)
+        if date_match:
+            date_str = date_match.group(1)
+            try:
+                date_obj = datetime.strptime(date_str, "%d/%m/%Y")
+                if date_obj.year < selected_year or (date_obj.year == selected_year and date_obj.month < month_map[selected_month]):
+                    return
+            except ValueError:
+                return
+    elif filter_mode == "Apenas o mês selecionado":
+        date_match = re.search(r"Dt\.Recebimento:\s*(\d{2}/\d{2}/\d{4})", report_text, re.IGNORECASE)
+        if date_match:
+            date_str = date_match.group(1)
+            try:
+                date_obj = datetime.strptime(date_str, "%d/%m/%Y")
+                if date_obj.year != selected_year or date_obj.month != month_map[selected_month]:
+                    return
+            except ValueError:
+                return
+    elif filter_mode == "Acordo com o relatório de pedidos":
+        match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
+        if not match:
+            return
+        sample_match = int(match.group(1))
+        if sample_match not in valid_ids:
+            return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -1124,22 +1145,33 @@ def process_singular_report(report_text, valid_ids):
         process_smear(report_text)
     else:
         process_general(report_text)
-def process_text_pdf(text_pdf, valid_ids):
+def process_text_pdf(text_pdf, valid_ids, filter_mode, selected_year, selected_month):
     if not text_pdf:
         return
     delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
     reports = re.split(delimiter_pattern, text_pdf)
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
-            process_singular_report(report_chunk, valid_ids)
+            process_singular_report(report_chunk, valid_ids, filter_mode, selected_year, selected_month)
 
 # Código principal da página
 st.title("Compilação de amostras")
-uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
-uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta por período", type=["pdf"], accept_multiple_files=False)
-uploaded_reports_request = st.file_uploader("2️⃣ Envie o relatório de solicitação", type=["pdf"], accept_multiple_files=False)
-st.markdown('<p style="font-size: 14px;">4️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
+uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf")
+uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta por período", type=["pdf"])
+st.markdown('<p style="font-size: 14px;">3️⃣ Selecione o periódo da extração</p>', unsafe_allow_html=True)
+filter_mode = st.radio("Filtrar resultados por:", ["Acordo com o relatório de pedidos", "A partir do mês selecionado", "Apenas o mês selecionado"], horizontal=True, index=0)
+month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
+if filter_mode == "A partir do mês selecionado" or filter_mode == "Apenas o mês selecionado":
+    col_m, col_a = st.columns([2, 1])
+    with col_m:
+        selected_month = st.selectbox("Mês", list(month_map.keys()))
+    with col_a:
+        selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
+    uploaded_filter_report = None
+elif filter_mode == "Acordo com o relatório de pedidos":
+    uploaded_reports_request = st.file_uploader("Envie o relatório de solicitação", type=["pdf"])
 
+st.markdown('<p style="font-size: 14px;">4️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     start_id_general = st.number_input("Geral", value=None, step=1)
@@ -1150,10 +1182,15 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
 
-conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
+core_files_uploaded = uploaded_files is not None and uploaded_reports_discharge is not None
+if filter_mode == "Acordo com o relatório de pedidos":
+    extra_condition = uploaded_reports_request is not None
+else:
+    extra_condition = True
+conditions_met = core_files_uploaded and extra_condition
 is_disabled = not conditions_met
 
 if st.button("Iniciar processamento", disabled=is_disabled):
@@ -1168,12 +1205,12 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             for pdf_file in uploaded_files:
                 with st.spinner("Dividindo PDF em partes menores..."):
                     pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                st.markdown(f"📄 PDF dividido em {len(pdf_parts)} partes.")
+                st.markdown(f"✅ PDF dividido em {len(pdf_parts)} partes.")
                 for idx, part in enumerate(pdf_parts, start=1):
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
-                        process_text_pdf(text, valid_ids)
-                st.markdown("📄 Extração de dados concluída!")
+                        process_text_pdf(text, valid_ids, filter_mode, selected_year, selected_month)
+                st.markdown("✅ Extração de dados concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
             df_list = [df_general, df_vigilance, df_smear]
