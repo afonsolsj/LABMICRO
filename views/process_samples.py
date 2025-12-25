@@ -1117,10 +1117,11 @@ def extract_text_pdf(pdf_file):
 def process_singular_report(report_text, valid_ids, tracker):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
-    match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
+    match = re.search(r"Amostra\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
     if not match:
         return
-    sample_match = int(match.group(1))
+    full_id_str = match.group(1)
+    sample_match = int(full_id_str[:-2]) if len(full_id_str) > 2 else 0
     if sample_match not in valid_ids:
         return
     tracker.add(sample_match)
@@ -1221,27 +1222,31 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             df_blood = df_general.copy()
             df_list = [df_general, df_vigilance, df_smear]
             df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
-        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
-    df_general = filter_general(df_general)
-    df_blood = filter_blood(df_blood)
-    df_general = apply_filter_hospital(df_general, filter_gen)
-    df_vigilance = apply_filter_hospital(df_vigilance, filter_vig)
-    df_smear = apply_filter_hospital(df_smear, filter_smear)
-    df_blood = apply_filter_hospital(df_blood, filter_blood_sel)
-    st_gen = int(start_id_general) if start_id_general is not None else 1
-    st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
-    st_smear = int(start_id_smear) if start_id_smear is not None else 1
-    st_blood = int(start_id_blood) if start_id_blood is not None else 1
-    if not df_general.empty:
-        df_general['id'] = range(st_gen, st_gen + len(df_general))
-    if not df_vigilance.empty:
-        df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
-    if not df_smear.empty:
-        df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
-    if not df_blood.empty:
-        df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
-    pdf_solicitacao_colorido = None
-    if uploaded_reports_request:
-        pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
+        with st.spinner("Codificando termos e aplicando filtros..."):
+            df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
+            df_general = filter_general(df_general)
+            df_blood = filter_blood(df_blood)
+            df_general = apply_filter_hospital(df_general, filter_gen)
+            df_vigilance = apply_filter_hospital(df_vigilance, filter_vig)
+            df_smear = apply_filter_hospital(df_smear, filter_smear)
+            df_blood = apply_filter_hospital(df_blood, filter_blood_sel)
+            st_gen = int(start_id_general) if start_id_general is not None else 1
+            st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
+            st_smear = int(start_id_smear) if start_id_smear is not None else 1
+            st_blood = int(start_id_blood) if start_id_blood is not None else 1
+            if not df_general.empty:
+                df_general['id'] = range(st_gen, st_gen + len(df_general))
+            if not df_vigilance.empty:
+                df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
+            if not df_smear.empty:
+                df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
+            if not df_blood.empty:
+                df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
+            st.markdown("✅ Codificação e filtragem concluídas!")
+        pdf_solicitacao_colorido = None
+        if uploaded_reports_request:
+            with st.spinner("Criando destaques no relatório de pedidos..."):
+                pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
+            st.markdown("✅ Relatório de pedidos finalizado!")
     style_download(df_general, df_vigilance, df_smear, df_blood, pdf_report=pdf_solicitacao_colorido)
     status.update(label="Concluído", state="complete", expanded=False)
