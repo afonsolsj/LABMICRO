@@ -1150,8 +1150,16 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
-filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
+st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
+fcol1, fcol2, fcol3, fcol4 = st.columns(4)
+with fcol1:
+    filter_gen = st.selectbox("Geral", ["Todos", "HUWC", "MEAC"], key="f_gen")
+with fcol2:
+    filter_vig = st.selectbox("Vigilância", ["Todos", "HUWC", "MEAC"], key="f_vig")
+with fcol3:
+    filter_smear = st.selectbox("Baciloscopia", ["Todos", "HUWC", "MEAC"], key="f_smear")
+with fcol4:
+    filter_blood_sel = st.selectbox("Hemocultura", ["Todos", "HUWC", "MEAC"], key="f_blood")
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
@@ -1181,10 +1189,10 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
     df_general = filter_general(df_general)
     df_blood = filter_blood(df_blood)
-    df_general = apply_filter_hospital(df_general, filter_hospital)
-    df_vigilance = apply_filter_hospital(df_vigilance, filter_hospital)
-    df_smear = apply_filter_hospital(df_smear, filter_hospital)
-    df_blood = apply_filter_hospital(df_blood, filter_hospital)
+    df_general = apply_filter_hospital(df_general, filter_gen)
+    df_vigilance = apply_filter_hospital(df_vigilance, filter_vig)
+    df_smear = apply_filter_hospital(df_smear, filter_smear)
+    df_blood = apply_filter_hospital(df_blood, filter_blood_sel)
     st_gen = int(start_id_general) if start_id_general is not None else 1
     st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
     st_smear = int(start_id_smear) if start_id_smear is not None else 1
