@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 import requests
 import base64
 
@@ -40,16 +41,29 @@ with col2:
     if "editing" not in st.session_state:
         st.session_state.editing = False
     if not st.session_state.editing:
-        st.info(current_text if current_text else "Nenhum aviso no momento.")
-        if st.button("✏️"):
+        with st.container(height=250, border=True):
+            if current_text:
+                st.markdown(current_text)
+            else:
+                st.caption("Nenhum aviso no momento.")
+        if st.button("✏️ Editar Mural"):
             st.session_state.editing = True
             st.rerun()
     else:
-        new_content = st.text_area("Escreva o aviso:", value=current_text, height=150)
-        if st.button("💾"):
-            if update_post_it_github(new_content, sha):
-                st.success("Salvo!")
+        new_content = st.text_area("Escreva o novo aviso:", value=current_text, height=200, help="Dica: Use markdown para formatar")
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("💾 Salvar", use_container_width=True):
+                data_hoje = datetime.now().strftime("%d/%m/%Y %H:%M")
+                header = f"**{data_hoje} - {st.session_state.username}:**\n"
+                final_text = new_content if header in new_content else f"{header}{new_content}\n\n--- \n{current_text}"
+                if update_post_it_github(final_text, sha):
+                    st.success("Atualizado!")
+                    st.session_state.editing = False
+                    st.rerun()
+                else:
+                    st.error("Erro ao salvar.")
+        with col_btn2:
+            if st.button("❌ Cancelar", use_container_width=True):
                 st.session_state.editing = False
                 st.rerun()
-            else:
-                st.error("Erro ao salvar no GitHub.")
