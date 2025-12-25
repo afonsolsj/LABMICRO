@@ -1151,15 +1151,10 @@ with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
-fcol1, fcol2, fcol3, fcol4 = st.columns(4)
-with fcol1:
-    filter_gen = st.selectbox("Geral", ["Todos", "HUWC", "MEAC"], key="f_gen")
-with fcol2:
-    filter_vig = st.selectbox("Vigilância", ["Todos", "HUWC", "MEAC"], key="f_vig")
-with fcol3:
-    filter_smear = st.selectbox("Baciloscopia", ["Todos", "HUWC", "MEAC"], key="f_smear")
-with fcol4:
-    filter_blood_sel = st.selectbox("Hemocultura", ["Todos", "HUWC", "MEAC"], key="f_blood")
+filter_gen = st.radio("Geral", ["Todos", "HUWC", "MEAC"], key="f_gen")
+filter_vig = st.radio("Vigilância", ["Todos", "HUWC", "MEAC"], key="f_vig")
+filter_smear = st.radio("Baciloscopia", ["Todos", "HUWC", "MEAC"], key="f_smear")
+filter_blood_sel = st.radio("Hemocultura", ["Todos", "HUWC", "MEAC"], key="f_blood")
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
