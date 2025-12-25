@@ -28,7 +28,7 @@ def update_post_it_github(new_text, sha):
 st.title("Estagiários Lab Microbiologia")
 st.markdown(f"Bem-vindo, **{st.session_state.username}** 👋")
 
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns([1, 2.5])
 with col1:
     if st.button("Compilação de amostras", use_container_width=True):
         st.switch_page("views/process_samples.py")
