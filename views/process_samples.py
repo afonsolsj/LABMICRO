@@ -1151,16 +1151,18 @@ with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
+st.markdown("<style>.label-center {display: flex; align-items: center; height: 100%; font-size: 14px;}</style>", unsafe_allow_html=True)
 def radio_inline(label, key):
-    col1, col2 = st.columns([1, 5])
+    col1, col2 = st.columns([1.5, 6])
     with col1:
-        st.markdown(f"**{label}:**")
+        st.markdown(f'<div class="label-center">{label}:</div>', unsafe_allow_html=True)
     with col2:
         return st.radio("", ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
 filter_gen = radio_inline("Geral", "f_gen")
 filter_vig = radio_inline("Vigilância", "f_vig")
 filter_smear = radio_inline("Baciloscopia", "f_smear")
 filter_blood_sel = radio_inline("Hemocultura", "f_blood")
+
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
