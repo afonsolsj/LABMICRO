@@ -1153,15 +1153,16 @@ with col4:
 st.markdown('<p style="font-size: 14px; margin-bottom: 15px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 with st.popover("Editar"):
     def render_filter_row(label, key):
-        col_label, col_radio = st.columns([1, 4]) 
+        col_label, col_radio = st.columns([1, 2]) 
         with col_label:
-            st.markdown(f'<p style="margin-top: 8px; font-size: 14px;">{label}</p>', unsafe_allow_html=True)
+            st.markdown(f'<p style="margin-top: 8px; font-size: 15px;">{label}</p>', unsafe_allow_html=True)
         with col_radio:
             return st.radio(label, ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
     filter_gen = render_filter_row("Geral:", "f_gen")
     filter_vig = render_filter_row("Vigilância:", "f_vig")
     filter_smear = render_filter_row("Baciloscopia:", "f_smear")
     filter_blood_sel = render_filter_row("Hemocultura:", "f_blood")
+st.caption(f"Filtros: Geral({filter_gen}), Vig({filter_vig}), Bacilo({filter_smear}), Hemo({filter_blood_sel})")
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
