@@ -1130,8 +1130,9 @@ def process_text_pdf(text_pdf):
 # Código principal da página
 st.title("Compilação de amostras")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
-uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
-st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
+uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta por período", type=["pdf"], accept_multiple_files=False)
+uploaded_reports_request = st.file_uploader("2️⃣ Envie o relatório de solicitação", type=["pdf"], accept_multiple_files=False)
+st.markdown('<p style="font-size: 14px;">4️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -1146,12 +1147,18 @@ with col4:
 st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
 
-conditions_met = uploaded_files and uploaded_reports_discharge
+conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
 
 if st.button("Iniciar processamento", disabled=is_disabled):
     st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
     with st.status("Extraindo dados...", expanded=False) as status:
+        if uploaded_reports_request:
+            with st.spinner("Processando relatório de solicitação..."):
+                text_request = extract_text_pdf(uploaded_reports_request)
+                valid_ids = list(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE))
+            st.markdown(valid_ids)
+            st.success(f"✅ {len(valid_ids)} pedidos identificados.")
         if uploaded_files:
             for pdf_file in uploaded_files:
                 with st.spinner("Dividindo PDF em partes menores..."):
