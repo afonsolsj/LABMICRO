@@ -1125,7 +1125,7 @@ def process_text_pdf(text_pdf, valid_ids):
 st.title("Compilação de amostras")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
-uploaded_filter_report = st.file_uploader("3️⃣ Envie o RELATÓRIO DE PEDIDOS (Filtro obrigatório)", type=["pdf"])
+uploaded_filter_report = st.file_uploader("3️⃣ Envie o relatório de pedidos", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">4️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -1179,5 +1179,5 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
         if not df_blood.empty: 
             df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
-        style_download(df_general, df_vigilance, df_smear, df_blood)
-        status.update(label="Processamento concluído!", state="complete", expanded=False)
+    style_download(df_general, df_vigilance, df_smear, df_blood)
+    status.update(label="Processamento concluído!", state="complete", expanded=False)
