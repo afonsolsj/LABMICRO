@@ -1098,8 +1098,13 @@ def process_singular_report(report_text, valid_ids):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
+    if not match:
+        return
     sample_match = int(match.group(1))
-    st.markdown(f"Analisando pedido: {sample_match}")
+    if sample_match in valid_ids:
+        st.markdown(f"➡️ Processando pedido: **{sample_match}**")
+    if sample_match not in valid_ids:
+        return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -1165,7 +1170,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             for pdf_file in uploaded_files:
                 with st.spinner("Dividindo PDF em partes menores..."):
                     pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                st.markdown(f"PDF dividido em {len(pdf_parts)} partes.")
+                st.markdown(f"📄 PDF dividido em {len(pdf_parts)} partes.")
                 for idx, part in enumerate(pdf_parts, start=1):
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
