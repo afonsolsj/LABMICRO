@@ -1094,9 +1094,15 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text):
+def process_singular_report(report_text, valid_ids):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
+    match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
+    if not match:
+        return
+    sample_match = int(match.group(1))
+    if sample_match not in valid_ids:
+        return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -1118,14 +1124,14 @@ def process_singular_report(report_text):
         process_smear(report_text)
     else:
         process_general(report_text)
-def process_text_pdf(text_pdf):
+def process_text_pdf(text_pdf, valid_ids):
     if not text_pdf:
         return
     delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
     reports = re.split(delimiter_pattern, text_pdf)
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
-            process_singular_report(report_chunk)
+            process_singular_report(report_chunk, valid_ids)
 
 # Código principal da página
 st.title("Compilação de amostras")
@@ -1156,7 +1162,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         if uploaded_reports_request:
             with st.spinner("Processando relatório de solicitação..."):
                 text_request = extract_text_pdf(uploaded_reports_request)
-                valid_ids = list(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE))
+                valid_ids = [int(i) for i in re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)]
             st.markdown(valid_ids)
             st.success(f"✅ {len(valid_ids)} pedidos identificados.")
         if uploaded_files:
@@ -1168,7 +1174,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                     st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
-                        process_text_pdf(text)
+                        process_text_pdf(text, valid_ids)
                     st.success(f"Parte {idx} concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
