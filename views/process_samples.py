@@ -1156,8 +1156,8 @@ def process_text_pdf(text_pdf, valid_ids, filter_mode, selected_year, selected_m
 
 # Código principal da página
 st.title("Compilação de amostras")
-uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf")
-uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta por período", type=["pdf"])
+uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
+uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta por período", type=["pdf"], accept_multiple_files=False)
 st.markdown('<p style="font-size: 14px;">3️⃣ Selecione o periódo da extração</p>', unsafe_allow_html=True)
 filter_mode = st.radio("Filtrar resultados por:", ["Acordo com o relatório de pedidos", "A partir do mês selecionado", "Apenas o mês selecionado"], horizontal=True, index=0)
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
@@ -1169,7 +1169,7 @@ if filter_mode == "A partir do mês selecionado" or filter_mode == "Apenas o mê
         selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
     uploaded_filter_report = None
 elif filter_mode == "Acordo com o relatório de pedidos":
-    uploaded_reports_request = st.file_uploader("Envie o relatório de solicitação", type=["pdf"])
+    uploaded_reports_request = st.file_uploader("Envie o relatório de solicitação", type=["pdf"], accept_multiple_files=False)
 
 st.markdown('<p style="font-size: 14px;">4️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
 col1, col2, col3, col4 = st.columns(4)
