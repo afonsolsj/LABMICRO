@@ -1101,8 +1101,6 @@ def process_singular_report(report_text, valid_ids):
     if not match:
         return
     sample_match = int(match.group(1))
-    if sample_match in valid_ids:
-        st.markdown(f"➡️ Processando pedido: **{sample_match}**")
     if sample_match not in valid_ids:
         return
     procedencia_index = report_text_lower.find("procedência.:")
