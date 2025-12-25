@@ -1162,9 +1162,11 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         if uploaded_reports_request:
             with st.spinner("Processando relatório de solicitação..."):
                 text_request = extract_text_pdf(uploaded_reports_request)
-                valid_ids = [int(i) for i in re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)]
-            st.markdown(valid_ids)
-            st.success(f"✅ {len(valid_ids)} pedidos identificados.")
+                valid_ids = {int(i) for i in re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)}
+            if not valid_ids:
+                st.warning("⚠️ Nenhum pedido foi identificado no relatório.")
+            else:
+                st.success(f"✅ {len(valid_ids)} pedidos identificados.")
         if uploaded_files:
             for pdf_file in uploaded_files:
                 with st.spinner("Dividindo PDF em partes menores..."):
