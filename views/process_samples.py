@@ -901,7 +901,7 @@ def filter_general(df_general):
     df_final.drop(columns=["pedido_inicial", "check_ver_resultado_em", "ver_resultado_em_pedido", "laudo_unico", "via_coleta"], inplace=True, errors="ignore")
     return df_final
 def filter_blood(df, substitution_departments=substitution_departments, blood_collection=blood_collection, microorganism_blood_positive=microorganism_blood_positive, microorganism_blood_contaminated=microorganism_blood_contaminated):
-    df_filter_blood = df[df['qual_tipo_de_material'].str.lower().str.strip() == "sangue"].copy()
+    df_filter_blood = df[df['qual_tipo_de_material'].str.contains(r"sangue", case=False, na=False)].copy()
     df_filter_blood['micro_contaminado'] = None
     if "via_coleta" in df_filter_blood.columns and blood_collection:
         for idx, val in df_filter_blood["via_coleta"].items():
@@ -1173,7 +1173,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
                         process_text_pdf(text, valid_ids)
-                st.markdown(f"Extração de dados concluída!")
+                st.markdown("📄 Extração de dados concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
             df_list = [df_general, df_vigilance, df_smear]
