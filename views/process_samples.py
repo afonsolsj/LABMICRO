@@ -1150,11 +1150,11 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-st.markdown('<p style="font-size: 14px; font-weight: bold; margin-bottom: 20px;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 14px; margin-bottom: 20px;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
 def render_filter_row(label, key):
-    col_label, col_radio = st.columns([1, 4])
+    col_label, col_radio = st.columns([0.5, 4])
     with col_label:
-        st.markdown(f'<p style="margin-top: 8px; font-weight: 500;">{label}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="margin-top: 8px; font-size: 14px;">{label}</p>', unsafe_allow_html=True)
     with col_radio:
         return st.radio(label, ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
 filter_gen = render_filter_row("Geral:", "f_gen")
