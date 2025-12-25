@@ -1167,9 +1167,17 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         df_vigilance = apply_filter_hospital(df_vigilance, filter_hospital)
         df_smear = apply_filter_hospital(df_smear, filter_hospital)
         df_blood = apply_filter_hospital(df_blood, filter_hospital)
-        if not df_general.empty: df_general['id'] = range(start_id_general, start_id_general + len(df_general))
-        if not df_vigilance.empty: df_vigilance['record_id'] = range(start_id_vigilance, start_id_vigilance + len(df_vigilance))
-        if not df_smear.empty: df_smear['record_id'] = range(start_id_smear, start_id_smear + len(df_smear))
-        if not df_blood.empty: df_blood['record_id'] = range(start_id_blood, start_id_blood + len(df_blood))
+        st_gen = int(start_id_general) if start_id_general is not None else 1
+        st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
+        st_smear = int(start_id_smear) if start_id_smear is not None else 1
+        st_blood = int(start_id_blood) if start_id_blood is not None else 1
+        if not df_general.empty: 
+            df_general['id'] = range(st_gen, st_gen + len(df_general))
+        if not df_vigilance.empty: 
+            df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
+        if not df_smear.empty: 
+            df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
+        if not df_blood.empty: 
+            df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
         style_download(df_general, df_vigilance, df_smear, df_blood)
         status.update(label="Processamento concluído!", state="complete", expanded=False)
