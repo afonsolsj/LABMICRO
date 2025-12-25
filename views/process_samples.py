@@ -1154,7 +1154,7 @@ st.markdown('<p style="font-size: 14px; margin-bottom: 20px;">5️⃣ Selecione 
 def render_filter_row(label, key):
     col_label, col_radio = st.columns([0.7, 4])
     with col_label:
-        st.markdown(f'<p style="margin-top: 8px; font-size: 14px;">{label}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="margin-top: 8px; font-weight: 500;">{label}</p>', unsafe_allow_html=True)
     with col_radio:
         return st.radio(label, ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
 filter_gen = render_filter_row("Geral:", "f_gen")
