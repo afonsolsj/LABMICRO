@@ -1094,14 +1094,11 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text, selected_month_name, selected_year, filter_mode, valid_ids):
+def process_singular_report(report_text, valid_ids):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
-    if filter_mode == "Por relatório de pedidos":
-        sample_match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
-        if sample_match not in valid_ids:
-            return
-    elif filter_mode == "A partir do mês selecionado":
+    sample_match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
+    if not sample_match or sample_match.group(1) not in valid_ids:
         return
     if "cpdhr" in report_text_lower or "paciente teste" in report_text_lower:
         return
@@ -1115,21 +1112,21 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
         process_smear(report_text)
     else:
         process_general(report_text)
-def process_text_pdf(text_pdf, selected_month, selected_year, filter_mode, valid_ids):
+def process_text_pdf(text_pdf, valid_ids):
     if not text_pdf:
         return
     delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
     reports = re.split(delimiter_pattern, text_pdf)
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
-            process_singular_report(report_chunk, selected_month, selected_year, filter_mode, valid_ids)
+            process_singular_report(report_chunk, valid_ids)
 
 # Código principal da página
 st.title("Compilação de amostras")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
 uploaded_reports_discharge = st.file_uploader("2️⃣ Envie o relatório de alta/período", type=["pdf"], accept_multiple_files=False)
-st.markdown('<p style="font-size: 14px;">3️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
-
+uploaded_filter_report = st.file_uploader("3️⃣ Envie o RELATÓRIO DE PEDIDOS (Filtro obrigatório)", type=["pdf"])
+st.markdown('<p style="font-size: 14px;">4️⃣ Defina os IDs iniciais para cada formulário</p>', unsafe_allow_html=True)
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     start_id_general = st.number_input("Geral", value=None, step=1)
@@ -1140,72 +1137,39 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-
-month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
-st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o modo de filtragem</p>', unsafe_allow_html=True)
-filter_mode = st.radio("Filtro", ["Por relatório de pedidos", "A partir da data selecionada"], label_visibility="collapsed")
-col_m, col_a = st.columns([2, 1])
-valid_ids = set() 
-if filter_mode == "A partir da data":
-    with col_m:
-        month = st.selectbox("Mês", list(month_map.keys()))
-    with col_a:
-        selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
-    uploaded_filter_report = None
-else:
-    uploaded_filter_report = st.file_uploader("Envie o relatório de pedidos", type=["pdf"], key="filter_pdf")
-    month = list(month_map.keys())[0] 
-    selected_year = datetime.now().year
-
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
 
-conditions_met = uploaded_files and uploaded_reports_discharge
-if filter_mode == "Por relatório de pedidos" and not uploaded_filter_report:
-    conditions_met = False
-is_disabled = not conditions_met
+is_disabled = not (uploaded_files and uploaded_reports_discharge and uploaded_filter_report)
 
 if st.button("Iniciar processamento", disabled=is_disabled):
     st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
     with st.status("Extraindo dados...", expanded=False) as status:
-        if uploaded_filter_report:
-            text = extract_text_pdf(uploaded_filter_report)
-            if not text:
-                set()
-            valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
-        if uploaded_files:
-            for pdf_file in uploaded_files:
-                with st.spinner("Dividindo PDF em partes menores..."):
-                    pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                st.success(f"PDF dividido em {len(pdf_parts)} partes.")
-                for idx, part in enumerate(pdf_parts, start=1):
-                    st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
-                    with st.spinner(f"Processando parte {idx}..."):
-                        text = extract_text_pdf(part)
-                        process_text_pdf(text, month, selected_year, filter_mode, valid_ids)
-                    st.success(f"Parte {idx} concluída!")
-        if uploaded_reports_discharge:
-            df_blood = df_general.copy()
-            df_list = [df_general, df_vigilance, df_smear]
-            df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
-        df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
-    df_general = filter_general(df_general)
-    df_blood = filter_blood(df_blood)
-    df_general = apply_filter_hospital(df_general, filter_hospital)
-    df_vigilance = apply_filter_hospital(df_vigilance, filter_hospital)
-    df_smear = apply_filter_hospital(df_smear, filter_hospital)
-    df_blood = apply_filter_hospital(df_blood, filter_hospital)
-    st_gen = int(start_id_general) if start_id_general is not None else 1
-    st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
-    st_smear = int(start_id_smear) if start_id_smear is not None else 1
-    st_blood = int(start_id_blood) if start_id_blood is not None else 1
-    if not df_general.empty:
-        df_general['id'] = range(st_gen, st_gen + len(df_general))
-    if not df_vigilance.empty:
-        df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
-    if not df_smear.empty:
-        df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
-    if not df_blood.empty:
-        df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
-    style_download(df_general, df_vigilance, df_smear, df_blood)
-    status.update(label="Concluído", state="complete", expanded=False)
+        st.write("📖 Lendo relatório de pedidos...")
+        text_filter = extract_text_pdf(uploaded_filter_report)
+        valid_ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text_filter, re.IGNORECASE))
+        st.write(f"✅ {len(valid_ids)} pedidos identificados para filtragem.")
+        for pdf_file in uploaded_files:
+            st.write(f"📂 Processando: {pdf_file.name}")
+            pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
+            
+            for idx, part in enumerate(pdf_parts, start=1):
+                text = extract_text_pdf(part)
+                process_text_pdf(text, valid_ids)
+        st.write("🔗 Cruzando dados e buscando desfechos...")
+        df_list = [df_general, df_vigilance, df_smear]
+        df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
+        df_blood = df_general.copy()
+        df_general, df_vigilance, df_smear = compare_data([df_general, df_vigilance, df_smear], substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
+        df_general = filter_general(df_general)
+        df_blood = filter_blood(df_blood)
+        df_general = apply_filter_hospital(df_general, filter_hospital)
+        df_vigilance = apply_filter_hospital(df_vigilance, filter_hospital)
+        df_smear = apply_filter_hospital(df_smear, filter_hospital)
+        df_blood = apply_filter_hospital(df_blood, filter_hospital)
+        if not df_general.empty: df_general['id'] = range(start_id_general, start_id_general + len(df_general))
+        if not df_vigilance.empty: df_vigilance['record_id'] = range(start_id_vigilance, start_id_vigilance + len(df_vigilance))
+        if not df_smear.empty: df_smear['record_id'] = range(start_id_smear, start_id_smear + len(df_smear))
+        if not df_blood.empty: df_blood['record_id'] = range(start_id_blood, start_id_blood + len(df_blood))
+        style_download(df_general, df_vigilance, df_smear, df_blood)
+        status.update(label="Processamento concluído!", state="complete", expanded=False)
