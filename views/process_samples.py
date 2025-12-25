@@ -1094,29 +1094,24 @@ def extract_text_pdf(pdf_file):
     except Exception as e:
         st.error(f"Erro ao ler o PDF com pdfplumber: {e}")
         return None
-def process_singular_report(report_text, selected_month_name, selected_year, filter_mode, valid_ids=None):
+def process_singular_report(report_text, selected_month_name, selected_year, only_month):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
-    should_process = False
-    if filter_mode == "Por data":
-        date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
-        if date_match:
-            try:
-                report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
-                selected_month_num = month_map[selected_month_name]
-                data_corte = datetime(selected_year, selected_month_num, 1)
-                if report_date >= data_corte:
-                    should_process = True
-            except ValueError:
-                pass
-    elif filter_mode == "Por relatório de pedidos":
-        if valid_ids:
-            sample_match = re.search(r"Pedido:\s*(\d+)", report_text, re.IGNORECASE)
-            if sample_match:
-                sample_number = sample_match.group(1).strip()
-                if sample_number in valid_ids:
-                    should_process = True
-    if not should_process:
+    date_match = re.search(r"data solicita[ç|c][ã|a]o:?\s*(\d{2}/\d{2}/\d{4})\s*\|", report_text_lower)
+    if date_match:
+        try:
+            report_date = datetime.strptime(date_match.group(1), "%d/%m/%Y")
+            selected_month_num = month_map[selected_month_name]
+            data_corte = datetime(selected_year, selected_month_num, 1)
+            if only_month:
+                if report_date.month != selected_month_num or report_date.year != selected_year:
+                    return
+            else:
+                if report_date < data_corte:
+                    return
+        except ValueError:
+            return
+    else:
         return
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
@@ -1139,20 +1134,14 @@ def process_singular_report(report_text, selected_month_name, selected_year, fil
         process_smear(report_text)
     else:
         process_general(report_text)
-def process_text_pdf(text_pdf, selected_month, selected_year, filter_mode, valid_ids):
+def process_text_pdf(text_pdf, selected_month, selected_year, only_month):
     if not text_pdf:
         return
     delimiter_pattern = r"(?=COMPLEXO HOSPITALAR DA UFC/EBSERH)"
     reports = re.split(delimiter_pattern, text_pdf)
     for report_chunk in reports:
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
-            process_singular_report(report_chunk, selected_month, selected_year, filter_mode, valid_ids)
-def extract_ids_from_filter_report(pdf_file):
-    text = extract_text_pdf(pdf_file)
-    if not text:
-        return set()
-    ids = set(re.findall(r"Pedido:?\s*[\r\n]*(\d+)", text, re.IGNORECASE))
-    return ids
+            process_singular_report(report_chunk, selected_month, selected_year, only_month)
 
 # Código principal da página
 st.title("Compilação de amostras")
@@ -1170,33 +1159,23 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
+st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o período do processamento</p>', unsafe_allow_html=True)
 
 month_map = {"Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12}
-st.markdown('<p style="font-size: 14px;">4️⃣ Selecione o modo de filtragem</p>', unsafe_allow_html=True)
-filter_mode = st.radio("Escolha do filtro", ["Por data", "Por relatório de pedidos"])
 col_m, col_a = st.columns([2, 1])
-valid_ids = set() 
-if filter_mode == "Por data":
-    with col_m:
-        month = st.selectbox("Mês", list(month_map.keys()))
-    with col_a:
-        selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
-    uploaded_filter_report = None
-else:
-    uploaded_filter_report = st.file_uploader("Relatório de Pedidos (PDF)", type=["pdf"], key="filter_pdf")
-    month = list(month_map.keys())[0] 
-    selected_year = datetime.now().year 
-    if uploaded_filter_report:
-        with st.spinner("Lendo lista de pedidos..."):
-            valid_ids = extract_ids_from_filter_report(uploaded_filter_report)
-        st.success(f"{len(valid_ids)} pedidos identificados para filtragem.")
+with col_m:
+    month = st.selectbox("Mês", list(month_map.keys()))
+with col_a:
+    selected_year = st.number_input("Ano", value=datetime.now().year, step=1)
+if "filtro_modo" not in st.session_state:
+    st.session_state.filtro_modo = True
+label_dinamico = "Apenas o mês selecionado" if st.session_state.filtro_modo else "A partir do mês selecionado"
+only_month = st.toggle(label=label_dinamico, value=True, key="filtro_modo")
 
 st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
 filter_hospital = st.radio("Filtrar resultados por:", ["Todos", "HUWC", "MEAC"], horizontal=True, index=0)
 
 conditions_met = uploaded_files and uploaded_reports_discharge
-if filter_mode == "Por relatório de pedidos" and not uploaded_filter_report:
-    conditions_met = False
 is_disabled = not conditions_met
 
 if st.button("Iniciar processamento", disabled=is_disabled):
@@ -1211,7 +1190,7 @@ if st.button("Iniciar processamento", disabled=is_disabled):
                     st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
-                        process_text_pdf(text, month, selected_year, filter_mode, valid_ids)
+                        process_text_pdf(text, month, selected_year, only_month)
                     st.success(f"Parte {idx} concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
