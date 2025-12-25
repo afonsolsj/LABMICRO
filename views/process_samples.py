@@ -1152,7 +1152,6 @@ if st.button("Iniciar processamento", disabled=is_disabled):
         for pdf_file in uploaded_files:
             st.write(f"📂 Processando: {pdf_file.name}")
             pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-            
             for idx, part in enumerate(pdf_parts, start=1):
                 text = extract_text_pdf(part)
                 process_text_pdf(text, valid_ids)
