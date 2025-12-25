@@ -1151,13 +1151,13 @@ with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
 st.markdown('<p style="font-size: 14px; margin-bottom: 15px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
-st.caption(f"📍 **Filtros ativos:** Geral: {st.session_state.get('f_gen', 'Todos')} | "
+st.caption(f"**Filtros ativos:** Geral: {st.session_state.get('f_gen', 'Todos')} | "
            f"Vigilância: {st.session_state.get('f_vig', 'Todos')} | "
            f"Baciloscopia: {st.session_state.get('f_smear', 'Todos')} | "
            f"Hemocultura: {st.session_state.get('f_blood', 'Todos')}")
 with st.popover("Editar"):
     def render_filter_row(label, key):
-        col_label, col_radio = st.columns([1, 2]) 
+        col_label, col_radio = st.columns([1, 3]) 
         with col_label:
             st.markdown(f'<p style="margin-top: 8px; font-size: 15px;">{label}</p>', unsafe_allow_html=True)
         with col_radio:
