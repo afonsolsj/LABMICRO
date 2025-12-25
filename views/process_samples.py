@@ -1150,22 +1150,17 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-st.markdown('<p style="font-size: 14px; font-weight: bold;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
-
-filtros = [("Geral:", "f_gen"), ("Vigilância:", "f_vig"), ("Baciloscopia:", "f_smear"), ("Hemocultura:", "f_blood")]
-for label, chave in filtros:
-    col_label, col_radio = st.columns([1.5, 5])
-    with col_label:
-        st.markdown(f'<p style="padding-top: 10px; font-weight: 500;">{label}</p>', unsafe_allow_html=True)
-    with col_radio:
-        if chave == "f_gen":
-            filter_gen = st.radio("", ["Todos", "HUWC", "MEAC"], key=chave, horizontal=True)
-        elif chave == "f_vig":
-            filter_vig = st.radio("", ["Todos", "HUWC", "MEAC"], key=chave, horizontal=True)
-        elif chave == "f_smear":
-            filter_smear = st.radio("", ["Todos", "HUWC", "MEAC"], key=chave, horizontal=True)
-        elif chave == "f_blood":
-            filter_blood_sel = st.radio("", ["Todos", "HUWC", "MEAC"], key=chave, horizontal=True)
+st.markdown('<p style="font-size: 14px;">5️⃣ Selecione o filtro de Hospital para cada relatório</p>', unsafe_allow_html=True)
+def radio_inline(label, key):
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        st.markdown(f"**{label}:**")
+    with col2:
+        return st.radio("", ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
+filter_gen = radio_inline("Geral", "f_gen")
+filter_vig = radio_inline("Vigilância", "f_vig")
+filter_smear = radio_inline("Baciloscopia", "f_smear")
+filter_blood_sel = radio_inline("Hemocultura", "f_blood")
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
