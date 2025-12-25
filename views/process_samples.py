@@ -1098,11 +1098,8 @@ def process_singular_report(report_text, valid_ids):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     match = re.search(r"Pedido\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
-    if not match:
-        return
     sample_match = int(match.group(1))
-    if sample_match not in valid_ids:
-        return
+    st.markdown(f"Analisando pedido: {sample_match}")
     procedencia_index = report_text_lower.find("procedência.:")
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
@@ -1163,21 +1160,17 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             with st.spinner("Processando relatório de solicitação..."):
                 text_request = extract_text_pdf(uploaded_reports_request)
                 valid_ids = {int(i) for i in re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)}
-            if not valid_ids:
-                st.warning("⚠️ Nenhum pedido foi identificado no relatório.")
-            else:
-                st.success(f"✅ {len(valid_ids)} pedidos identificados.")
+            st.markdown(f"✅ {len(valid_ids)} pedidos identificados.")
         if uploaded_files:
             for pdf_file in uploaded_files:
                 with st.spinner("Dividindo PDF em partes menores..."):
                     pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                st.success(f"PDF dividido em {len(pdf_parts)} partes.")
+                st.markdown(f"PDF dividido em {len(pdf_parts)} partes.")
                 for idx, part in enumerate(pdf_parts, start=1):
-                    st.write(f"🔹 Processando parte {idx}/{len(pdf_parts)}")
                     with st.spinner(f"Processando parte {idx}..."):
                         text = extract_text_pdf(part)
                         process_text_pdf(text, valid_ids)
-                    st.success(f"Parte {idx} concluída!")
+                st.markdown(f"Extração de dados concluída!")
         if uploaded_reports_discharge:
             df_blood = df_general.copy()
             df_list = [df_general, df_vigilance, df_smear]
