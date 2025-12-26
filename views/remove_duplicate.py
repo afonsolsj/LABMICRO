@@ -44,6 +44,3 @@ if st.button("Iniciar limpeza", disabled=arquivos_faltando):
                 st.error(f"❌ A coluna de pedido não foi encontrada nos 'Dados para Remoção'.")  
     except Exception as e:
         st.error(f"⚠️ Ocorreu um erro inesperado: {e}")
-
-if arquivos_faltando:
-    st.info("💡 Por favor, carregue os dois arquivos acima para liberar o botão de limpeza.")
