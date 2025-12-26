@@ -37,33 +37,23 @@ with col1:
         st.switch_page("views/remove_duplicate.py")
 with col2:
     st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">📌 Mural de avisos</p>', unsafe_allow_html=True)
-    current_text, sha = get_post_it_content()
-    if "editing" not in st.session_state:
-        st.session_state.editing = False
-    if not st.session_state.editing:
-        with st.container(height=250, border=True):
-            if current_text:
-                st.markdown(current_text)
-            else:
-                st.caption("Nenhum aviso no momento.")
-        if st.button("✏️ Editar Mural"):
-            st.session_state.editing = True
-            st.rerun()
-    else:
-        new_content = st.text_area("Escreva o novo aviso:", value=current_text, height=200, help="Dica: Use markdown para formatar")
-        col_btn1, col_btn2 = st.columns(2)
-        with col_btn1:
-            if st.button("💾 Salvar", use_container_width=True):
-                data_hoje = datetime.now().strftime("%d/%m/%Y %H:%M")
-                header = f"**{data_hoje} - {st.session_state.username}:**\n"
-                final_text = new_content if header in new_content else f"{header}{new_content}\n\n--- \n{current_text}"
-                if update_post_it_github(final_text, sha):
-                    st.success("Atualizado!")
-                    st.session_state.editing = False
+    current_history, sha = get_post_it_content()
+    with st.container(height=250, border=True):
+        if current_history:
+            st.markdown(current_history)
+        else:
+            st.caption("Nenhum aviso registrado.")
+    with st.expander("➕"):
+        new_entry = st.text_area("Escreva sua mensagem:", key="new_post_it", placeholder="Digite aqui o aviso...")
+        if st.button("💾", use_container_width=True):
+            if new_entry.strip() != "":
+                data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
+                formatted_entry = f"**{st.session_state.username}** - *{data_hora}*\n\n{new_entry}\n\n---\n"
+                updated_content = formatted_entry + current_history
+                if update_post_it_github(updated_content, sha):
+                    st.success("Aviso postado!")
                     st.rerun()
                 else:
-                    st.error("Erro ao salvar.")
-        with col_btn2:
-            if st.button("❌ Cancelar", use_container_width=True):
-                st.session_state.editing = False
-                st.rerun()
+                    st.error("Erro ao conectar com o GitHub.")
+            else:
+                st.warning("O campo de texto está vazio.")
