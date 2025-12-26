@@ -4,8 +4,7 @@ import requests
 import base64
 import pytz
 
-# --- CONFIGURAÇÕES DO GITHUB ---
-GITHUB_TOKEN = st.secrets["github"]["token"] # Guarde seu token no st.secrets por segurança
+GITHUB_TOKEN = st.secrets["github"]["token"]
 REPO_OWNER = "afonsolsj"
 REPO_NAME = "LABMICRO"
 FILE_PATH = "assets/files/notice_board.txt"
@@ -39,15 +38,6 @@ with col1:
         st.switch_page("views/process_samples.py")
     if st.button("Remoção de duplicatas", use_container_width=True):
         st.switch_page("views/remove_duplicate.py")
-import pytz
-from datetime import datetime
-
-# ... (funções get_post_it_content e update_post_it_github iguais)
-
-def get_fortaleza_time():
-    fuso = pytz.timezone('America/Fortaleza')
-    return datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
-
 with col2:
     st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">📌 Mural de avisos</p>', unsafe_allow_html=True)
     current_history, sha = get_post_it_content()
