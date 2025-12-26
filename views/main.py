@@ -53,7 +53,7 @@ with col2:
             st.caption("Nenhum aviso no momento.")
         else:
             for i, item in enumerate(avisos):
-                c_text, c_del = st.columns([0.9, 0.1])
+                c_text, c_del = st.columns([0.85, 0.15])
                 with c_text:
                     st.markdown(f"**{item['user']}** — *{item['date']}*\n\n{item['text']}")
                 with c_del:
