@@ -37,10 +37,9 @@ def get_fortaleza_time():
     return datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 
 st.title("Estagiários Lab Microbiologia")
-st.markdown(f"Bem-vindo, **{st.session_state.username}** 👋")
-
 col1, col2 = st.columns([1, 2.5])
 with col1:
+    st.markdown(f"Bem-vindo, **{st.session_state.username}** 👋")
     if st.button("Compilação de amostras", use_container_width=True):
         st.switch_page("views/process_samples.py")
     if st.button("Remoção de duplicatas", use_container_width=True):
