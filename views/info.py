@@ -52,7 +52,7 @@ def render_legend_item(badge_text, icon, color, description):
 
 # Código principal da página
 st.title("Informações")
-tab1, tab2, tab3, tab4 = st.tabs(["Data do exame pendente mais antigo", "Setores", "Materiais", "Microrganismos", "Legendas"])
+tab1, tab2, tab3, tab4 = st.tabs(["Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
     render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
 with tab2:
