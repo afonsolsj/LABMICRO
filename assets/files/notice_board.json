@@ -2,6 +2,11 @@
     {
         "user": "Afonso",
         "date": "25/12/2025 21:23",
+        "text": "Olá. Essa é a segunda anotação."
+    },
+    {
+        "user": "Afonso",
+        "date": "25/12/2025 21:23",
         "text": "Olá. Essa é a primeira anotação."
     }
 ]
