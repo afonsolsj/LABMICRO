@@ -52,7 +52,7 @@ with col2:
         st.session_state.adding_new = False
     avisos, sha = get_post_it_content()
     if not st.session_state.adding_new:
-        with st.container(height=350, border=True):
+        with st.container(height=275, border=True):
             if not avisos:
                 st.caption("Nenhum aviso no momento.")
             else:
