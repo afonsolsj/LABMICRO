@@ -45,49 +45,34 @@ with col1:
         st.switch_page("views/process_samples.py")
     if st.button("Remoção de duplicatas", use_container_width=True):
         st.switch_page("views/remove_duplicate.py")
-Python
-# ... (suas funções get_post_it_content, update_github e get_fortaleza_time continuam iguais)
-
 with col2:
     st.markdown('📌 **Mural de avisos**')
     avisos, sha = get_post_it_content()
-
-    # Container de Visualização
     with st.container(height=350, border=True):
         if not avisos:
             st.caption("Nenhum aviso no momento.")
         else:
             for i, item in enumerate(avisos):
-                # Usamos uma proporção que dê pouco espaço para o botão (ex: 15 para 1)
-                c_text, c_del = st.columns([15, 1])
-                
+                c_text, c_del = st.columns([0.9, 0.1])
                 with c_text:
-                    # Exibição do texto formatada
-                    st.markdown(f"**{item['user']}** — *{item['date']}*")
-                    st.markdown(f"{item['text']}")
-                
+                    st.markdown(f"**{item['user']}** — *{item['date']}*\n\n{item['text']}")
                 with c_del:
-                    # Usamos um botão pequeno sem label para a lixeira
-                    if st.button("🗑️", key=f"del_{i}", help="Excluir aviso"):
+                    if st.button("🗑️", key=f"del_{i}"):
                         avisos.pop(i)
                         if update_github(avisos, sha):
                             st.rerun()
-                
-                st.markdown("---") # Linha divisória simples
-
-    # Lógica de Botões (➕, 💾, ❌) na Direita
+                st.divider()
+    if "adding_new" not in st.session_state:
+        st.session_state.adding_new = False
     if not st.session_state.adding_new:
-        # Colunas para empurrar o botão ➕ para a direita
-        c_empty, c_add = st.columns([0.9, 0.1])
+        c_empty, c_add = st.columns([8, 1])
         with c_add:
             if st.button("➕", use_container_width=True):
                 st.session_state.adding_new = True
                 st.rerun()
     else:
-        new_entry = st.text_area("Nova entrada:", height=100, placeholder="Digite o aviso...")
-        
-        # Alinhamento dos botões de salvar e cancelar
-        c_empty, c_save, c_cancel = st.columns([0.76, 0.12, 0.12])
+        new_entry = st.text_area("Nova entrada:", height=100)
+        c_empty, c_save, c_cancel = st.columns([6, 1.2, 1.2])
         with c_save:
             if st.button("💾", use_container_width=True):
                 if new_entry.strip():
@@ -96,7 +81,7 @@ with col2:
                         "date": get_fortaleza_time(),
                         "text": new_entry
                     }
-                    avisos.insert(0, novo_aviso)
+                    avisos.insert(0, novo_aviso) # Adiciona no topo da lista
                     if update_github(avisos, sha):
                         st.session_state.adding_new = False
                         st.rerun()
