@@ -70,8 +70,8 @@ with col2:
                 st.session_state.adding_new = True
                 st.rerun()
     else:
-        st.write("✏️ Nova entrada:")
-        new_entry = st_quill(placeholder="Escreva o aviso aqui...", html=True, key="quill_editor")
+        with st.spinner("Carregando editor..."):
+            new_entry = st_quill(placeholder="Escreva o aviso aqui...", html=True, key="quill_editor")
         c_empty, c_save, c_cancel = st.columns([6, 1.2, 1.2])
         with c_save:
             if st.button("💾", use_container_width=True):
