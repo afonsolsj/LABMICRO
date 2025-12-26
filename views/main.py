@@ -4,8 +4,8 @@ import requests
 import base64
 import pytz
 import json
+from streamlit_quill import st_quill
 
-# --- CONFIGURAÇÕES DO GITHUB ---
 GITHUB_TOKEN = st.secrets["github"]["token"]
 REPO_OWNER = "afonsolsj"
 REPO_NAME = "LABMICRO"
@@ -55,7 +55,8 @@ with col2:
             for i, item in enumerate(avisos):
                 c_text, c_del = st.columns([0.85, 0.15])
                 with c_text:
-                    st.markdown(f"**{item['user']}** — *{item['date']}*\n\n{item['text']}")
+                    st.markdown(f"**{item['user']}** — *{item['date']}*")
+                    st.markdown(item['text'], unsafe_allow_html=True) 
                 with c_del:
                     if st.button("🗑️", key=f"del_{i}"):
                         avisos.pop(i)
@@ -71,17 +72,14 @@ with col2:
                 st.session_state.adding_new = True
                 st.rerun()
     else:
-        new_entry = st.text_area("Nova entrada:", height=100)
+        st.write("Nova entrada:")
+        new_entry = st_quill(placeholder="Escreva o aviso aqui...", html=True, key="quill_editor")
         c_empty, c_save, c_cancel = st.columns([6, 1.2, 1.2])
         with c_save:
             if st.button("💾", use_container_width=True):
-                if new_entry.strip():
-                    novo_aviso = {
-                        "user": st.session_state.username,
-                        "date": get_fortaleza_time(),
-                        "text": new_entry
-                    }
-                    avisos.insert(0, novo_aviso) # Adiciona no topo da lista
+                if new_entry and new_entry != '<p><br></p>':
+                    novo_aviso = {"user": st.session_state.username, "date": get_fortaleza_time(), "text": new_entry}
+                    avisos.insert(0, novo_aviso)
                     if update_github(avisos, sha):
                         st.session_state.adding_new = False
                         st.rerun()
