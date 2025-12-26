@@ -48,24 +48,22 @@ with col1:
 with col2:
     st.markdown('📌 **Mural de avisos**')
     avisos, sha = get_post_it_content()
-    with st.container(height=350, border=True):
-        if not avisos:
-            st.caption("Nenhum aviso no momento.")
-        else:
-            for i, item in enumerate(avisos):
-                c_text, c_del = st.columns([0.85, 0.15])
-                with c_text:
-                    st.markdown(f"**{item['user']}** — *{item['date']}*")
-                    st.markdown(item['text'], unsafe_allow_html=True) 
-                with c_del:
-                    if st.button("🗑️", key=f"del_{i}"):
-                        avisos.pop(i)
-                        if update_github(avisos, sha):
-                            st.rerun()
-                st.divider()
-    if "adding_new" not in st.session_state:
-        st.session_state.adding_new = False
     if not st.session_state.adding_new:
+        with st.container(height=350, border=True):
+            if not avisos:
+                st.caption("Nenhum aviso no momento.")
+            else:
+                for i, item in enumerate(avisos):
+                    c_text, c_del = st.columns([0.85, 0.15])
+                    with c_text:
+                        st.markdown(f"**{item['user']}** — *{item['date']}*")
+                        st.markdown(item['text'], unsafe_allow_html=True) 
+                    with c_del:
+                        if st.button("🗑️", key=f"del_{i}"):
+                            avisos.pop(i)
+                            if update_github(avisos, sha):
+                                st.rerun()
+                    st.divider()
         c_empty, c_add = st.columns([8, 1])
         with c_add:
             if st.button("➕", use_container_width=True):
