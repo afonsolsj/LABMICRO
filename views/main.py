@@ -45,11 +45,14 @@ with col1:
         st.switch_page("views/process_samples.py")
     if st.button("Remoção de duplicatas", use_container_width=True):
         st.switch_page("views/remove_duplicate.py")
+
 with col2:
     st.markdown('📌 **Mural de avisos**')
+    if "adding_new" not in st.session_state:
+        st.session_state.adding_new = False
     avisos, sha = get_post_it_content()
     if not st.session_state.adding_new:
-        with st.container(height=220, border=True):
+        with st.container(height=350, border=True):
             if not avisos:
                 st.caption("Nenhum aviso no momento.")
             else:
@@ -70,7 +73,8 @@ with col2:
                 st.session_state.adding_new = True
                 st.rerun()
     else:
-        new_entry = st_quill(placeholder="Escreva o aviso aqui...", html=True, key="quill_editor")
+        with st.spinner("Carregando editor..."):
+            new_entry = st_quill(placeholder="Escreva o aviso aqui...", html=True, key="quill_editor")
         c_empty, c_save, c_cancel = st.columns([6, 1.2, 1.2])
         with c_save:
             if st.button("💾", use_container_width=True):
