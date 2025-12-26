@@ -38,8 +38,8 @@ def get_fortaleza_time():
 
 st.markdown("""
     <style>
-    /* Estiliza especificamente o botão de excluir */
-    div[data-testid="stColumn"] button {
+    /* Estiliza apenas botões que estejam dentro da div 'link-btn' */
+    .link-btn div[data-testid="stButton"] button {
         background: none !important;
         border: none !important;
         padding: 0 !important;
@@ -49,21 +49,20 @@ st.markdown("""
         font-size: 14px !important;
         height: auto !important;
         min-height: 0 !important;
-        line-height: 1.5 !important;
+        line-height: inherit !important;
         display: inline !important;
+        box-shadow: none !important;
     }
-    div[data-testid="stColumn"] button:hover {
-        color: #ff4b4b !important;
+    .link-btn div[data-testid="stButton"] button:hover {
+        color: #0056b3 !important;
         text-decoration: none !important;
         background: none !important;
     }
-    div[data-testid="stColumn"] button:active {
-        color: #ff4b4b !important;
-        background: none !important;
-    }
-    /* Ajuste de espaçamento para as colunas do mural */
-    [data-testid="stHorizontalBlock"] {
-        align-items: baseline;
+    /* Mantém o alinhamento das colunas do aviso */
+    .row-align {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -80,33 +79,25 @@ with col1:
 with col2:
     st.markdown('📌 **Mural de avisos**')
     avisos, sha = get_post_it_content()
-    
-    with st.container(height=450, border=True):
+    with st.container(height=350, border=True):
         if not avisos:
             st.caption("Nenhum aviso no momento.")
         else:
             for i, item in enumerate(avisos):
-                # Layout de linha única para cabeçalho: Nome - Data | Link Excluir
-                c_info, c_del = st.columns([0.8, 0.2])
-                
-                with c_info:
+                c_head, c_del = st.columns([0.85, 0.15])
+                with c_head:
                     st.markdown(f"**{item['user']}** — *{item['date']}*")
-                
                 with c_del:
-                    # O botão agora parece um link devido ao CSS acima
+                    st.markdown('<div class="link-btn">', unsafe_allow_html=True)
                     if st.button("Excluir", key=f"del_{i}"):
                         avisos.pop(i)
                         if update_github(avisos, sha):
                             st.rerun()
-                
-                # Texto do aviso logo abaixo do cabeçalho
+                    st.markdown('</div>', unsafe_allow_html=True)
                 st.markdown(f"{item['text']}")
                 st.divider()
-
-    # Lógica para adicionar novo aviso
     if "adding_new" not in st.session_state:
         st.session_state.adding_new = False
-
     if not st.session_state.adding_new:
         c_empty, c_add = st.columns([8, 1])
         with c_add:
@@ -117,8 +108,7 @@ with col2:
         new_entry = st.text_area("Nova entrada:", height=100)
         c_empty, c_save, c_cancel = st.columns([6, 1.2, 1.2])
         with c_save:
-            # Botão de salvar (usei o ícone mas pode ser texto)
-            if st.button("💾 Salvar", use_container_width=True):
+            if st.button("💾", use_container_width=True):
                 if new_entry.strip():
                     novo_aviso = {
                         "user": st.session_state.username,
