@@ -38,22 +38,33 @@ with col1:
 with col2:
     st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">📌 Mural de avisos</p>', unsafe_allow_html=True)
     current_history, sha = get_post_it_content()
-    with st.container(height=250, border=True):
-        if current_history:
-            st.markdown(current_history)
-        else:
-            st.caption("Nenhum aviso registrado.")
-    with st.expander("➕"):
-        new_entry = st.text_area("Escreva sua mensagem:", key="new_post_it", placeholder="Digite aqui o aviso...")
-        if st.button("💾", use_container_width=True):
-            if new_entry.strip() != "":
-                data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
-                formatted_entry = f"**{st.session_state.username}** - *{data_hora}*\n\n{new_entry}\n\n---\n"
-                updated_content = formatted_entry + current_history
-                if update_post_it_github(updated_content, sha):
-                    st.success("Aviso postado!")
-                    st.rerun()
+    if "adding_new" not in st.session_state:
+        st.session_state.adding_new = False
+    if not st.session_state.adding_new:
+        with st.container(height=200, border=True):
+            st.markdown(current_history if current_history else "Nenhum aviso no momento.")
+        if st.button("✏️"):
+            st.session_state.adding_new = True
+            st.rerun()
+    else:
+        new_entry = st.text_area("Nova entrada no mural:", height=150, placeholder="Escreva o aviso aqui...")
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("💾"):
+                if new_entry.strip() != "":
+                    # Formata a nova entrada com data e usuário
+                    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
+                    header = f"**{st.session_state.username}** - *{data_hora}*\n\n"
+                    updated_content = f"{header}{new_entry}\n\n---\n\n{current_history}"
+                    if update_post_it_github(updated_content, sha):
+                        st.success("Postado!")
+                        st.session_state.adding_new = False
+                        st.rerun()
+                    else:
+                        st.error("Erro ao salvar no GitHub.")
                 else:
-                    st.error("Erro ao conectar com o GitHub.")
-            else:
-                st.warning("O campo de texto está vazio.")
+                    st.warning("O texto está vazio!")
+        with col_btn2:
+            if st.button("❌"):
+                st.session_state.adding_new = False
+                st.rerun()
