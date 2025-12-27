@@ -1155,6 +1155,22 @@ def process_text_pdf(text_pdf, valid_ids, tracker):
         if report_chunk.strip() and "COMPLEXO HOSPITALAR" in report_chunk:
             process_singular_report(report_chunk, valid_ids, tracker)
 
+def reset_session():
+    # Limpa as variáveis de dados
+    st.session_state.dfs_processados = {
+        "geral": pd.DataFrame(),
+        "vigilancia": pd.DataFrame(),
+        "smear": pd.DataFrame(),
+        "blood": pd.DataFrame(),
+        "pdf_report": None,
+        "concluido": False
+    }
+    # Força a limpeza de buffers de arquivos
+    st.cache_data.clear()
+
+if "dfs_processados" not in st.session_state:
+    reset_session()
+
 # Código principal da página
 st.title("Compilação de amostras")
 uploaded_files = st.file_uploader("1️⃣ Envie os arquivos PDF para processar", type="pdf", accept_multiple_files=True)
@@ -1200,6 +1216,7 @@ conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_repo
 is_disabled = not conditions_met
 
 if st.button("Iniciar processamento", disabled=is_disabled):
+    reset_session()
     ids_found_report = set()
     st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
     with st.status("Extraindo dados...", expanded=False) as status:
@@ -1248,5 +1265,43 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             with st.spinner("Criando destaques no relatório de pedidos..."):
                 pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
             st.markdown("✅ Relatório de pedidos finalizado!")
-    style_download(df_general, df_vigilance, df_smear, df_blood, pdf_report=pdf_solicitacao_colorido)
-    status.update(label="Concluído", state="complete", expanded=False)
+    st.session_state.dfs_processados["geral"] = df_general
+    st.session_state.dfs_processados["vigilancia"] = df_vigilance
+    st.session_state.dfs_processados["smear"] = df_smear
+    st.session_state.dfs_processados["blood"] = df_blood
+    st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
+    st.session_state.dfs_processados["concluido"] = True
+    st.rerun()
+
+# Verifica se já houve um processamento com sucesso
+if st.session_state.dfs_processados["concluido"]:
+    st.divider()
+    st.subheader("Resultados Prontos")
+    
+    # Chama sua função de download usando os dados guardados
+    style_download(
+        st.session_state.dfs_processados["geral"],
+        st.session_state.dfs_processados["vigilancia"],
+        st.session_state.dfs_processados["smear"],
+        st.session_state.dfs_processados["blood"],
+        pdf_report=st.session_state.dfs_processados["pdf_report"]
+    )
+
+if st.session_state.dfs_processados["concluido"]:
+    st.divider()
+    col_dl, col_reset = st.columns([1, 1])
+    
+    with col_dl:
+        # Chama sua função original de download
+        style_download(
+            st.session_state.dfs_processados["geral"],
+            st.session_state.dfs_processados["vigilancia"],
+            st.session_state.dfs_processados["smear"],
+            st.session_state.dfs_processados["blood"],
+            pdf_report=st.session_state.dfs_processados["pdf_report"]
+        )
+    
+    with col_reset:
+        if st.button("Reiniciar", use_container_width=True):
+            reset_session()
+            st.rerun()
