@@ -1272,7 +1272,7 @@ if not st.session_state.dfs_processados["concluido"]:
         st.rerun()
 else:
     st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
-    col1, col2, _ = st.columns([0.22, 0.22, 0.56])
+    col1, col2, _ = st.columns([0.22, 0.17, 0.61])
     with col1:
         style_download(
             st.session_state.dfs_processados["geral"],

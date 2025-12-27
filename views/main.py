@@ -46,10 +46,21 @@ with col1:
         st.switch_page("views/remove_duplicate.py")
 
 with col2:
-    st.markdown('📌 **Mural de avisos**')
-    if "adding_new" not in st.session_state:
-        st.session_state.adding_new = False
+    c_titulo, c_acoes = st.columns([1.5, 1]) 
+    with c_titulo:
+        st.markdown('📌 **Mural de avisos**')
     avisos, sha = get_post_it_content()
+    with c_acoes:
+        if not st.session_state.adding_new:
+            if st.button("➕", use_container_width=True):
+                st.session_state.adding_new = True
+                st.rerun()
+        else:
+            c_save, c_cancel = st.columns(2)
+            with c_save:
+                btn_save = st.button("💾", use_container_width=True)
+            with c_cancel:
+                btn_cancel = st.button("❌", use_container_width=True)
     if not st.session_state.adding_new:
         with st.container(height=275, border=True):
             if not avisos:
@@ -66,24 +77,16 @@ with col2:
                             if update_github(avisos, sha):
                                 st.rerun()
                     st.divider()
-        c_empty, c_add = st.columns([8, 1])
-        with c_add:
-            if st.button("➕", use_container_width=True):
-                st.session_state.adding_new = True
-                st.rerun()
     else:
         with st.spinner("Carregando editor..."):
             new_entry = st_quill(placeholder="Escreva o aviso aqui...", html=True, key="quill_editor")
-        c_empty, c_save, c_cancel = st.columns([6, 1.2, 1.2])
-        with c_save:
-            if st.button("💾", use_container_width=True):
-                if new_entry and new_entry != '<p><br></p>':
-                    novo_aviso = {"user": st.session_state.username, "date": get_fortaleza_time(), "text": new_entry}
-                    avisos.insert(0, novo_aviso)
-                    if update_github(avisos, sha):
-                        st.session_state.adding_new = False
-                        st.rerun()
-        with c_cancel:
-            if st.button("❌", use_container_width=True):
-                st.session_state.adding_new = False
-                st.rerun()
+        if btn_save:
+            if new_entry and new_entry != '<p><br></p>':
+                novo_aviso = {"user": st.session_state.username, "date": get_fortaleza_time(), "text": new_entry}
+                avisos.insert(0, novo_aviso)
+                if update_github(avisos, sha):
+                    st.session_state.adding_new = False
+                    st.rerun()
+        if btn_cancel:
+            st.session_state.adding_new = False
+            st.rerun()
