@@ -1211,71 +1211,68 @@ with col_botao:
         filter_smear = render_filter_row("Baciloscopia:", "f_smear")
         filter_blood_sel = render_filter_row("Hemocultura:", "f_blood")
 
-placeholder_botao = st.empty()
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
 
-if placeholder_botao.button("Iniciar processamento", disabled=is_disabled, key="btn_processar"):
-    placeholder_botao.empty()
-    reset_session()
-    ids_found_report = set()
-    st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
-    with st.status("Extraindo dados...", expanded=False) as status:
-        if uploaded_reports_request:
-            with st.spinner("Processando relatório de solicitação..."):
-                text_request = extract_text_pdf(uploaded_reports_request)
-                valid_ids = {int(i) for i in re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)}
-            st.markdown(f"✅ {len(valid_ids)} pedidos identificados.")
-        if uploaded_files:
-            for pdf_file in uploaded_files:
-                with st.spinner("Dividindo PDF em partes menores..."):
-                    pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                st.markdown(f"✅ PDF dividido em {len(pdf_parts)} partes.")
-                for idx, part in enumerate(pdf_parts, start=1):
-                    with st.spinner(f"Processando parte {idx}..."):
-                        text = extract_text_pdf(part)
-                        process_text_pdf(text, valid_ids, ids_found_report)
+if not st.session_state.dfs_processados["concluido"]:
+    placeholder_botao = st.empty()
+    if placeholder_botao.button("Iniciar processamento", disabled=is_disabled, use_container_width=False):
+        placeholder_botao.empty()
+        reset_session()
+        ids_found_report = set()
+        st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True) 
+        with st.status("Extraindo dados...", expanded=False) as status:
+            if uploaded_reports_request:
+                with st.spinner("Processando relatório de solicitação..."):
+                    text_request = extract_text_pdf(uploaded_reports_request)
+                    valid_ids = {int(i) for i in re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)}
+                st.markdown(f"✅ {len(valid_ids)} pedidos identificados.")
+            if uploaded_files:
+                for pdf_file in uploaded_files:
+                    with st.spinner("Dividindo PDF em partes menores..."):
+                        pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
+                    st.markdown(f"✅ PDF dividido em {len(pdf_parts)} partes.")
+                    for idx, part in enumerate(pdf_parts, start=1):
+                        with st.spinner(f"Processando parte {idx}..."):
+                            text = extract_text_pdf(part)
+                            process_text_pdf(text, valid_ids, ids_found_report)
                 st.markdown("✅ Extração de dados concluída!")
-        if uploaded_reports_discharge:
-            df_blood = df_general.copy()
-            df_list = [df_general, df_vigilance, df_smear]
-            df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
-        with st.spinner("Codificando termos e aplicando filtros..."):
-            df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
-            df_general = filter_general(df_general)
-            df_blood = filter_blood(df_blood)
-            df_general = apply_filter_hospital(df_general, filter_gen)
-            df_vigilance = apply_filter_hospital(df_vigilance, filter_vig)
-            df_smear = apply_filter_hospital(df_smear, filter_smear)
-            df_blood = apply_filter_hospital(df_blood, filter_blood_sel)
-            st_gen = int(start_id_general) if start_id_general is not None else 1
-            st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
-            st_smear = int(start_id_smear) if start_id_smear is not None else 1
-            st_blood = int(start_id_blood) if start_id_blood is not None else 1
-            if not df_general.empty:
-                df_general['id'] = range(st_gen, st_gen + len(df_general))
-            if not df_vigilance.empty:
-                df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
-            if not df_smear.empty:
-                df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
-            if not df_blood.empty:
-                df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
-            st.markdown("✅ Codificação e filtragem concluídas!")
-        pdf_solicitacao_colorido = None
-        if uploaded_reports_request:
-            with st.spinner("Criando destaques no relatório de pedidos..."):
-                pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
-            st.markdown("✅ Relatório de pedidos finalizado!")
-        st.session_state.dfs_processados["geral"] = df_general
-        st.session_state.dfs_processados["vigilancia"] = df_vigilance
-        st.session_state.dfs_processados["smear"] = df_smear
-        st.session_state.dfs_processados["blood"] = df_blood
-        st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
-        st.session_state.dfs_processados["concluido"] = True
-        st.markdown("✅ Processamento concluído!")
-    st.rerun()
-
-if st.session_state.dfs_processados["concluido"]:
+            if uploaded_reports_discharge:
+                df_blood = df_general.copy()
+                df_list = [df_general, df_vigilance, df_smear]
+                df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
+            with st.spinner("Codificando termos e aplicando filtros..."):
+                df_general, df_vigilance, df_smear = compare_data(df_list, substitution_departments, {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy})
+                df_general = filter_general(df_general)
+                df_blood = filter_blood(df_blood)
+                df_general = apply_filter_hospital(df_general, filter_gen)
+                df_vigilance = apply_filter_hospital(df_vigilance, filter_vig)
+                df_smear = apply_filter_hospital(df_smear, filter_smear)
+                df_blood = apply_filter_hospital(df_blood, filter_blood_sel)
+                st_gen = int(start_id_general) if start_id_general is not None else 1
+                st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
+                st_smear = int(start_id_smear) if start_id_smear is not None else 1
+                st_blood = int(start_id_blood) if start_id_blood is not None else 1
+                if not df_general.empty: df_general['id'] = range(st_gen, st_gen + len(df_general))
+                if not df_vigilance.empty: df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
+                if not df_smear.empty: df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
+                if not df_blood.empty: df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
+                st.markdown("✅ Codificação e filtragem concluídas!")
+            pdf_solicitacao_colorido = None
+            if uploaded_reports_request:
+                with st.spinner("Criando destaques no relatório de pedidos..."):
+                    pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
+                st.markdown("✅ Relatório de pedidos finalizado!")
+            st.session_state.dfs_processados["geral"] = df_general
+            st.session_state.dfs_processados["vigilancia"] = df_vigilance
+            st.session_state.dfs_processados["smear"] = df_smear
+            st.session_state.dfs_processados["blood"] = df_blood
+            st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
+            st.session_state.dfs_processados["concluido"] = True
+            status.update(label="Concluído", state="complete", expanded=False)
+        st.rerun()
+else:
+    st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)    
     col_dl, col_reset = st.columns([1, 1])
     with col_dl:
         style_download(
@@ -1286,6 +1283,7 @@ if st.session_state.dfs_processados["concluido"]:
             pdf_report=st.session_state.dfs_processados["pdf_report"]
         )
     with col_reset:
+        st.write("")
         if st.button("🗑️ Reiniciar", use_container_width=True):
             reset_session()
             st.rerun()
