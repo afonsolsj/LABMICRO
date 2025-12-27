@@ -1273,26 +1273,9 @@ if st.button("Iniciar processamento", disabled=is_disabled):
     st.session_state.dfs_processados["concluido"] = True
     st.rerun()
 
-# Verifica se já houve um processamento com sucesso
 if st.session_state.dfs_processados["concluido"]:
-    st.divider()
-    st.subheader("Resultados Prontos")
-    
-    # Chama sua função de download usando os dados guardados
-    style_download(
-        st.session_state.dfs_processados["geral"],
-        st.session_state.dfs_processados["vigilancia"],
-        st.session_state.dfs_processados["smear"],
-        st.session_state.dfs_processados["blood"],
-        pdf_report=st.session_state.dfs_processados["pdf_report"]
-    )
-
-if st.session_state.dfs_processados["concluido"]:
-    st.divider()
     col_dl, col_reset = st.columns([1, 1])
-    
     with col_dl:
-        # Chama sua função original de download
         style_download(
             st.session_state.dfs_processados["geral"],
             st.session_state.dfs_processados["vigilancia"],
@@ -1300,8 +1283,8 @@ if st.session_state.dfs_processados["concluido"]:
             st.session_state.dfs_processados["blood"],
             pdf_report=st.session_state.dfs_processados["pdf_report"]
         )
-    
     with col_reset:
-        if st.button("Reiniciar", use_container_width=True):
+        st.markdown("<br>", unsafe_allow_html=True) 
+        if st.button("🗑️ Reiniciar", use_container_width=True):
             reset_session()
             st.rerun()
