@@ -1211,10 +1211,12 @@ with col_botao:
         filter_smear = render_filter_row("Baciloscopia:", "f_smear")
         filter_blood_sel = render_filter_row("Hemocultura:", "f_blood")
 
+placeholder_botao = st.empty()
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
 
-if st.button("Iniciar processamento", disabled=is_disabled):
+if placeholder_botao.button("Iniciar processamento", disabled=is_disabled, key="btn_processar"):
+    placeholder_botao.empty()
     reset_session()
     ids_found_report = set()
     st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True)  
@@ -1264,12 +1266,13 @@ if st.button("Iniciar processamento", disabled=is_disabled):
             with st.spinner("Criando destaques no relatório de pedidos..."):
                 pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
             st.markdown("✅ Relatório de pedidos finalizado!")
-    st.session_state.dfs_processados["geral"] = df_general
-    st.session_state.dfs_processados["vigilancia"] = df_vigilance
-    st.session_state.dfs_processados["smear"] = df_smear
-    st.session_state.dfs_processados["blood"] = df_blood
-    st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
-    st.session_state.dfs_processados["concluido"] = True
+        st.session_state.dfs_processados["geral"] = df_general
+        st.session_state.dfs_processados["vigilancia"] = df_vigilance
+        st.session_state.dfs_processados["smear"] = df_smear
+        st.session_state.dfs_processados["blood"] = df_blood
+        st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
+        st.session_state.dfs_processados["concluido"] = True
+        st.markdown("✅ Processamento concluído!")
     st.rerun()
 
 if st.session_state.dfs_processados["concluido"]:
