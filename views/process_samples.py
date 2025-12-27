@@ -136,7 +136,6 @@ def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, pdf_repor
             if pdf_report:
                 zip_file.writestr("Relatório de pedidos.pdf", pdf_report)
         zip_buffer.seek(0)
-        st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
         st.download_button(label="Baixar (.zip)", data=zip_buffer,
                            file_name=nome_arquivo_zip, mime="application/zip")
     except Exception as e:
@@ -1272,9 +1271,9 @@ if not st.session_state.dfs_processados["concluido"]:
             status.update(label="Concluído", state="complete", expanded=False)
         st.rerun()
 else:
-    st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)    
-    col_dl, col_reset = st.columns([1, 1])
-    with col_dl:
+    st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
+    col1, col2, _ = st.columns([0.2, 0.2, 0.6])
+    with col1:
         style_download(
             st.session_state.dfs_processados["geral"],
             st.session_state.dfs_processados["vigilancia"],
@@ -1282,8 +1281,8 @@ else:
             st.session_state.dfs_processados["blood"],
             pdf_report=st.session_state.dfs_processados["pdf_report"]
         )
-    with col_reset:
-        st.write("")
-        if st.button("🗑️ Reiniciar", use_container_width=True):
+    with col2:
+        st.markdown("""<style> div[class*="stButton"] > button { margin-top: 0px !important; } </style>""", unsafe_allow_html=True)
+        if st.button("Reiniciar", use_container_width=True):
             reset_session()
             st.rerun()
