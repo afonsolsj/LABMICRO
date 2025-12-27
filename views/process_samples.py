@@ -58,91 +58,91 @@ df_smear = pd.DataFrame(columns=st.secrets["columns"]["smear_microscopy"]); df_s
 
 # Função de estilização/download
 def style_download(df_geral, df_vigilancia, df_baciloscopia, df_blood, pdf_report=None, nome_arquivo_zip="relatorios_processados.zip"):
-    status.update(label="Estilizando planilhas...", state="running", expanded=False)
-    try:
-        zip_buffer = io.BytesIO()
-        dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia, "Hemocultura.xlsx": df_blood}
-        cols_required = ["record_id", "id","hospital", "hospital_de_origem", "n_mero_do_pedido", "n_mero_do_prontu_rio", "sexo", "idade", "idade_anos", "data_da_entrada", "setor_de_origem", "tipo_de_material", "qual_tipo_de_material", "data_da_libera_o", "resultado", "data_agora", "formulrio_complete"]
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for nome_arquivo_excel, df in dfs_para_exportar.items():
-                if df is None or df.empty:
-                    continue
-                excel_buffer = io.BytesIO()
-                with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                    nome_aba = "Dados"
-                    df.to_excel(writer, sheet_name=nome_aba, index=False)
-                    workbook = writer.book
-                    worksheet = writer.sheets[nome_aba]
-                    blue_format = workbook.add_format({'bg_color': '#DDEBF7'})
-                    green_format = workbook.add_format({'bg_color': '#C6EFCE'})
-                    red_format = workbook.add_format({'bg_color': '#FFC7CE'})
-                    yellow_format = workbook.add_format({'bg_color': '#FFEB9C'})
-                    max_row = len(df)
-                    if max_row == 0:
+    with st.spinner("Preparando arquivos para download..."):
+        try:
+            zip_buffer = io.BytesIO()
+            dfs_para_exportar = {"Geral.xlsx": df_geral, "Vigilancia.xlsx": df_vigilancia, "Baciloscopia.xlsx": df_baciloscopia, "Hemocultura.xlsx": df_blood}
+            cols_required = ["record_id", "id","hospital", "hospital_de_origem", "n_mero_do_pedido", "n_mero_do_prontu_rio", "sexo", "idade", "idade_anos", "data_da_entrada", "setor_de_origem", "tipo_de_material", "qual_tipo_de_material", "data_da_libera_o", "resultado", "data_agora", "formulrio_complete"]
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for nome_arquivo_excel, df in dfs_para_exportar.items():
+                    if df is None or df.empty:
                         continue
-                    for col in cols_required:
-                        if col in df.columns:
-                            col_idx = df.columns.get_loc(col)
-                            worksheet.conditional_format(1, col_idx, max_row, col_idx, {'type': 'blanks', 'format': blue_format})
-                    if "desfecho_do_paciente" in df.columns:
-                        col_idx = df.columns.get_loc("desfecho_do_paciente")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "2", 'format': red_format})
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
-                        worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
-                        worksheet.conditional_format(*cell_range, {'type': 'no_blanks', 'format': yellow_format})
-                    if "qual_o_tipo_de_microorganismo" in df.columns and "qual_microorganismo" in df.columns:
-                        col_target = df.columns.get_loc("qual_o_tipo_de_microorganismo")
-                        col_check = df.columns.get_loc("qual_microorganismo")
-                        cell_range = (1, col_target, max_row, col_target)
-                        ref_target = xl_rowcol_to_cell(1, col_target, row_abs=False, col_abs=False)
-                        ref_check = xl_rowcol_to_cell(1, col_check, row_abs=False, col_abs=True)
-                        formula = f'=AND({ref_check}=29, ISBLANK({ref_target}))'
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
-                    if "qual_microorganismo" in df.columns:
-                        col_idx = df.columns.get_loc("qual_microorganismo")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '29', 'format': yellow_format})
-                    if "setor_de_origem" in df.columns:
-                        col_idx = df.columns.get_loc("setor_de_origem")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        first_cell = xl_rowcol_to_cell(1, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
-                    if "setor_origem" in df.columns:
-                        col_idx = df.columns.get_loc("setor_origem")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        first_cell = xl_rowcol_to_cell(1, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
-                    if "tipo_de_material" in df.columns:
-                        col_idx = df.columns.get_loc("tipo_de_material")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '15', 'format': yellow_format})
-                    if "qual_tipo_de_material" in df.columns:
-                        col_idx = df.columns.get_loc("qual_tipo_de_material")
-                        cell_range = (1, col_idx, max_row, col_idx)
-                        worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '10', 'format': yellow_format})
-                    tem_agente = "se_positivo_para_qual_agente" in df.columns
-                    tem_marque = "se_positivo_marque" in df.columns
-                    if "resultado" in df.columns and (tem_agente or tem_marque):
-                        col_res = df.columns.get_loc("resultado")
-                        nome_col_agente = "se_positivo_para_qual_agente" if tem_agente else "se_positivo_marque"
-                        col_agente = df.columns.get_loc(nome_col_agente)
-                        cell_range = (1, col_agente, max_row, col_agente) 
-                        ref_resultado = xl_rowcol_to_cell(1, col_res, row_abs=False, col_abs=True)
-                        ref_agente = xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)
-                        formula = f'=AND({ref_resultado}=1, ISBLANK({ref_agente}))'
-                        worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
-                excel_buffer.seek(0)
-                zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
-            if pdf_report:
-                zip_file.writestr("Relatório de pedidos.pdf", pdf_report)
-        zip_buffer.seek(0)
-        st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
-        st.download_button(label="Baixar (.zip)", data=zip_buffer,
-                           file_name=nome_arquivo_zip, mime="application/zip")
-    except Exception as e:
-        st.error(f"Ocorreu um erro inesperado ao gerar o arquivo .zip: {e}")
-        st.exception(e)
+                    excel_buffer = io.BytesIO()
+                    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                        nome_aba = "Dados"
+                        df.to_excel(writer, sheet_name=nome_aba, index=False)
+                        workbook = writer.book
+                        worksheet = writer.sheets[nome_aba]
+                        blue_format = workbook.add_format({'bg_color': '#DDEBF7'})
+                        green_format = workbook.add_format({'bg_color': '#C6EFCE'})
+                        red_format = workbook.add_format({'bg_color': '#FFC7CE'})
+                        yellow_format = workbook.add_format({'bg_color': '#FFEB9C'})
+                        max_row = len(df)
+                        if max_row == 0:
+                            continue
+                        for col in cols_required:
+                            if col in df.columns:
+                                col_idx = df.columns.get_loc(col)
+                                worksheet.conditional_format(1, col_idx, max_row, col_idx, {'type': 'blanks', 'format': blue_format})
+                        if "desfecho_do_paciente" in df.columns:
+                            col_idx = df.columns.get_loc("desfecho_do_paciente")
+                            cell_range = (1, col_idx, max_row, col_idx)
+                            worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "2", 'format': red_format})
+                            worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': "3", 'format': green_format})
+                            worksheet.conditional_format(*cell_range, {'type': 'blanks', 'format': blue_format})
+                            worksheet.conditional_format(*cell_range, {'type': 'no_blanks', 'format': yellow_format})
+                        if "qual_o_tipo_de_microorganismo" in df.columns and "qual_microorganismo" in df.columns:
+                            col_target = df.columns.get_loc("qual_o_tipo_de_microorganismo")
+                            col_check = df.columns.get_loc("qual_microorganismo")
+                            cell_range = (1, col_target, max_row, col_target)
+                            ref_target = xl_rowcol_to_cell(1, col_target, row_abs=False, col_abs=False)
+                            ref_check = xl_rowcol_to_cell(1, col_check, row_abs=False, col_abs=True)
+                            formula = f'=AND({ref_check}=29, ISBLANK({ref_target}))'
+                            worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
+                        if "qual_microorganismo" in df.columns:
+                            col_idx = df.columns.get_loc("qual_microorganismo")
+                            cell_range = (1, col_idx, max_row, col_idx)
+                            worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '29', 'format': yellow_format})
+                        if "setor_de_origem" in df.columns:
+                            col_idx = df.columns.get_loc("setor_de_origem")
+                            cell_range = (1, col_idx, max_row, col_idx)
+                            first_cell = xl_rowcol_to_cell(1, col_idx)
+                            worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
+                        if "setor_origem" in df.columns:
+                            col_idx = df.columns.get_loc("setor_origem")
+                            cell_range = (1, col_idx, max_row, col_idx)
+                            first_cell = xl_rowcol_to_cell(1, col_idx)
+                            worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': f'=ISTEXT({first_cell})', 'format': yellow_format})
+                        if "tipo_de_material" in df.columns:
+                            col_idx = df.columns.get_loc("tipo_de_material")
+                            cell_range = (1, col_idx, max_row, col_idx)
+                            worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '15', 'format': yellow_format})
+                        if "qual_tipo_de_material" in df.columns:
+                            col_idx = df.columns.get_loc("qual_tipo_de_material")
+                            cell_range = (1, col_idx, max_row, col_idx)
+                            worksheet.conditional_format(*cell_range, {'type': 'cell', 'criteria': '==', 'value': '10', 'format': yellow_format})
+                        tem_agente = "se_positivo_para_qual_agente" in df.columns
+                        tem_marque = "se_positivo_marque" in df.columns
+                        if "resultado" in df.columns and (tem_agente or tem_marque):
+                            col_res = df.columns.get_loc("resultado")
+                            nome_col_agente = "se_positivo_para_qual_agente" if tem_agente else "se_positivo_marque"
+                            col_agente = df.columns.get_loc(nome_col_agente)
+                            cell_range = (1, col_agente, max_row, col_agente) 
+                            ref_resultado = xl_rowcol_to_cell(1, col_res, row_abs=False, col_abs=True)
+                            ref_agente = xl_rowcol_to_cell(1, col_agente, row_abs=False, col_abs=False)
+                            formula = f'=AND({ref_resultado}=1, ISBLANK({ref_agente}))'
+                            worksheet.conditional_format(*cell_range, {'type': 'formula', 'criteria': formula, 'format': blue_format})
+                    excel_buffer.seek(0)
+                    zip_file.writestr(nome_arquivo_excel, excel_buffer.getvalue())
+                if pdf_report:
+                    zip_file.writestr("Relatório de pedidos.pdf", pdf_report)
+            zip_buffer.seek(0)
+            st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
+            st.download_button(label="Baixar (.zip)", data=zip_buffer,
+                            file_name=nome_arquivo_zip, mime="application/zip")
+        except Exception as e:
+            st.error(f"Ocorreu um erro inesperado ao gerar o arquivo .zip: {e}")
+            st.exception(e)
 
 # Função de comparação
 def compare_data(dfs, substitution_dict, materials_dicts, setor_col="setor_de_origem", microorganisms_gnb=microorganisms_gnb, microorganisms_gpc=microorganisms_gpc, microorganisms_fy=microorganisms_fy, microorganisms_gpb=microorganisms_gpb):
