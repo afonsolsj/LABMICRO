@@ -1272,7 +1272,6 @@ if not st.session_state.dfs_processados["concluido"]:
         st.rerun()
 else:
     st.markdown('<p style="font-size: 14px;">⬇️ Processamento finalizado</p>', unsafe_allow_html=True)
-    st.divider()
     col1, col2, _ = st.columns([0.22, 0.22, 0.56])
     with col1:
         style_download(
@@ -1283,15 +1282,6 @@ else:
             pdf_report=st.session_state.dfs_processados["pdf_report"]
         )
     with col2:
-        st.markdown("""
-            <style>
-            div.stButton > button {
-                width: 100% !important;
-                height: 45px !important; /* Força a altura para igualar ao download */
-                margin-top: 0px !important;
-            }
-            </style>
-        """, unsafe_allow_html=True) 
-        if st.button("🗑️ Reiniciar", use_container_width=True):
+        if st.button("Reiniciar", use_container_width=True):
             reset_session()
             st.rerun()
