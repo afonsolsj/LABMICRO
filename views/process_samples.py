@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+import os
 import zipfile
 import pdfplumber
 import tempfile
@@ -35,21 +36,35 @@ blood_collection_df = pd.read_csv("assets/files/blood_collection.csv")
 blood_collection = dict(zip(blood_collection_df["Sitio"].str.lower(), blood_collection_df["Código"]))
 
 # Destacar pedidos encontrados/não encontrados
-def paint_request_pdf(input_pdf_file, found_ids, all_ids):
-    input_pdf_file.seek(0)
-    pdf_bytes = input_pdf_file.read()
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    for page in doc:
-        page_width = page.rect.width
-        for order_id in all_ids:
-            text_instances = page.search_for(str(order_id))
-            for inst in text_instances:
-                line_rect = fitz.Rect(0, inst.y0, page_width, inst.y1)
-                color = (0.7, 1, 0.7) if order_id in found_ids else (1, 0.7, 0.7)
-                annot = page.add_highlight_annot(line_rect)
-                annot.set_colors(stroke=color)
-                annot.update()
-    return doc.tobytes()
+def paint_request_pdf(uploaded_file, found_ids, all_ids):
+    found_ids_set = set(str(x) for x in found_ids)
+    all_ids_set = set(str(x) for x in all_ids)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_input:
+        tmp_input.write(uploaded_file.getbuffer())
+        tmp_input_path = tmp_input.name
+    output_path = tmp_input_path.replace(".pdf", "_out.pdf")
+    try:
+        doc = fitz.open(tmp_input_path)
+        for page in doc:
+            page_width = page.rect.width
+            words = page.get_text("words") 
+            for w in words:
+                word_text = w[4].strip()
+                if word_text in all_ids_set:
+                    inst_rect = fitz.Rect(w[0], w[1], w[2], w[3])
+                    line_rect = fitz.Rect(0, inst_rect.y0, page_width, inst_rect.y1)  
+                    color = (0.7, 1, 0.7) if word_text in found_ids_set else (1, 0.7, 0.7)  
+                    annot = page.add_highlight_annot(line_rect)
+                    annot.set_colors(stroke=color)
+                    annot.update()
+        doc.save(output_path, garbage=4, deflate=True)
+        doc.close()
+        with open(output_path, "rb") as f:
+            final_bytes = f.read()
+        return final_bytes
+    finally:
+        if os.path.exists(tmp_input_path): os.remove(tmp_input_path)
+        if os.path.exists(output_path): os.remove(output_path)
 
 # Planilhas para download
 df_general = pd.DataFrame(columns=st.secrets["columns"]["general"]); df_general.name = "general"
