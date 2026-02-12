@@ -240,6 +240,9 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
         for idx, row in df.iterrows():
             patient_name = str(row[column_name_search]).strip()
             setor = str(row.get(col_setor, "")).lower()
+            if any(x in setor for x in ["amb", "amb "]):
+            #if "amb" in setor:
+                df.at[idx, col_outcome] = 3
             found_in_report = False
             if patient_name: 
                 for line in lines:
@@ -253,9 +256,6 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
                         if len(dates) >= 2:
                             df.at[idx, col_date1] = dates[0]
                             df.at[idx, col_date2] = dates[1]
-                            df.at[idx, col_outcome] = 3
-                        elif any(x in setor for x in ["amb", "amb "]):
-                        #if "amb" in setor:
                             df.at[idx, col_outcome] = 3
                         elif len(dates) == 1:
                             df.at[idx, col_date1] = dates[0]
