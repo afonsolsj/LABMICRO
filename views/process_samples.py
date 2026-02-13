@@ -1207,7 +1207,7 @@ with col_resumo:
     loc = st.session_state.master_filter
     procs = [name for key, name in [("run_gen", "Geral"), ("run_vig", "Vigilância"), ("run_smear", "Baciloscopia"), ("run_blood", "Hemocultura")] if st.session_state[key]]
     st.markdown(f"""<p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
-        <strong>Hospital:</strong> {loc} | <strong>Processar:</strong> {', '.join(procs) if procs else 'Nenhum'}
+        <strong>Hospital:</strong> {loc} | <strong>Formulários:</strong> {', '.join(procs) if procs else 'Nenhum'}
     </p>""", unsafe_allow_html=True)
 
 with col_botao:
