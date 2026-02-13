@@ -6,42 +6,43 @@ Liquido pleural,3.0
 Partes moles,4.0
 Sangue,5.0
 Liquido pericardico,6.0
+PERICARDIO,6.0
 Urina,7.0
 Liquido abdominal,8.0
 Ponta de cateter,9.0
 Outro,10.0
-Fragmento de tecido,11.0
 Ferida operatoria,11.0
 Lesao perianal,11.0
 Pleura pariental,11.0
-Mao direita,11.0
+Fragmento de tecido,11.0
 Pele,11.0
 Rim,11.0
 FRAGMENTO TECIDO,11.0
-Fragmento osseo,12.0
+Mao direita,11.0
 Osso,12.0
 Esterno,12.0
+Fragmento osseo,12.0
 Líquido Hepático,13.0
 Líquido da loja renal,14.0
 Liquor,15.0
-Liquido cefalorraquidiano,15.0
 Valvula aortica,15.0
+Liquido cefalorraquidiano,15.0
 Liquido sinovial,16.0
 Líquido articular,17.0
 Secrecao nasal,18.0
 Secrecao ocular,19.0
-Secrecao de ferida,20.0
 Secrecao de abcesso,20.0
-Secrecao purulenta,21.0
+Secrecao de ferida,20.0
 Abscesso hepatico,21.0
+Secrecao purulenta,21.0
 Fragmento de pele,22.0
 LIQUIDO BILIAR,23.0
 Líquido biliar,23.0
 Médula Óssea,24.0
-Escarro,25.0
 ESCARRO 3ª AMOSTRA,25.0
 ESCARRO 2ª AMOSTRA,25.0
 ESCARRO 1ª AMOSTRA,25.0
+Escarro,25.0
 Peça cirúrgica,26.0
 Líquido peritoneal,27.0
 Líquido intra-cavitário,28.0
