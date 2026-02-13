@@ -1237,8 +1237,19 @@ if not st.session_state.dfs_processados["concluido"]:
             if uploaded_reports_request:
                 with st.spinner("Processando relatório de solicitação..."):
                     text_request = extract_text_pdf(uploaded_reports_request)
-                    valid_ids = {int(i) for i in re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)}
-                st.markdown(f"✅ {len(valid_ids)} pedidos identificados.")
+                    if not text_request:
+                        st.error("Não foi possível extrair texto do relatório de solicitação. Verifique se o arquivo está protegido ou vazio.")
+                        st.stop()
+                    matches = re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)
+                    if not matches:
+                        st.warning("Nenhum número de pedido foi encontrado no relatório de solicitação.")
+                        valid_ids = set()
+                    else:
+                        valid_ids = {int(i) for i in matches}
+                        st.markdown(f"✅ {len(valid_ids)} pedidos identificados.")
+            else:
+                st.error("Por favor, envie o relatório de solicitação.")
+                st.stop()
             if uploaded_files:
                 for pdf_file in uploaded_files:
                     with st.spinner("Dividindo PDF em partes menores..."):
