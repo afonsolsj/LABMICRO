@@ -3,8 +3,8 @@ Acinetobacter baumannii,1.0
 Acinetobacter baumannii complex,1.0
 Enterobacter cloacae,7.0
 Escherichia coli,10.0
-Klebsiella pneumoniae ssp pneumoniae,11.0
 Klebsiella pneumoniae,11.0
+Klebsiella pneumoniae ssp pneumoniae,11.0
 Proteus mirabilis,12.0
 Pseudomonas aeruginosa,13.0
 Serratia marcescens,14.0
@@ -98,6 +98,7 @@ Cronobacter dublinensis,118.0
 Cronobacter malonaticus,119.0
 Cronobacter muytjensii,120.0
 Cronobacter sakazakii,121.0
+Cronobacter sakazakii group,121.0
 Cronobacter spp.,122.0
 Cronobacter turicensis,123.0
 Cronobacter universalis,124.0
