@@ -20,6 +20,8 @@ Klebsiella oxytoca,36.0
 Citrobacter freundii,38.0
 Proteus spp,41.0
 Morganella spp,42.0
+Morganella morganii,42.0
+Morganella morganii ssp morganii,42.0
 Enterobacter spp,43.0
 Klebsiella aerogenes,44.0
 Escherichia spp,45.0
@@ -267,4 +269,3 @@ Brevundimonas diminuta/vesicularis,324.0
 Pseudomonas spp.,326.0
 Pasteurella testudinis,327.0
 Pasteurella canis,333.0
-,
