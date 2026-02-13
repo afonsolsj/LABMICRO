@@ -19,9 +19,9 @@ Pseudomonas putida,35.0
 Klebsiella oxytoca,36.0
 Citrobacter freundii,38.0
 Proteus spp,41.0
-Morganella spp,42.0
-Morganella morganii,42.0
 Morganella morganii ssp morganii,42.0
+Morganella morganii,42.0
+Morganella spp,42.0
 Enterobacter spp,43.0
 Klebsiella aerogenes,44.0
 Escherichia spp,45.0
@@ -35,6 +35,7 @@ Moraxella spp,53.0
 Burkholderia pseudomallei,54.0
 Salmonella entérica,55.0
 Salmonella spp,56.0
+Salmonella group,56.0
 Shigella dysenteriae,57.0
 Shigella flexneri,58.0
 Shigella sonnei,59.0
