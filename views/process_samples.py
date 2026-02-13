@@ -1129,33 +1129,31 @@ def process_singular_report(report_text, valid_ids, tracker, filter_choice):
     report_text_clean = report_text.strip()
     report_text_lower = report_text_clean.lower()
     match = re.search(r"Amostra\s*[\.]*:\s*(\d+)", report_text, re.IGNORECASE)
-    if not match:
-        return
+    if not match: return
     full_id_str = match.group(1)
     sample_match = int(full_id_str[:-2]) if len(full_id_str) > 2 else 0
-    if sample_match not in valid_ids:
-        return
+    if sample_match not in valid_ids: return
     procedencia_index = report_text_lower.find("procedência.:")
-    hospital_detectado = "" # HUWC = 1, MEAC = 2
+    hospital_detectado = ""
     if procedencia_index != -1:
         end_of_line = report_text_lower.find("\n", procedencia_index)
         procedencia_line = report_text_lower[procedencia_index:end_of_line]
-        if "meac" in procedencia_line or "maternidade" in procedencia_line:
-            hospital_detectado = "MEAC"
-        else:
-            hospital_detectado = "HUWC"
+        hospital_detectado = "MEAC" if any(x in procedencia_line for x in ["meac", "maternidade"]) else "HUWC"
     if filter_choice != "Todos" and hospital_detectado != filter_choice:
         return
     tracker.add(sample_match)
-    if "cpdhr" in procedencia_line or "paciente teste" in report_text_lower or "bacterioscopia" in report_text_lower:
-        return
-    if re.search(r"(material:\s*|material examinado:\s*)(" + "|".join(re.escape(term) for term in materials_vigilance.keys()) + r")", report_text_lower):
-        if "faltando reagente" not in report_text_lower:
+    if any(x in report_text_lower for x in ["cpdhr", "paciente teste", "bacterioscopia"]): return
+    is_vigilancia = re.search(r"(material:\s*|material examinado:\s*)(" + "|".join(re.escape(term) for term in materials_vigilance.keys()) + r")", report_text_lower)
+    is_smear = "baar" in report_text_lower
+    if is_vigilancia:
+        if st.session_state.run_vig and "faltando reagente" not in report_text_lower:
             process_vigilance(report_text)
-    elif "baar" in report_text_lower:
-        process_smear(report_text)
+    elif is_smear:
+        if st.session_state.run_smear:
+            process_smear(report_text)
     else:
-        process_general(report_text)
+        if st.session_state.run_gen or st.session_state.run_blood:
+            process_general(report_text)
 
 def process_text_pdf(text_pdf, valid_ids, tracker, filter_choice):
     if not text_pdf:
@@ -1199,29 +1197,35 @@ with col3:
 with col4:
     start_id_blood = st.number_input("Hemocultura", value=None, step=1)
 
-st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">5️⃣ Selecione o filtro de Hospital</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">5️⃣ Configurações de Processamento</p>', unsafe_allow_html=True)
 col_resumo, col_botao = st.columns([0.85, 0.15])
+
+# Inicializa estados padrões se não existirem
+for key, val in {"run_gen": True, "run_vig": True, "run_smear": True, "run_blood": True, "master_filter": "Todos"}.items():
+    if key not in st.session_state: st.session_state[key] = val
+
 with col_resumo:
-    st.markdown(f"""
-        <p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
-            <strong>Filtros ativos:</strong> Geral: {st.session_state.get('f_gen', 'Todos')} | 
-            Vigilância: {st.session_state.get('f_vig', 'Todos')} | 
-            Baciloscopia: {st.session_state.get('f_smear', 'Todos')} | 
-            Hemocultura: {st.session_state.get('f_blood', 'Todos')}
-        </p>
-    """, unsafe_allow_html=True)
+    # Mostra um resumo compacto do que será feito
+    loc = st.session_state.master_filter
+    procs = [name for key, name in [("run_gen", "Geral"), ("run_vig", "Vigilância"), ("run_smear", "Baciloscopia"), ("run_blood", "Hemocultura")] if st.session_state[key]]
+    st.markdown(f"""<p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
+        <strong>Local:</strong> {loc} | <strong>Processar:</strong> {', '.join(procs) if procs else 'Nenhum'}
+    </p>""", unsafe_allow_html=True)
+
 with col_botao:
     with st.popover("Editar"):
-        def render_filter_row(label, key):
-            c1, c2 = st.columns([1.2, 3.8]) 
-            with c1:
-                st.markdown(f'<p style="margin-top: 10px; font-size: 15px; white-space: nowrap;">{label}</p>', unsafe_allow_html=True)
-            with c2:
-                return st.radio(label, ["Todos", "HUWC", "MEAC"], key=key, horizontal=True, label_visibility="collapsed")
-        filter_gen = render_filter_row("Geral:", "f_gen")
-        filter_vig = render_filter_row("Vigilância:", "f_vig")
-        filter_smear = render_filter_row("Baciloscopia:", "f_smear")
-        filter_blood_sel = render_filter_row("Hemocultura:", "f_blood")
+        st.markdown("### Local Único")
+        master_filter = st.radio("Selecione o Hospital:", ["Todos", "HUWC", "MEAC"], key="master_filter", horizontal=True)
+        
+        st.markdown("---")
+        st.markdown("### Selecione o que processar:")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.checkbox("Geral", key="run_gen")
+            st.checkbox("Vigilância", key="run_vig")
+        with c2:
+            st.checkbox("Baciloscopia", key="run_smear")
+            st.checkbox("Hemocultura", key="run_blood")
 
 conditions_met = uploaded_files and uploaded_reports_discharge and uploaded_reports_request
 is_disabled = not conditions_met
@@ -1230,38 +1234,37 @@ if not st.session_state.dfs_processados["concluido"]:
     if placeholder_botao.button("Iniciar processamento", disabled=is_disabled, use_container_width=False):
         placeholder_botao.empty()
         reset_session()
-        ids_found_report = set()        
-        filtro_mestre = filter_gen 
+        ids_found_report = set()         
+        filtro_mestre = st.session_state.master_filter 
         st.markdown('<p style="font-size: 14px;">🔄 Realizando processamento</p>', unsafe_allow_html=True) 
-        with st.status("Extraindo dados...", expanded=False) as status:
+        with st.status("Extraindo dados...", expanded=True) as status:
             if uploaded_reports_request:
                 with st.spinner("Processando relatório de solicitação..."):
                     text_request = extract_text_pdf(uploaded_reports_request)
                     if not text_request:
-                        st.error("Não foi possível extrair texto do relatório de solicitação. Verifique se o arquivo está protegido ou vazio.")
+                        st.error("Não foi possível extrair texto do relatório de solicitação.")
                         st.stop()
                     matches = re.findall(r"Pedido\s*[\.:]?\s*[\r\n]*(\d+)", text_request, re.IGNORECASE)
                     if not matches:
-                        st.warning("Nenhum número de pedido foi encontrado no relatório de solicitação.")
+                        st.warning("Nenhum número de pedido encontrado.")
                         valid_ids = set()
                     else:
                         valid_ids = {int(i) for i in matches}
                         st.markdown(f"✅ {len(valid_ids)} pedidos identificados.")
-            else:
-                st.error("Por favor, envie o relatório de solicitação.")
-                st.stop()
             if uploaded_files:
                 for pdf_file in uploaded_files:
-                    with st.spinner("Dividindo PDF em partes menores..."):
+                    with st.spinner("Dividindo PDF..."):
                         pdf_parts = split_pdf_in_chunks(pdf_file, max_pages=400)
-                    st.markdown(f"✅ PDF dividido em {len(pdf_parts)} partes.")
                     for idx, part in enumerate(pdf_parts, start=1):
                         with st.spinner(f"Processando parte {idx}..."):
                             text = extract_text_pdf(part)
                             process_text_pdf(text, valid_ids, ids_found_report, filtro_mestre)
                 st.markdown("✅ Extração de dados concluída!")
-            if uploaded_reports_discharge:
+            if st.session_state.run_blood:
                 df_blood = df_general.copy()
+            else:
+                df_blood = pd.DataFrame()
+            if uploaded_reports_discharge:
                 df_list = [df_general, df_vigilance, df_smear]
                 df_general, df_vigilance, df_smear = fill_outcome(uploaded_reports_discharge, df_list)
             with st.spinner("Codificando termos e aplicando filtros..."):
@@ -1270,33 +1273,37 @@ if not st.session_state.dfs_processados["concluido"]:
                     substitution_departments, 
                     {"df_general": materials_general, "df_vigilance": materials_vigilance, "df_smear": materials_smear_microscopy}
                 )
-                df_general = filter_general(df_general)
-                df_blood = filter_blood(df_blood)
-                df_general = apply_filter_hospital(df_general, filter_gen)
-                df_vigilance = apply_filter_hospital(df_vigilance, filter_vig)
-                df_smear = apply_filter_hospital(df_smear, filter_smear)
-                df_blood = apply_filter_hospital(df_blood, filter_blood_sel)                
+                if st.session_state.run_gen or st.session_state.run_blood:
+                    df_general = filter_general(df_general)
+                if st.session_state.run_blood and not df_blood.empty:
+                    df_blood = filter_blood(df_blood)
+                if not st.session_state.run_gen: df_general = pd.DataFrame()
+                if not st.session_state.run_vig: df_vigilance = pd.DataFrame()
+                if not st.session_state.run_smear: df_smear = pd.DataFrame()
                 st_gen = int(start_id_general) if start_id_general is not None else 1
                 st_vig = int(start_id_vigilance) if start_id_vigilance is not None else 1
                 st_smear = int(start_id_smear) if start_id_smear is not None else 1
                 st_blood = int(start_id_blood) if start_id_blood is not None else 1
-                if not df_general.empty: df_general['id'] = range(st_gen, st_gen + len(df_general))
-                if not df_vigilance.empty: df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
-                if not df_smear.empty: df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
-                if not df_blood.empty: df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
+                if not df_general.empty: 
+                    df_general['id'] = range(st_gen, st_gen + len(df_general))
+                if not df_vigilance.empty: 
+                    df_vigilance['record_id'] = range(st_vig, st_vig + len(df_vigilance))
+                if not df_smear.empty: 
+                    df_smear['record_id'] = range(st_smear, st_smear + len(df_smear))
+                if not df_blood.empty: 
+                    df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
                 st.markdown("✅ Codificação e filtragem concluídas!")
             pdf_solicitacao_colorido = None
             if uploaded_reports_request:
                 with st.spinner("Criando destaques no relatório de pedidos..."):
                     pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
-                st.markdown("✅ Relatório de pedidos finalizado!")
             st.session_state.dfs_processados["geral"] = df_general
             st.session_state.dfs_processados["vigilancia"] = df_vigilance
             st.session_state.dfs_processados["smear"] = df_smear
             st.session_state.dfs_processados["blood"] = df_blood
             st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
-            st.session_state.dfs_processados["concluido"] = True
-            status.update(label="Concluído", state="complete", expanded=False)
+            st.session_state.dfs_processados["concluido"] = True 
+            status.update(label="Processamento Concluído!", state="complete", expanded=False)
         st.rerun()
 
 else:
