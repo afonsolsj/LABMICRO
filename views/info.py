@@ -35,7 +35,7 @@ def render_editor(title, path_key, color, key_suffix, icon_selected):
     st.badge(title, icon=icon_selected, color=color)
     df, sha = load_csv_from_github(paths[path_key])
     edited = st.data_editor(df, num_rows="dynamic", width='stretch', key=f"{key_suffix}_editor")
-    if st.button(f"Atualizar {title}", key=f"save_{key_suffix}"):
+    if st.button(f"↻ {title}", key=f"save_{key_suffix}"):
         if "Código" in edited.columns:
             edited = edited.sort_values("Código").reset_index(drop=True)
         if update_csv_on_github(edited, paths[path_key], sha):
@@ -54,7 +54,7 @@ def render_legend_item(badge_text, icon, color, description):
 st.title("Informações")
 tab1, tab2, tab3, tab4 = st.tabs(["Setores", "Materiais", "Microrganismos", "Legendas"])
 with tab1:
-    render_editor("HUWC", "departments", "yellow", "department", ":material/home_health:")
+    render_editor("Completo Hospitalar", "departments", "yellow", "department", ":material/home_health:")
 with tab2:
     render_editor("Materiais (Geral)", "material_general", "blue", "general", ":material/fluid_med:")
     render_editor("Materiais (Cultura de vigilância)", "material_vigilance", "red", "vigilance", ":material/medication_liquid:")
