@@ -3,13 +3,14 @@ Acinetobacter baumannii,1.0
 Enterobacter cloacae,7.0
 Escherichia coli,10.0
 Klebsiella pneumoniae,11.0
+Klebsiella pneumoniae ssp pneumoniae,11.0
 Proteus mirabilis,12.0
 Pseudomonas aeruginosa,13.0
 Serratia marcescens,14.0
 Stenotrophomonas maltophilia,22.0
 Sphingomonas paucimobilis,27.0
-Complexo Burkholderia cepacia,28.0
 Burkholderia cepacia,28.0
+Complexo Burkholderia cepacia,28.0
 Pseudomonas Fluorescens,30.0
 Morganela morganii,31.0
 Providencia stuartii,32.0
