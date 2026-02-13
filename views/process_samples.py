@@ -1214,11 +1214,9 @@ with col_resumo:
 
 with col_botao:
     with st.popover("Editar"):
-        st.markdown("### Local Único")
+        st.markdown("Local")
         master_filter = st.radio("Selecione o Hospital:", ["Todos", "HUWC", "MEAC"], key="master_filter", horizontal=True)
-        
-        st.markdown("---")
-        st.markdown("### Selecione o que processar:")
+        st.markdown("Selecione qual(is) formulário(s) processar:")
         c1, c2 = st.columns(2)
         with c1:
             st.checkbox("Geral", key="run_gen")
