@@ -1200,20 +1200,18 @@ with col4:
 st.markdown('<p style="font-size: 14px; margin-bottom: 5px;">5️⃣ Configurações de Processamento</p>', unsafe_allow_html=True)
 col_resumo, col_botao = st.columns([0.85, 0.15])
 
-# Inicializa estados padrões se não existirem
 for key, val in {"run_gen": True, "run_vig": True, "run_smear": True, "run_blood": True, "master_filter": "Todos"}.items():
     if key not in st.session_state: st.session_state[key] = val
 
 with col_resumo:
-    # Mostra um resumo compacto do que será feito
     loc = st.session_state.master_filter
     procs = [name for key, name in [("run_gen", "Geral"), ("run_vig", "Vigilância"), ("run_smear", "Baciloscopia"), ("run_blood", "Hemocultura")] if st.session_state[key]]
     st.markdown(f"""<p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
-        <strong>Local:</strong> {loc} | <strong>Processar:</strong> {', '.join(procs) if procs else 'Nenhum'}
+        <strong>Hospital:</strong> {loc} | <strong>Processar:</strong> {', '.join(procs) if procs else 'Nenhum'}
     </p>""", unsafe_allow_html=True)
 
 with col_botao:
-    with st.popover("Editar filtros"):
+    with st.popover("Editar"):
         master_filter = st.radio("Selecione o Hospital:", ["Todos", "HUWC", "MEAC"], key="master_filter", horizontal=True)
         st.markdown('<p style="font-size: 13px; margin-bottom: 5px;">Selecione quais formulários processar:</p>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
