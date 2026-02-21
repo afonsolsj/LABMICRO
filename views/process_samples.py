@@ -720,10 +720,14 @@ def extract_fields(report_text, df_name):
                 return 3
         else:
             return 0
-    def process_material(raw_material, df_name):
+    def process_material(raw_material, df_name, report_text):
         if not raw_material:
-            return {"tipo": "", "outro": ""}
-        material_clean = raw_material.strip().lower()
+            report_clean = str(report_text).lower() if report_text else ""
+            if "sangue" in report_clean:
+                return {"tipo": "SANGUE", "outro": ""}
+            else:
+                return {"tipo": "ESCARRO", "outro": ""}
+        material_clean = raw_material.strip().lower()        
         if "sangue" in material_clean:
             return {"tipo": "SANGUE", "outro": ""}
         if df_name == "smear":
@@ -829,7 +833,6 @@ def process_general(report_text, row_idx=None):
         for key, val in fields.items():
             if key in new_row:
                 new_row[key] = val
-        #new_row["id"] = get_next_id(df_general, start_id_general, "id")
         new_row["id"] = None
         df_general = pd.concat([df_general, pd.DataFrame([new_row])], ignore_index=True)
     else:
@@ -851,7 +854,6 @@ def process_vigilance(report_text, row_idx=None):
         for key, val in fields.items():
             if key in new_row:
                 new_row[key] = val
-        #new_row["record_id"] = get_next_id(df_vigilance, start_id_vigilance, "record_id")
         new_row["record_id"] = None
         df_vigilance = pd.concat([df_vigilance, pd.DataFrame([new_row])], ignore_index=True)
     else:
@@ -873,7 +875,6 @@ def process_smear(report_text, row_idx=None):
         for key, val in fields.items():
             if key in new_row:
                 new_row[key] = val
-        #new_row["record_id"] = get_next_id(df_smear, start_id_smear, "record_id")
         new_row["record_id"] = None
         df_smear = pd.concat([df_smear, pd.DataFrame([new_row])], ignore_index=True)
     else:
@@ -1165,7 +1166,6 @@ def process_text_pdf(text_pdf, valid_ids, tracker, filter_choice):
             process_singular_report(report_chunk, valid_ids, tracker, filter_choice)
 
 def reset_session():
-    # Limpa as variáveis de dados
     st.session_state.dfs_processados = {
         "geral": pd.DataFrame(),
         "vigilancia": pd.DataFrame(),
@@ -1174,7 +1174,6 @@ def reset_session():
         "pdf_report": None,
         "concluido": False
     }
-    # Força a limpeza de buffers de arquivos
     st.cache_data.clear()
 
 if "dfs_processados" not in st.session_state:

@@ -47,7 +47,7 @@ with col1:
 with col2:
     if "adding_new" not in st.session_state:
         st.session_state.adding_new = False
-    c_titulo, c_acoes = st.columns([1.5, 1]) 
+    c_titulo, c_acoes = st.columns([1.5, 10]) 
     with c_titulo:
         st.markdown('📌 **Mural de avisos**')
     avisos, sha = get_post_it_content()
