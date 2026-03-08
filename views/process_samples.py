@@ -353,7 +353,7 @@ def extract_fields_positive(report_text, df_name):
                 return 9, ""
             else:
                 return "", ""
-        def apresenta_gene_resistencia(report_text):
+        def apresenta_gene_resistencia(report_lower):
             if " kpc " in report_text and " ndm " in report_text:
                 return 10
             elif " kpc " in report_text and " imp " in report_text:
@@ -390,18 +390,17 @@ def extract_fields_positive(report_text, df_name):
                 return 1    
             else:
                 return ""
-        def get_cim_result(report_text):
+        def get_cim_result(report_lower):
             text = report_text.lower()
-            patterns = {"mcim_pos": "inativação de carbapenêmico modificado): positivo", "mcim_neg": "inativação de carbapenêmico modificado): negativo", "ecim_pos": "(ecim-edta): positivo", "ecim_neg": "(ecim-edta): negativo"}
-            mcim = 4 
+            mcim = 4
             ecim = 4
-            if patterns["mcim_pos"] in text:
+            if re.search(r'mcim.*positivo', text):
                 mcim = 1
-            elif patterns["mcim_neg"] in text:
+            elif re.search(r'mcim.*negativo', text):
                 mcim = 2
-            if patterns["ecim_pos"] in text:
+            if re.search(r'ecim.*positivo', text):
                 ecim = 1
-            elif patterns["ecim_neg"] in text:
+            elif re.search(r'ecim.*negativo', text):
                 ecim = 2
             return mcim, ecim
         def result_ast(value):
@@ -459,7 +458,7 @@ def extract_fields_positive(report_text, df_name):
                 valores = [("", "")] * len(campos)
                 gram_negativo_gn_ambulatorio = 2
                 return (*valores, gram_negativo_gn_ambulatorio)
-        def get_leveduras_values(get_value, result_ast, report_text, type_micro):
+        def get_leveduras_values(get_value, result_ast, report_lower, type_micro):
             campos = ["fluconazol", "voriconazol", "caspofungina", "micafungina", "anfotericina b", "fluocitosina"]
             if any(x in report_text.lower() for x in campos) and type_micro == 2:
                 valores = [result_ast(get_value(c)) for c in campos]
@@ -469,7 +468,7 @@ def extract_fields_positive(report_text, df_name):
                 valores = [("", "")] * len(campos)
                 para_leveduras = 2
                 return (*valores, para_leveduras)
-        def get_gram_positivo_values(get_value, result_ast, report_text, type_micro):
+        def get_gram_positivo_values(get_value, result_ast, report_lower, type_micro):
             campos = ["benzilpenicilina", "ampicilina (iv)", "oxacilina", "ceftarolina", "ESTE_E_FIXO_4", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]
             filtros = ["benzilpenicilina", "ampicilina", "oxacilina", "ceftarolina", "estreptomicina", "gentamicina", "levofloxacina", "eritromicina", "clindamicina", "linezolid", "daptomicina", "teicoplanina", "vancomicina", "tigeciclina", "rifampicina", "trimetoprim/sulfametoxazol", "nitrofurantoina"]
             if any(x in report_text.lower() for x in filtros) and type_micro == 0:
@@ -490,12 +489,24 @@ def extract_fields_positive(report_text, df_name):
                 return 1
             else:
                 return 2
+        def get_carbapenase(report_lower):
+            if "dupla carbapenemase" in report_lower:
+                return 13
+            if re.search(r'\bmetalo\b', report_lower):
+                return 6
+            if re.search(r'\bserino\b', report_lower):
+                return 2
+            if "não detectado" in report_lower or "nao detectado" in report_lower:
+                return 8
+            if "não enzimático" in report_lower or "nao enzimatico" in report_lower:
+                return 1
+            return ""
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :") 
         type_micro = classify_microorganism(get_value("ISOLADO1 :") or get_value("ISOLADO2 :")) 
         micro_final = "Outro" if type_micro == "" and isolate_micro else isolate_micro 
         other_micro = isolate_micro if type_micro == "" and isolate_micro else ""
-        (fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras) = get_leveduras_values(get_value, result_ast, report_text, type_micro)
-        (benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo) = get_gram_positivo_values(get_value, result_ast, report_text, type_micro)
+        (fluconazol, voriconazol, caspofungina, micafungina, anfotericina_b, fluocitosina, para_leveduras) = get_leveduras_values(get_value, result_ast, report_lower, type_micro)
+        (benzilpenicilina, ampicilina_gram_positivo, oxacilina, ceftarolina_pneumonia, ceftarolina_outra, estreptomicina, gentamicina_gram_positivo, levofloxacina_gram_positivo, eritromicina, clindamicina, linezolid, daptomicina, teicoplanina, vancomicina, tigeciclina_gram_positivo, rifampicina, trimetoprima_sulfametaxazol_gram_positivo, nitrofurantoina_gram_positivo, gram_positivo) = get_gram_positivo_values(get_value, result_ast, report_lower, type_micro)
         (amoxicilina, aztreonam, cefiderocol, ceftalozone_tazobactam, ceftazidime_avibactam, ampicilina, ampicilina_sulbactam, piperacilina_tazobactam, cefoxitina, cefuroxima, ceftazidima, cefepima, ertapenem, imipenem, imipenem_relebactam, gn_levofloxacina, meropenem, meropenem_vaborbactam, amicacina, gentamicina, ciprofloxacina, tigeciclina, trimetoprim_sulfametozol, colistina, ceftriaxona, gram_negativo_gn_hospitala) = get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro)
         (ampicilina_ambul, amoxicilina_cido_clavul_nico, piperacilina_tazobactam_ambul, cefalexina, cefalotina, cefuroxima_ambul, cefuroxima_axetil, ceftriaxona_ambul, cefepima_ambul, ertapenem_ambul, meropenem_ambul, amicacina_ambul, gentamicina_ambul, cido_nalidixico, ciprofloxacino, norfloxacino, nitrofurantoina, trimetoprima_sulfametoxazol, levofloxacina, gram_negativo_gn_ambulat_rio) = get_gn_ambulatorial_values(get_value, result_ast, report_lower, type_micro)
         if gram_negativo_gn_ambulat_rio == 2 and gram_negativo_gn_hospitala == 2 and gram_positivo == 2 and para_leveduras == 2:
@@ -508,7 +519,7 @@ def extract_fields_positive(report_text, df_name):
             antibiograma_realizado = 1
         mechanism, other_mechanism = get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final)
         tem_mecanismo_resist_ncia = 1 if mechanism != "" else 2
-        code_mcim, code_ecim = get_cim_result(report_text) if mechanism in (2, 6) else ("", "")
+        code_mcim, code_ecim = get_cim_result(report_lower) if mechanism in (2, 6) else ("", "")
         realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else ""
         return {
             "resultado": 1,
@@ -662,7 +673,8 @@ def extract_fields_positive(report_text, df_name):
             "qual_outro_mecanismo_de_re": other_mechanism,
             "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia,
             "realizou_teste_imunogromat": realizou_teste_imunogromat,
-            "apresenta_gene_resistencia": apresenta_gene_resistencia(report_text)
+            "apresenta_gene_resistencia": apresenta_gene_resistencia(report_lower)
+            "apresenta_carbapenase": get_carbapenase(report_lower)
         }
 def extract_fields(report_text, df_name):
     report_lower = report_text.lower()
