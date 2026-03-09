@@ -354,53 +354,52 @@ def extract_fields_positive(report_text, df_name):
             else:
                 return "", ""
         def apresenta_gene_resistencia(report_lower):
-            if " kpc " in report_text and " ndm " in report_text:
+            if "kpc" in text and "ndm" in report_lower:
                 return 10
-            elif " kpc " in report_text and " imp " in report_text:
+            elif "kpc" in text and "imp" in report_lower:
                 return 9
-            elif " ndm " in report_text and " imp " in report_text:
+            elif "ndm" in text and "imp" in report_lower:
                 return 11
-            elif " kpc " in report_text and " vim " in report_text:
+            elif "kpc" in text and "vim" in report_lower:
                 return 13
-            elif " ndm " in report_text and " vim " in report_text:
+            elif "ndm" in text and "vim" in report_lower:
                 return 14
-            elif " imp " in report_text and " vim " in report_text:
+            elif "imp" in text and "vim" in report_lower:
                 return 15
-            elif " kpc " in report_text and " oxa " in report_text:
+            elif "kpc" in text and "oxa" in report_lower:
                 return 16
-            elif " oxa " in report_text and " imp " in report_text:
+            elif "oxa" in text and "imp" in report_lower:
                 return 17
-            elif " oxa " in report_text and " vim " in report_text:
+            elif "oxa" in text and "vim" in report_lower:
                 return 18
-            elif " ndm " in report_text and " oxa " in report_text:
+            elif "ndm" in text and "oxa" in report_lower:
                 return 19
-            elif "enzimático não detectado" in report_text:
+            elif "enzimático não detectado" in report_lower:
                 return 8
-            elif " ndm " in report_text:
+            elif "ndm" in report_lower:
                 return 6
-            elif " vim " in report_text:
+            elif "vim" in report_lower:
                 return 5
-            elif " imp " in report_text:
+            elif "imp" in report_lower:
                 return 4
-            elif " oxa " in report_text:
+            elif "oxa" in report_lower:
                 return 3
-            elif " kpc " in report_text:
+            elif "kpc" in report_lower:
                 return 2
-            elif " não enzimático " in report_text:
-                return 1    
+            elif "não enzimático" in report_lower:
+                return 1
             else:
                 return ""
         def get_cim_result(report_lower):
-            text = report_text.lower()
             mcim = 4
             ecim = 4
-            if re.search(r'mcim.*positivo', text):
+            if re.search(r'\bmcim\b.*?positivo', report_lower, re.S):
                 mcim = 1
-            elif re.search(r'mcim.*negativo', text):
+            elif re.search(r'\bmcim\b.*?negativo', report_lower, re.S):
                 mcim = 2
-            if re.search(r'ecim.*positivo', text):
+            if re.search(r'\becim\b.*?positivo', report_lower, re.S):
                 ecim = 1
-            elif re.search(r'ecim.*negativo', text):
+            elif re.search(r'\becim\b.*?negativo', report_lower, re.S):
                 ecim = 2
             return mcim, ecim
         def result_ast(value):
