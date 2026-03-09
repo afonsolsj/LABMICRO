@@ -391,15 +391,16 @@ def extract_fields_positive(report_text, df_name):
             else:
                 return ""
         def get_cim_result(report_lower):
-            mcim = 4
-            ecim = 4
-            if re.search(r'\bmcim\b.*?positivo', report_lower, re.S):
+            text = report_lower.lower().replace("\n", " ")
+            mcim = ""
+            ecim = ""
+            if re.search(r'\bmcim\b.*?positivo', text):
                 mcim = 1
-            elif re.search(r'\bmcim\b.*?negativo', report_lower, re.S):
+            elif re.search(r'\bmcim\b.*?negativo', text):
                 mcim = 2
-            if re.search(r'\becim\b.*?positivo', report_lower, re.S):
+            if re.search(r'\becim\b.*?positivo', text):
                 ecim = 1
-            elif re.search(r'\becim\b.*?negativo', report_lower, re.S):
+            elif re.search(r'\becim\b.*?negativo', text):
                 ecim = 2
             return mcim, ecim
         def result_ast(value):
@@ -484,7 +485,7 @@ def extract_fields_positive(report_text, df_name):
                 gram_positivo = 2
                 return (*valores, gram_positivo)
         def get_imunocromat(report_lower):
-            if "imunocromatografia" or "imunocromatográfico" in report_lower:
+            if "imunocromatografia" in report_lower or "imunocromatográfico" in report_lower:
                 return 1
             else:
                 return 2
@@ -518,7 +519,7 @@ def extract_fields_positive(report_text, df_name):
             antibiograma_realizado = 1
         mechanism, other_mechanism = get_mechanism(oxacilina, meropenem, imipenem, ertapenem, vancomicina, micro_final)
         tem_mecanismo_resist_ncia = 1 if mechanism != "" else 2
-        code_mcim, code_ecim = get_cim_result(report_lower) if mechanism in (2, 6) else ("", "")
+        code_mcim, code_ecim = get_cim_result(report_lower)
         realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else ""
         return {
             "resultado": 1,
