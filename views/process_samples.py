@@ -232,37 +232,22 @@ def fill_outcome(pdf_file, dfs, column_name_search="column_aux1", col_date1="col
     if not text:
         return dfs
     lines = text.splitlines()
-    date_pattern = r"(\d{2}/\d{2}/\d{4})"
     for df in dfs:
-        for col in [col_date1, col_date2, col_outcome]:
-            if col not in df.columns:
-                df[col] = ""
+        if col_outcome not in df.columns:
+            df[col_outcome] = ""
         for idx, row in df.iterrows():
             patient_name = str(row[column_name_search]).strip()
-            setor = str(row.get(col_setor, "")).lower()
-            found_in_report = False
-            if patient_name: 
+            if patient_name:
                 for line in lines:
                     if patient_name in line:
-                        found_in_report = True
-                        dates = re.findall(date_pattern, line)
-                        if len(dates) >= 2:
-                            df.at[idx, col_date1] = dates[0]
-                            df.at[idx, col_date2] = dates[1]
-                            df.at[idx, col_outcome] = 3
-                        elif any(x in setor for x in ["amb", "amb "]):
-                            df.at[idx, col_outcome] = 3
-                        elif len(dates) == 1:
-                            df.at[idx, col_date1] = dates[0]
-                            df.at[idx, col_outcome] = 1
-                        elif len(dates) == 0:
-                            df.at[idx, col_outcome] = ""
                         if re.search(r"\bO\s+" + re.escape(patient_name) + r"\b", line):
                             df.at[idx, col_outcome] = 2
+                        else:
+                            df.at[idx, col_outcome] = 3
                         break
         for col in [column_name_search, col_date1, col_date2]:
             if col in df.columns:
-                df.drop(columns=[col], inplace=True) 
+                df.drop(columns=[col], inplace=True)
     return dfs
 
 # Funções de preenchimento
