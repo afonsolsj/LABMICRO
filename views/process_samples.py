@@ -300,6 +300,24 @@ def extract_fields_positive(report_text, df_name):
                 value = line.split(":", 1)[-1].strip()
                 return value
             return ""
+        def format_time(raw_text, df_name, column_name=""):
+            match = re.search(r"(\d{2}/\d{2}/\d{4})(?:\s+(\d{2}:\d{2}))?", raw_text)
+            if not match:
+                return ""
+            date_str = match.group(1)
+            time_str = match.group(2) or "00:00"
+            try:
+                date_obj = datetime.strptime(f"{date_str} {time_str}", "%d/%m/%Y %H:%M")
+            except ValueError:
+                return ""
+            if df_name in ("general", "vigilance"):
+                return date_obj.strftime("%Y-%m-%d %H:%M")
+            elif df_name == "smear":
+                if column_name == "data_da_libera_o":
+                    date_obj += timedelta(days=1)
+                return date_obj.strftime("%Y-%m-%d")
+            else:
+                return date_obj.strftime("%Y-%m-%d %H:%M")
         def classify_microorganism(value):
             if not value:
                 return ""
@@ -337,37 +355,40 @@ def extract_fields_positive(report_text, df_name):
             else:
                 return "", ""
         def apresenta_gene_resistencia(report_lower):
-            if "kpc" in text and "ndm" in report_lower:
-                return 10
-            elif "kpc" in text and "imp" in report_lower:
-                return 9
-            elif "ndm" in text and "imp" in report_lower:
-                return 11
-            elif "kpc" in text and "vim" in report_lower:
-                return 13
-            elif "ndm" in text and "vim" in report_lower:
-                return 14
-            elif "imp" in text and "vim" in report_lower:
-                return 15
-            elif "kpc" in text and "oxa" in report_lower:
-                return 16
-            elif "oxa" in text and "imp" in report_lower:
-                return 17
-            elif "oxa" in text and "vim" in report_lower:
-                return 18
-            elif "ndm" in text and "oxa" in report_lower:
-                return 19
-            elif "enzimático não detectado" in report_lower:
+            def tem(termo, texto):
+                padrao = rf'\b{termo}\b'
+                return re.search(padrao, texto)
+            if "enzimático não detectado" in report_lower or "(kpc, oxa-48, ndm , imp, vim) resultado: não reagente" in report_lower or "(kpc, oxa-48, ndm, imp, vim) resultado: não reagente" in report_lower or "resultado: não reagente" in report_lower or "(kpc, oxa-48, ndm , imp, vim)" in report_lower:
                 return 8
-            elif "ndm" in report_lower:
+            elif tem("kpc", report_lower) and tem("ndm", report_lower):
+                return 10
+            elif tem("kpc", report_lower) and tem("imp", report_lower):
+                return 9
+            elif tem("ndm", report_lower) and tem("imp", report_lower):
+                return 11
+            elif tem("kpc", report_lower) and tem("vim", report_lower):
+                return 13
+            elif tem("ndm", report_lower) and tem("vim", report_lower):
+                return 14
+            elif tem("imp", report_lower) and tem("vim", report_lower):
+                return 15
+            elif tem("kpc", report_lower) and tem("oxa", report_lower):
+                return 16
+            elif tem("oxa", report_lower) and tem("imp", report_lower):
+                return 17
+            elif tem("oxa", report_lower) and tem("vim", report_lower):
+                return 18
+            elif tem("ndm", report_lower) and tem("oxa", report_lower):
+                return 19
+            elif tem("ndm", report_lower):
                 return 6
-            elif "vim" in report_lower:
+            elif tem("vim", report_lower):
                 return 5
-            elif "imp" in report_lower:
+            elif tem("imp", report_lower):
                 return 4
-            elif "oxa" in report_lower:
+            elif tem("oxa", report_lower):
                 return 3
-            elif "kpc" in report_lower:
+            elif tem("kpc", report_lower):
                 return 2
             elif "não enzimático" in report_lower:
                 return 1
@@ -410,7 +431,7 @@ def extract_fields_positive(report_text, df_name):
                 mic_value = ""
             return status_code, mic_value
         def get_gn_hospitalar_values(get_value, result_ast, report_lower, type_micro):
-            campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftalozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
+            campos = ["amoxicilina", "aztreonam", "cefiderocol", "ceftolozano/tazobactam", "ceftazidima/avibactam", "ampicilina", "ampicilina/sulbactam", "piperacilina/tazobactam", "cefoxitina", "cefuroxima", "ceftazidima", "cefepima", "ertapenem", "imipenem", "imipenem/relebactam", "levofloxacina", "meropenem", "meropenem/vaborbactam", "amicacina", "gentamicina", "ciprofloxacina", "tigeciclina", "trimetoprim/sulfametozol", "polimixina b", "ceftriaxona"]
             tem_medicamento_hospitalar = "ceftazidima/avibactam" in report_lower
             proc_val = get_value("Procedência.:")
             nao_e_ambulatorio = "AMB" not in (proc_val if proc_val else "")
@@ -473,19 +494,19 @@ def extract_fields_positive(report_text, df_name):
                 return (*valores, gram_positivo)
         def get_imunocromat(report_lower):
             if "imunocromatografia" in report_lower or "imunocromatográfico" in report_lower:
-                return 1
+                return 1, format_time(get_value("Dt.Liberação:"), df_name, "data_da_libera_o")
             else:
-                return 2
+                return 0, ""
         def get_carbapenase(report_lower):
-            if "dupla carbapenemase" in report_lower:
-                return 13
-            if re.search(r'\bmetalo\b', report_lower):
+            if "não é detectada" in report_lower or "nao e detectada" in report_lower:
+                return 0
+            elif "dupla carbapenemase" in report_lower:
                 return 6
-            if re.search(r'\bserino\b', report_lower):
+            elif re.search(r'\bmetalo\b', report_lower):
+                return 3
+            elif re.search(r'\bserino\b', report_lower):
                 return 2
-            if "não detectado" in report_lower or "nao detectado" in report_lower:
-                return 8
-            if "não enzimático" in report_lower or "nao enzimatico" in report_lower:
+            elif "enzimático não detectável" in report_lower or "enzimatico nao detectavel" in report_lower:
                 return 1
             return ""
         isolate_micro = get_value("ISOLADO1 :") or get_value("ISOLADO2 :") 
@@ -507,7 +528,7 @@ def extract_fields_positive(report_text, df_name):
         mechanism, other_mechanism = get_mechanism(oxacilina[0], meropenem[0], imipenem[0], ertapenem[0], vancomicina[0], micro_final)
         tem_mecanismo_resist_ncia = 1 if mechanism != "" else 2
         code_mcim, code_ecim = get_cim_result(report_lower, micro_final)
-        realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else ""
+        realizou_teste_imunogromat = get_imunocromat(report_lower) if mechanism in (2, 6) else (None, "")
         return {
             "resultado": 1,
             "qual_microorganismo": micro_final,
@@ -543,7 +564,7 @@ def extract_fields_positive(report_text, df_name):
             "gentamicina_gram_positivo": gentamicina_gram_positivo[0],
             "mic_gentamicinagp": gentamicina_gram_positivo[1],
             "levofloxacina_gram_positivo": levofloxacina_gram_positivo[0],
-            "mic_levofloxacina_gram_positivo": levofloxacina_gram_positivo[1],
+            "mic_levofloxacinagp": levofloxacina_gram_positivo[1],
             "eritromicina": eritromicina[0],
             "mic_eritromicina": eritromicina[1],
             "clindamicina": clindamicina[0],
@@ -566,7 +587,7 @@ def extract_fields_positive(report_text, df_name):
             "mic_nitrofurantoinagp": nitrofurantoina_gram_positivo[1],
             "gram_positivo": gram_positivo,
             "amoxicilina": amoxicilina[0],
-            "mic_amoxicilina": amoxicilina[1],
+            "mic_amoxicilna_cido_clavul": amoxicilina[1],
             "aztreonam": aztreonam[0],
             "mic_aztreonam": aztreonam[1],
             "cefiderocol": cefiderocol[0],
@@ -659,7 +680,8 @@ def extract_fields_positive(report_text, df_name):
             "qual_gene_de_mecanismo_res": mechanism,
             "qual_outro_mecanismo_de_re": other_mechanism,
             "tem_mecanismo_resist_ncia": tem_mecanismo_resist_ncia,
-            "realizou_teste_imunogromat": realizou_teste_imunogromat,
+            "realizou_teste_imunogromat": realizou_teste_imunogromat[0] if realizou_teste_imunogromat else None,
+            "data_do_teste_imunogromato": realizou_teste_imunogromat[1] if len(realizou_teste_imunogromat) > 1 else "",
             "apresenta_gene_resistencia": apresenta_gene_resistencia(report_lower),
             "apresenta_carbapenase": get_carbapenase(report_lower)
         }
@@ -821,7 +843,7 @@ def extract_fields(report_text, df_name):
 def process_general(report_text, row_idx=None):
     global df_general
     fields = extract_fields(report_text, "general")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
+    if any(x in report_text.lower() for x in ["isolado1", "isolado2"]):    
         fields_positive = extract_fields_positive(report_text, "general")
         if fields_positive:
             fields.update(fields_positive)
@@ -842,7 +864,7 @@ def process_general(report_text, row_idx=None):
 def process_vigilance(report_text, row_idx=None):
     global df_vigilance
     fields = extract_fields(report_text, "vigilance")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
+    if any(x in report_text.lower() for x in ["isolado1", "isolado2"]):    
         fields_positive = extract_fields_positive(report_text, "vigilance")
         if fields_positive:
             fields.update(fields_positive)
@@ -863,7 +885,7 @@ def process_vigilance(report_text, row_idx=None):
 def process_smear(report_text, row_idx=None):
     global df_smear
     fields = extract_fields(report_text, "smear")
-    if any(x in report_text.lower() for x in ["positivo", "interpretação dos antibióticos é expressa"]):    
+    if any(x in report_text.lower() for x in ["positiva", "+"]):    
         fields_positive = extract_fields_positive(report_text, "smear")
         if fields_positive:
             fields.update(fields_positive)
@@ -1286,14 +1308,27 @@ if not st.session_state.dfs_processados["concluido"]:
                 if not df_blood.empty: 
                     df_blood['record_id'] = range(st_blood, st_blood + len(df_blood))
                 st.markdown("✅ Codificação e filtragem concluídas!")
-            pdf_solicitacao_colorido = None
-            if uploaded_reports_request:
-                with st.spinner("Criando destaques no relatório de pedidos..."):
-                    pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_found_report, valid_ids)
             st.session_state.dfs_processados["geral"] = df_general
             st.session_state.dfs_processados["vigilancia"] = df_vigilance
             st.session_state.dfs_processados["smear"] = df_smear
             st.session_state.dfs_processados["blood"] = df_blood
+            ids_finais_para_destaque = set()
+            for nome in ["geral", "vigilancia", "smear"]:
+                df_atual = st.session_state.dfs_processados[nome]
+                if not df_atual.empty and "n_mero_do_pedido" in df_atual.columns:
+                    ids_sujos = df_atual["n_mero_do_pedido"].astype(str).unique()
+                    ids_limpos = {i[:-2] if len(i) > 2 else i for i in ids_sujos if i and i.lower() != "nan"}
+                    ids_finais_para_destaque.update(ids_limpos)   
+            df_b = st.session_state.dfs_processados["blood"]
+            if not df_b.empty and "numero_pedido" in df_b.columns:
+                ids_sujos_blood = df_b["numero_pedido"].astype(str).unique()
+                ids_limpos_blood = {i[:-2] if len(i) > 2 else i for i in ids_sujos_blood if i and i.lower() != "nan"}
+                ids_finais_para_destaque.update(ids_limpos_blood)
+            ids_finais_para_destaque = {str(i).strip() for i in ids_finais_para_destaque}                 
+            pdf_solicitacao_colorido = None
+            if uploaded_reports_request:
+                with st.spinner("Criando destaques no relatório de pedidos..."):
+                    pdf_solicitacao_colorido = paint_request_pdf(uploaded_reports_request, ids_finais_para_destaque, valid_ids)
             st.session_state.dfs_processados["pdf_report"] = pdf_solicitacao_colorido
             st.session_state.dfs_processados["concluido"] = True 
             status.update(label="Processamento Concluído!", state="complete", expanded=False)
