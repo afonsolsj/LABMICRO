@@ -11,6 +11,7 @@ Coagulase negative Staphylococcus,21.0
 Staphylococcus lentus,21.0
 Staphylococcus xylosus,21.0
 Staphylococcus cohnii ssp urealyticus,21.0
+Staphylococcus cohnii ssp cohnii,21.0
 Streptococcus agalactiae,23.0
 Streptococcus pyogenes,24.0
 Streptococcus pneumoniae,25.0
@@ -18,14 +19,14 @@ Streptococcus do grupo viridans,26.0
 Staphylococcus hominis,34.0
 Staphylococcus hominis ssp hominis,34.0
 Streptococcus mitis,37.0
-Streptococcus spp,39.0
 Streptococcus dysgalactiae ssp equisimilis,39.0
+Streptococcus spp,39.0
 Staphylococcus spp,40.0
 Enterococcus spp,48.0
-Micrococus sp,62.0
 Micrococcus spp,62.0
-Kocuria sp,63.0
+Micrococus sp,62.0
 Kocuria spp,63.0
+Kocuria sp,63.0
 Enterococcus casseliflavus,147.0
 Enterococcus gallinarum,148.0
 Enterococcus spp.,149.0
